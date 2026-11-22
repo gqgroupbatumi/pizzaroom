@@ -1,0 +1,20 @@
+# Настройки Cloudflare. Обновление: Cloudflare сам выкладывает сайт после каждого изменения в GitHub.
+name = "pizzaroom"
+main = "src/worker.js"
+compatibility_date = "2026-11-01"
+
+[placement]
+mode = "smart"
+
+# Программа кассы (папка public) раздаётся с того же адреса, сервер отвечает на /api/...
+[assets]
+directory = "./public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pizzaroom"
+database_id = "ВСТАВИТЬ_ПОСЛЕ_СОЗДАНИЯ_БАЗЫ"
+
+# Секреты (не в этом файле):
+#   npx wrangler secret put TG_TOKEN   — токен Telegram-бота для уведомлений владельцу
+#   npx wrangler secret put TG_CHAT    — ваш chat id

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /kassa/
+Disallow: /api/
+Disallow: /print/
+
+Sitemap: https://pizzaroom.ge/sitemap.xml

@@ -1,0 +1,10 @@
+PIZZA ROOM - pechat zakazov na kuhnyu
+
+1. Raspakuyte etu papku v lyuboe mesto (naprimer, Rabochiy stol).
+2. V adminke: Nastroyki -> "Pechat na kuhnyu" -> "Sozdat klyuch" -> Kopirovat.
+3. Zapustite USTANOVIT.bat (esli Windows sprosit - "Podrobnee" -> "Vypolnit v lyubom sluchae").
+4. Vstavte klyuch (pravaya knopka myshi), vyberite nomer printera.
+5. Vyydet probnyy blank - gotovo. Programma zapuskaetsya sama pri vklyuchenii kompyutera.
+
+Otklyuchit: UDALIT.bat
+Zhurnal raboty: %LOCALAPPDATA%\PizzaRoomPrint\log.txt

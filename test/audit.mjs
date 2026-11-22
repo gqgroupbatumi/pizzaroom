@@ -1,0 +1,45 @@
+const B = 'http://localhost:8799';
+const tok = (await (await fetch(B + '/api/login', { method: 'POST', headers: { 'content-type': 'application/json', origin: B }, body: JSON.stringify({ pin: '7391', device: 'audit' }) })).json()).token;
+const g = async (p) => { const r = await fetch(B + p, { headers: { authorization: 'Bearer ' + tok } }); const j = await r.json(); if (!r.ok) throw new Error(p + ' ' + JSON.stringify(j)); return j; };
+const today = new Date(Date.now() + 4 * 3600e3).toISOString().slice(0, 10); const mon = today.slice(0, 7);
+let bad = 0; const chk = (c, n, x) => { console.log((c ? '  ✓ ' : '  ✗ ') + n, c ? '' : JSON.stringify(x)); if (!c) bad++; };
+const near = (a, b, t = 2) => Math.abs(a - b) <= t;
+for (const [f, t] of [['2000-01-01', today], [mon + '-01', today], [today.slice(0, 4) + '-10-01', today.slice(0, 4) + '-10-31']]) {
+  console.log('\nПериод', f, t);
+  const I = await g(`/api/reports/insights?from=${f}&to=${t}`); const S = await g(`/api/reports/summary?group=day&from=${f}&to=${t}`); const P = await g(`/api/pnl?from=${I.from}&to=${t}`);
+  const C = I.pnl.cur; const sum = (a, k) => a.reduce((s, x) => s + (x[k] || 0), 0);
+  chk(C.revenue_tetri === sum(S.rows, 'gross_tetri'), 'выручка: Аналитика = график по дням', [C.revenue_tetri, sum(S.rows, 'gross_tetri')]);
+  chk(C.revenue_tetri === sum(I.channels, 'revenue_tetri'), 'выручка = сумма по каналам');
+  chk(C.revenue_tetri === sum(I.pay_split, 'rev'), 'выручка = сумма по способам оплаты', [C.revenue_tetri, sum(I.pay_split, 'rev')]);
+  chk(C.orders === sum(I.pay_split, 'n') && C.orders === sum(I.weekdays, 'n') && C.orders === sum(I.hours, 'n'), 'заказы: итог = по оплатам = по дням недели = по часам', [C.orders, sum(I.pay_split, 'n'), sum(I.weekdays, 'n'), sum(I.hours, 'n')]);
+  chk(C.revenue_tetri === sum(I.weekdays, 'rev') && C.revenue_tetri === sum(I.hours, 'rev'), 'выручка по дням недели и часам сходится');
+  chk(C.revenue_tetri === P.totals.revenue_tetri && C.profit_tetri === P.totals.profit_tetri, 'Выручка и Прибыль показывают одни и те же цифры', [C.profit_tetri, P.totals.profit_tetri]);
+  const T = P.totals;
+  chk(T.net_revenue_tetri === T.revenue_tetri - T.vat_tetri, 'выручка без НДС = выручка − НДС');
+  chk(T.profit_tetri === T.net_revenue_tetri - T.cogs_tetri - T.waste_tetri - T.platform_fees_tetri - T.labor_tetri - T.expenses_tetri, 'чистая прибыль = без НДС − продукты − списания − Wolt/Glovo − зарплаты − расходы');
+  chk(T.avg_check_tetri === (T.orders ? Math.round(T.revenue_tetri / T.orders) : 0), 'средний чек = выручка / заказы');
+  for (const c of P.channels) chk(c.contribution_tetri === c.revenue_tetri - c.vat_tetri - c.cogs_tetri - c.platform_fees_tetri, 'канал ' + c.channel + ': остаётся = выручка − НДС − продукты − комиссия');
+  chk(T.cogs_tetri === sum(P.channels, 'cogs_tetri') && T.platform_fees_tetri === sum(P.channels, 'platform_fees_tetri'), 'продукты и комиссии = сумма по каналам');
+  const prodRev = sum(I.cur, 'rev'), prodCost = sum(I.cur, 'cost');
+  chk(prodCost === T.cogs_tetri, 'себестоимость по товарам = себестоимость в прибыли', [prodCost, T.cogs_tetri]);
+  chk(near(prodRev, T.revenue_tetri - sum(S.rows, 'delivery_tetri'), 5 * T.orders), 'выручка по товарам ≈ выручка − доставка (округление по строкам)', [prodRev, T.revenue_tetri]);
+  const bc = I.by_ch; chk(sum(bc, 'qty') === sum(I.cur, 'qty') && sum(bc, 'cost') === prodCost, 'товары по каналам = товары итого');
+  const ex = P.expenses.reduce((a, e) => a + e.net_tetri, 0); chk(ex === T.expenses_tetri, 'расходы в прибыли = сумма категорий');
+  for (const e of P.expenses) chk(e.net_tetri === e.gross_tetri - e.vat_in_tetri, 'расход ' + e.category + ': без НДС = с НДС − НДС к зачёту');
+}
+console.log('\nМесяц', mon);
+const PR = await g('/api/payroll?month=' + mon); const t = PR.totals; const sum = (a, k) => a.reduce((s, x) => s + (x[k] || 0), 0);
+for (const [k, pk] of [['gross','gross'], ['net','net'], ['income_tax','income_tax'], ['pension_emp','pension_emp'], ['pension_er','pension_er'], ['employer_cost','employer_cost'], ['to_pay','to_pay_tetri'], ['advances','advance_tetri']]) chk(t[k] === sum(PR.people, pk), 'Зарплаты: итог «' + k + '» = сумма по людям', [t[k], sum(PR.people, k)]);
+for (const p of PR.people) { chk(p.employer_cost === p.gross + p.pension_er, p.name + ': обходится = начислено + пенсия компании'); chk(p.net === p.gross - p.income_tax - p.pension_emp, p.name + ': на руки = начислено − подоходный − пенсия работника'); chk(p.to_pay_tetri === p.net - p.advance_tetri, p.name + ': к выплате = на руки − аванс'); }
+const E = await g('/api/expenses?month=' + mon); const EY = await g('/api/expenses/months?year=' + mon.slice(0, 4)); const ym = EY.months.find((m) => m.month === mon);
+chk(E.payroll_tetri === t.employer_cost && ym.payroll_tetri === t.employer_cost, 'Расходы: зарплаты = «Обходится компании»');
+const other = E.items.reduce((a, e) => a + e.amount_tetri, 0); chk(other === Object.values(ym.cats).reduce((a, b) => a + b, 0), 'Расходы: список = таблица по месяцам');
+chk(ym.total_tetri === ym.payroll_tetri + other + ym.platform_tetri, 'Расходы: итог месяца = зарплаты + прочие + Wolt/Glovo');
+chk(E.platform_tetri === ym.platform_tetri, 'Wolt/Glovo в расходах: месяц = таблица');
+const PM = (await g('/api/pnl/months?year=' + mon.slice(0, 4))).months.find((m) => m.month === mon); const PMon = await g(`/api/pnl?from=${mon}-01&to=${today}`);
+chk(PM.profit_tetri === PMon.totals.profit_tetri, 'Прибыль: таблица по месяцам = отчёт за месяц', [PM.profit_tetri, PMon.totals.profit_tetri]);
+chk(near(PM.platform_fees_tetri, E.platform_tetri, 3), 'комиссия Wolt/Glovo одинаковая в Прибыли и Расходах', [PM.platform_fees_tetri, E.platform_tetri]);
+const yr = (await g('/api/pnl/months?year=' + mon.slice(0, 4))); const fy = await g(`/api/pnl?from=${mon.slice(0, 4)}-01-01&to=${today}`);
+chk(near(yr.months.reduce((a, m) => a + m.profit_tetri, 0), fy.totals.profit_tetri, 12), 'прибыль за год = сумма месяцев', [yr.months.reduce((a, m) => a + m.profit_tetri, 0), fy.totals.profit_tetri]);
+chk(yr.months.reduce((a, m) => a + m.revenue_tetri, 0) === fy.totals.revenue_tetri, 'выручка за год = сумма месяцев');
+console.log('\nОшибок:', bad);

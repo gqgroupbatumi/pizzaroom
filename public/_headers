@@ -1,0 +1,17 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000
+  Permissions-Policy: camera=(), microphone=(), payment=(), usb=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://tile.openstreetmap.org https://unpkg.com; connect-src 'self' https://router.project-osrm.org; worker-src 'self'; manifest-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self'
+/kassa/*
+  X-Robots-Tag: noindex, nofollow
+/print/*
+  X-Robots-Tag: noindex, nofollow
+/img/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+/icon-*.png
+  Cache-Control: public, max-age=604800
+/logo-*.png
+  Cache-Control: public, max-age=604800
