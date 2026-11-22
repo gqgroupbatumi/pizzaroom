@@ -18,3 +18,7 @@ database_id = "85e105f4-2be8-402f-9f8a-fc0006684cba"
 # Секреты (не в этом файле):
 #   npx wrangler secret put TG_TOKEN   — токен Telegram-бота для уведомлений владельцу
 #   npx wrangler secret put TG_CHAT    — ваш chat id
+
+# Ежедневная задача (отчёт и проверки) — 05:00 UTC = 09:00 по Батуми
+[triggers]
+crons = ["0 5 * * *"]
