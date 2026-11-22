@@ -13,7 +13,7 @@ directory = "./public"
 [[d1_databases]]
 binding = "DB"
 database_name = "pizzaroom"
-database_id = "ВСТАВИТЬ_ПОСЛЕ_СОЗДАНИЯ_БАЗЫ"
+database_id = "85e105f4-2be8-402f-9f8a-fc0006684cba"
 
 # Секреты (не в этом файле):
 #   npx wrangler secret put TG_TOKEN   — токен Telegram-бота для уведомлений владельцу
