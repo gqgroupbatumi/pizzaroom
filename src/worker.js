@@ -1254,9 +1254,10 @@ const START_SQL = `datetime(o.want_at, '-' || ${LEAD_SQL} || ' minutes')`;
 const startAtOf = (o) => o.want_at ? new Date(Date.parse(o.want_at.replace(' ', 'T') + 'Z') - (o.mode === 'delivery' ? 40 : 20) * 60e3).toISOString().slice(0, 19).replace('T', ' ') : null;
 const PCH = { hall: 'დარბაზი', takeaway: 'წასაღები', site: 'საიტი', delivery: 'მიტანა', wolt: 'WOLT', glovo: 'GLOVO', bolt: 'BOLT' };
 function tbsTime(iso) { const d = new Date(String(iso).replace(' ', 'T') + 'Z'); d.setUTCHours(d.getUTCHours() + 4); return d.toISOString().slice(11, 16); }
-async function kitchenTickets(env, onlyNew, limit = 10) {
+async function kitchenTickets(env, onlyNew, limit = 10, only = null) {
   const c = await secretGet(env, 'print_key'); const from = (c && c.from) || isoNow();
-  const rows = await db(env).all(`SELECT o.*, f.fiscal_number AS rno FROM orders o LEFT JOIN fiscal_receipts f ON f.order_id = o.id WHERE o.status != 'cancelled'
+  // only = список заказов для повторной печати чека кассира (кнопка «печать чека» с телефона)
+  const rows = only ? (only.length ? await db(env).all(`SELECT o.*, f.fiscal_number AS rno FROM orders o LEFT JOIN fiscal_receipts f ON f.order_id = o.id WHERE o.status != 'cancelled' AND o.id IN (${only.map(() => '?').join(',')})`, ...only) : []) : await db(env).all(`SELECT o.*, f.fiscal_number AS rno FROM orders o LEFT JOIN fiscal_receipts f ON f.order_id = o.id WHERE o.status != 'cancelled'
     AND (o.sent_at IS NOT NULL OR o.paid_at IS NOT NULL OR (o.channel = 'site' AND o.accepted_at IS NOT NULL))
     AND (COALESCE(o.sent_at, o.paid_at, o.accepted_at) > datetime('now','-4 hours') OR (o.want_at IS NOT NULL AND o.want_at > datetime('now','-4 hours'))) AND COALESCE(o.sent_at, o.paid_at, o.accepted_at) > ?
     AND (o.want_at IS NULL OR ${START_SQL} <= datetime('now')) -- заказ ко времени печатается только когда пора готовить
@@ -1288,7 +1289,7 @@ async function kitchenTickets(env, onlyNew, limit = 10) {
     L.push({ line: 1 }); L.push({ t: 'შიდა #' + o.id, s: 8, a: 'c' });
     const no = String(o.rno || o.id);
     // 1) бланк на кухню — только пиццы (если в заказе одни напитки — на кухню ничего не печатаем)
-    if (food.length) jobs.push({ id: o.id, no, kind: 'kitchen', lines: L });
+    if (food.length && !only) jobs.push({ id: o.id, no, kind: 'kitchen', lines: L });
     // 2) чек кассиру — всё, что в заказе, с ценами; номер тот же, что на кухне
     const T = withTotals(Object.assign({}, o, { items: mine }));
     const K = [{ t: 'PIZZA ROOM · სალარო', s: 9, a: 'c' }];
@@ -1314,6 +1315,7 @@ async function kitchenTickets(env, onlyNew, limit = 10) {
 on('GET', '/api/print/kitchen', null, async ({ env, request }) => {
   await printAuth(env, request);
   const out = await kitchenTickets(env, true);
+  const rc = await rcQueue(env); if (rc.length) out.push(...(await kitchenTickets(env, false, 20, rc)).filter((j) => j.kind === 'cashier'));
   const t = await db(env).one(`SELECT value FROM settings WHERE key = 'print_test'`);
   if (t) out.unshift({ id: 0, no: 'TEST', lines: [{ t: 'PIZZA ROOM', s: 22, b: 1, a: 'c' }, { t: 'სატესტო ბეჭდვა · Тест печати', s: 13, a: 'c' }, { line: 1 },
     { t: '2 × პეპერონი', s: 17, b: 1 }, { t: '1 × მარგარიტა', s: 17, b: 1 }, { line: 1 }, { t: 'ქართული · Русский · English — OK', s: 11, a: 'c' }, { t: tbsTime(isoNow()), s: 10, a: 'c' }] });
@@ -1322,8 +1324,19 @@ on('GET', '/api/print/kitchen', null, async ({ env, request }) => {
 on('POST', '/api/print/kitchen/:id/done', null, async ({ env, request, params }) => {
   await printAuth(env, request); const id = Number(params.id);
   if (id === 0) await db(env).run(`DELETE FROM settings WHERE key = 'print_test'`);
-  else await db(env).run('INSERT OR IGNORE INTO kitchen_prints (order_id) VALUES (?)', int(params.id, 'id'));
+  else { await db(env).run('INSERT OR IGNORE INTO kitchen_prints (order_id) VALUES (?)', int(params.id, 'id')); const rc = await rcQueue(env); if (rc.includes(id)) await rcSave(env, rc.filter((x) => x !== id)); }
   return { ok: true };
+});
+// повторный чек кассира на принтер кассы (с телефона window.print() не работает)
+async function rcQueue(env) { const r = await db(env).one(`SELECT value FROM settings WHERE key = 'print_rc'`); try { return r ? JSON.parse(r.value).filter(Number.isInteger) : []; } catch (e) { return []; } }
+async function rcSave(env, a) { await db(env).run(`INSERT INTO settings (key, value) VALUES ('print_rc', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, JSON.stringify(a.slice(-20))); }
+on('POST', '/api/print/receipt/:id', 'kitchen.view', async ({ env, me, params }) => {
+  const id = int(params.id, 'id'); const c = await secretGet(env, 'print_key'); if (!c) fail(409, 'no_printer', 'Принтер кассы не подключён');
+  const o = await db(env).one('SELECT id FROM orders WHERE id = ?', id); if (!o) fail(404, 'not_found', 'Заказ не найден');
+  const printed = await db(env).one('SELECT 1 AS x FROM kitchen_prints WHERE order_id = ?', id);
+  if (!printed && (await kitchenTickets(env, true, 50)).some((j) => j.id === id)) return { ok: true, auto: true }; // и так сейчас напечатается
+  const rc = await rcQueue(env); if (!rc.includes(id)) await rcSave(env, [...rc, id]);
+  await audit(env, me.id, 'print.receipt', 'order', id); return { ok: true };
 });
 on('POST', '/api/print/error', null, async ({ env, request, body }) => {
   await printAuth(env, request); const msg = String(body.msg || '').slice(0, 200);

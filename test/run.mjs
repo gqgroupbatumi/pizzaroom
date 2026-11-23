@@ -476,6 +476,13 @@ ok(tk && tk.lines.some((l) => l.t && l.t.includes('WOLT #W-77')) && tk.lines.som
 ok((await papi('POST', `/api/print/kitchen/${po}/done`, pk)).status === 200 && !(await papi('GET', '/api/print/kitchen', pk)).data.some((x) => x.id === po), 'после печати второй раз не печатается');
 await api('POST', `/api/print/kitchen/${po}/again`, {}, cash2);
 ok((await papi('GET', '/api/print/kitchen', pk)).data.some((x) => x.id === po), 'кнопка «напечатать ещё раз» работает');
+await papi('POST', `/api/print/kitchen/${po}/done`, pk);
+{ const r1 = await api('POST', `/api/print/receipt/${po}`, {}, cash2); const j = (await papi('GET', '/api/print/kitchen', pk)).data.filter((x) => x.id === po);
+  ok(r1.status === 200 && j.length === 1 && j[0].kind === 'cashier', 'печать чека с телефона: на принтер уходит только чек кассира, без повторного бланка на кухню', j.map((x) => x.kind));
+  await papi('POST', `/api/print/kitchen/${po}/done`, pk);
+  ok(!(await papi('GET', '/api/print/kitchen', pk)).data.some((x) => x.id === po), 'повторный чек печатается один раз');
+  ok((await api('POST', '/api/print/receipt/999999', {}, cash2)).status === 404, 'чек несуществующего заказа — ошибка'); }
+await api('POST', `/api/print/kitchen/${po}/again`, {}, cash2); // как было до проверки: заказ снова ждёт печати
 { const r2 = await api('POST', '/api/orders', { channel: 'hall', items: [{ product_id: 'marg', qty: 1 }, { product_id: 'cola', qty: 2 }] }, cash2); const mid = r2.data.id;
   await api('POST', `/api/orders/${mid}/pay`, { method: 'cash', tendered_tetri: 999900 }, cash2);
   const js = (await papi('GET', '/api/print/kitchen', pk)).data.filter((x) => x.id === mid); const kj = js.find((x) => x.kind === 'kitchen'), cj = js.find((x) => x.kind === 'cashier');

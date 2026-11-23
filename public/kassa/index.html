@@ -1966,7 +1966,13 @@ document.addEventListener('click', (e) => {
       <div class="note">შეკვეთა ჩაიწერება „ველოდებით გადახდას“ სიაში, სანამ ფული ანგარიშზე არ შემოვა.</div><div class="row"><button class="b bo" style="flex:1" data-a="mClose">გაუქმება</button><button class="b bd" style="flex:1" data-a="payTrGo">დადასტურება</button></div>` }; return render();
     case 'payTrGo': { const payer = val('tr_payer').trim(); if (payer.length < 2) return toast('მიუთითეთ გადამხდელი'); const tin = val('tr_tin').trim(); S.modal = null; return doPay('online', { payer, payer_tin: tin }); }
     case 'fSave': S.modal.num = val('fnum'); return saveFiscal();
-    case 'print': return printReceipt(m.o, m.o.paidMethod);
+    case 'print': {
+      // телефон/планшет (iPhone): печать браузера там не работает — отправляем чек на принтер кассы
+      const mob = innerWidth <= 900 || navigator.standalone || /iPhone|iPad|Android/i.test(navigator.userAgent);
+      if (!mob) return printReceipt(m.o, m.o.paidMethod);
+      return run(async () => { try { await api('POST', `/api/print/receipt/${m.o.id}`); toast('🖨 ჩეკი გაიგზავნა სალაროს პრინტერზე · Чек отправлен на принтер'); }
+        catch (e) { if (e && (e.code === 'no_printer' || e.status === 409)) { toast('პრინტერი არ არის დაკავშირებული · Принтер кассы не подключён'); } else throw e; } });
+    }
     case 'mClose': { if (m && m.reject) m.reject(null); S.modal = null; return render(); }
     /* admin */
     case 'tab': S.A.verify = null; return openAdmin(d.k);
