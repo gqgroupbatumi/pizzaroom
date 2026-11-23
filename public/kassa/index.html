@@ -579,8 +579,8 @@ function viewPos() {
     ${S.stopMode ? '<div class="note">სტოპ-ლისტის რეჟიმი: დააჭირეთ პოზიციას, რომ დაამატოთ ან მოხსნათ სტოპიდან (დაბრუნება — მხოლოდ მენეჯერი).</div>' : ''}
     ${S.cats.find((c) => c.id === catId && c.soon) ? '<div class="note">ეს განყოფილება მალე გაიხსნება — გაყიდვა ჯერ არ შეიძლება.</div>' : ''}
     ${S.cats.find((c) => c.id === catId && c.age18) ? '<div class="note">18+ — საჭიროების შემთხვევაში შეამოწმეთ პირადობა.</div>' : ''}
-    ${catId === 'combo' ? `${PLAT.includes(o ? o.channel : S.channel) ? '<div class="note">კომბო მხოლოდ დარბაზში, გატანით, საკუთარ მიტანაზე და საიტზე — Wolt/Glovo-ზე არა.</div>' : ''}${S.combosOff && !(S.combos || []).length ? '<div class="note" style="background:#FBE3DF">კომბო ახლა გამორთულია — ჩართეთ ადმინკაში: „კომბო“ → „ჩართვა“. · Комбо выключены в админке.</div>' : ''}<div class="grid">${((S.combos || []).length ? S.combos : S.combosAll || []).map((c) => `<button class="pc ${(S.combos || []).length ? '' : 'stop'}" ${(S.combos || []).length ? '' : 'disabled'} data-a="combo" data-id="${esc(c.id)}"><img src="${esc(c.photo || '/img/pizza-pep-600.webp')}" alt="" loading="lazy"><span class="n">${esc(c.name_ka || c.name_ru)}</span><span class="p">${money(c.price_tetri)}</span></button>`).join('')}</div>` : ''}
-    <div class="grid" ${catId === 'combo' ? 'hidden' : ''}>${prods.map((p) => `<button class="pc ${p.in_stock ? '' : 'stop'} ${p.category_id === 'pizza' ? '' : 'tall'}" data-a="add" data-id="${p.id}"><img src="${esc(p.photo || '/img/hero-square-720.webp')}" alt="" loading="lazy"><span class="n">${esc(NAME(p))}${p.size && p.category_id !== 'pizza' ? ' · ' + esc(p.size) : ''}</span><span class="p">${p.promo_pct ? `<s style="opacity:.55;font-weight:500">${money(p.base_tetri)}</s> ` : ''}${money(p.price_tetri)}</span></button>`).join('') || '<span class="mut">ვერაფერი მოიძებნა</span>'}</div>
+    ${catId === 'combo' ? `${PLAT.includes(o ? o.channel : S.channel) ? '<div class="note">კომბო მხოლოდ დარბაზში, გატანით, საკუთარ მიტანაზე და საიტზე — Wolt/Glovo-ზე არა.</div>' : ''}${S.combosOff && !(S.combos || []).length ? '<div class="note" style="background:#FBE3DF">კომბო ახლა გამორთულია — ჩართეთ ადმინკაში: „კომბო“ → „ჩართვა“. · Комбо выключены в админке.</div>' : ''}<div class="grid" data-keep="g-combo">${((S.combos || []).length ? S.combos : S.combosAll || []).map((c) => `<button class="pc ${(S.combos || []).length ? '' : 'stop'}" ${(S.combos || []).length ? '' : 'disabled'} data-a="combo" data-id="${esc(c.id)}"><img src="${esc(c.photo || '/img/pizza-pep-600.webp')}" alt="" decoding="async"><span class="n">${esc(c.name_ka || c.name_ru)}</span><span class="p">${money(c.price_tetri)}</span></button>`).join('')}</div>` : ''}
+    <div class="grid" data-keep="g-prod" ${catId === 'combo' ? 'hidden' : ''}>${prods.map((p) => `<button class="pc ${p.in_stock ? '' : 'stop'} ${p.category_id === 'pizza' ? '' : 'tall'}" data-a="add" data-id="${p.id}"><img src="${esc(p.photo || '/img/hero-square-720.webp')}" alt="" decoding="async"><span class="n">${esc(NAME(p))}${p.size && p.category_id !== 'pizza' ? ' · ' + esc(p.size) : ''}</span><span class="p">${p.promo_pct ? `<s style="opacity:.55;font-weight:500">${money(p.base_tetri)}</s> ` : ''}${money(p.price_tetri)}</span></button>`).join('') || '<span class="mut">ვერაფერი მოიძებნა</span>'}</div>
   </section>
   <section class="col right">
     <div class="row between"><h2>${o ? 'შეკვეთა № ' + o.id : 'ახალი შეკვეთა'}</h2><span class="chip ch-${o ? o.channel : S.channel}">${CH[o ? o.channel : S.channel]}</span></div>
@@ -1791,7 +1791,17 @@ function render() {
   const snd = S.needSound && S.view !== 'login' ? `<button class="b by" style="position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:60;height:58px;font-size:18px;box-shadow:0 8px 30px rgba(0,0,0,.35)" data-a="sndOn">🔔 ხმის ჩართვა · Включить звук заказов</button>` : '';
   const inc = S.view === 'admin' ? (S.orders || []).filter((o) => o.channel === 'site' && !o.accepted_at && o.status === 'open').length : 0;
   const incBar = inc ? `<button class="b" style="position:fixed;right:16px;top:70px;z-index:55;background:#C0392B;color:#fff;height:52px;animation:arm 1s infinite" data-a="goPos">🔔 ${inc} ${L('новый заказ с сайта — открыть кассу', 'ახალი შეკვეთა საიტიდან — სალაროს გახსნა')}</button>` : '';
-  $app.innerHTML = html + viewModal() + snd + incBar + (S.toast ? `<div class="toast" role="status">${esc(S.toast)}</div>` : '');
+  const full = html + viewModal() + snd + incBar + (S.toast ? `<div class="toast" role="status">${esc(S.toast)}</div>` : '');
+  // без мерцания: неизменившиеся блоки с картинками (плитки товаров в кассе) не пересоздаются, а переносятся как есть
+  const live = {}; $app.querySelectorAll('[data-keep]').forEach((e) => { live[e.dataset.keep] = e; });
+  if (Object.keys(live).length) {
+    const tpl = document.createElement('template'); tpl.innerHTML = full;
+    tpl.content.querySelectorAll('[data-keep]').forEach((e) => { const src = e.outerHTML, o = live[e.dataset.keep]; e._src = src;
+      if (o && o._src === src) { e.replaceWith(o); } });
+    const fresh = [...tpl.content.querySelectorAll('[data-keep]')];
+    $app.replaceChildren(tpl.content);
+    fresh.forEach((e) => { if (!e._src) e._src = e.outerHTML; });
+  } else { $app.innerHTML = full; $app.querySelectorAll('[data-keep]').forEach((e) => { e._src = e.outerHTML; }); }
   if (mref && render._m === mref) for (const [id, k] of Object.entries(keep)) { const e = document.getElementById(id); if (!e) continue; if ('c' in k) e.checked = k.c; else e.value = k.v; }
   render._m = S.modal;
   wrapWide(); document.querySelectorAll('.tscroll').forEach((e, i) => { if (tsc[i]) { e.scrollLeft = tsc[i][0]; e.scrollTop = tsc[i][1]; const tp = e.previousElementSibling; if (tp && tp.classList.contains('tstop')) tp.scrollLeft = tsc[i][0]; } });
