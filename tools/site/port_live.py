@@ -521,5 +521,8 @@ html=_r(html, "    const lang = this.state.lang || this.props.lang || 'ru';\n   
 # карта: проверка подлинности файлов Leaflet (если на CDN подменят файл — браузер его не запустит)
 html=_r(html, "c.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';", "c.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; c.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY='; c.crossOrigin = '';")
 html=_r(html, "s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';", "s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; s.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo='; s.crossOrigin = '';")
+
+# значок сайта для Google/Яндекс (в поиске рядом с адресом): favicon.ico + PNG кратный 48 px
+html=_r(html, '<link rel="icon" href="/icon-192.png">', '<link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png"><link rel="icon" type="image/png" sizes="192x192" href="/icon-v2-192.png">')
 open('../../public/index.html','w').write(html)
 print('ok',len(html))
