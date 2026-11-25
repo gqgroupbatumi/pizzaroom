@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Pizza Room — заказ с телефона</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&amp;family=Rubik:wght@700;800;900&amp;family=Nunito:wght@800;900&amp;family=Inter+Tight:wght@700;800;900&amp;family=Inter:wght@400;500;600;700;800&amp;family=Noto+Sans+Georgian:wght@400;600;800;900&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2A1D13}a:hover{color:#5C4632}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: {{TH.bg}}; color: #2A1D13; font-family: Inter, 'Noto Sans Georgian', system-ui, sans-serif">
+
+  <div style="position: absolute; left: 0; right: 0; top: 0; bottom: 72px; overflow-y: auto">
+
+    <header style="position: sticky; top: 0; z-index: 10; background: {{TH.bg}}; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid {{TH.line}}">
+      <sc-if value="{{showLogo}}" hint-placeholder-val="{{true}}">
+        <img src="/_blob/350e4ad16609e39931ce67f75b096543" alt="Pizza Room" style="display: block; height: 46px; width: auto">
+      </sc-if>
+      <sc-if value="{{showTitle}}" hint-placeholder-val="{{false}}">
+        <span style="font-family: {{TH.hf}}, 'Noto Sans Georgian', sans-serif; font-weight: 900; font-size: 22px">{{title}}</span>
+      </sc-if>
+      <div style="display: flex; background: {{TH.pill}}; border-radius: 999px; padding: 3px">
+        <sc-for list="{{langs}}" as="lg" hint-placeholder-count="3">
+          <button onClick="{{lg.pick}}" aria-label="{{lg.full}}" style="border: 0; cursor: pointer; min-width: 38px; height: 34px; border-radius: 999px; font: 700 12px Inter, sans-serif; {{lg.style}}">{{lg.code}}</button>
+        </sc-for>
+      </div>
+    </header>
+
+    <sc-if value="{{showStrip}}" hint-placeholder-val="{{true}}">
+      <button onClick="{{openPromo}}" style="width: 100%; border: 0; cursor: pointer; background: #2A1D13; color: #FDC134; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font: 800 14px Inter, 'Noto Sans Georgian', sans-serif; text-align: left">
+        <span>{{promo.title}}</span>
+        <span style="background: #FDC134; color: #2A1D13; border-radius: 999px; padding: 4px 10px; font-size: 13px; flex-shrink: 0">−{{promo.pct}}%</span>
+      </button>
+    </sc-if>
+
+    <sc-if value="{{closed}}" hint-placeholder-val="{{false}}">
+      <div role="status" style="margin: 12px 16px 0; background: #2A1D13; color: #FBF5EA; border-radius: 14px; padding: 12px 14px; font-size: 14px; line-height: 1.4">{{L.closed}}</div>
+    </sc-if>
+    <sc-if value="{{offline}}" hint-placeholder-val="{{false}}">
+      <div role="status" style="margin: 12px 16px 0; background: #FCE3DE; color: #8A2414; border-radius: 14px; padding: 12px 14px; font-size: 14px; line-height: 1.4; font-weight: 600">{{L.offline}}</div>
+    </sc-if>
+
+    <sc-if value="{{isHome}}" hint-placeholder-val="{{true}}">
+      <section style="padding: 14px 16px 0">
+        <div style="position: relative; border-radius: 24px; overflow: hidden; background: #2B2622">
+          <img src="/_blob/081b705acb3320019dd6a3c45ce7a37a" alt="{{L.heroAlt}}" fetchpriority="high" style="display: block; width: 100%; height: 300px; object-fit: cover; object-position: 50% 60%">
+          <span style="position: absolute; left: 12px; top: 12px; background: #FDC134; color: #2A1D13; font-size: 12px; font-weight: 800; padding: 6px 10px; border-radius: 999px">{{L.firstBadge}}</span>
+          <span style="position: absolute; right: 12px; bottom: 12px; background: rgba(42,29,19,0.75); color: #FBF5EA; font-size: 10px; font-weight: 600; padding: 4px 8px; border-radius: 999px">{{L.photoSoon}}</span>
+        </div>
+      </section>
+      <section style="padding: 18px 16px 8px; display: flex; flex-direction: column; gap: 10px">
+        <span style="align-self: flex-start; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #22562E; background: #DDE7D2; padding: 6px 10px; border-radius: 999px"><span style="width: 7px; height: 7px; border-radius: 999px; background: #2F6B3A"></span>{{openLabel}}</span>
+        <h1 style="margin: 0; font-family: {{TH.hf}}, 'Noto Sans Georgian', sans-serif; font-weight: 900; font-size: 34px; line-height: 1.02; letter-spacing: -0.02em">{{L.heroTitle}}</h1>
+        <p style="margin: 0; color: #5C4632; font-size: 15px; line-height: 1.45">{{L.heroSub}}</p>
+        <button onClick="{{goMenu}}" style="margin-top: 4px; height: 56px; border: 0; cursor: pointer; border-radius: 16px; background: #FDC134; color: #2A1D13; font: 800 17px Inter, 'Noto Sans Georgian', sans-serif">{{L.seeMenu}} →</button>
+      </section>
+
+      <section style="padding: 10px 16px 4px">
+        <div style="background: #FBF5EA; border-radius: 20px; padding: 6px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+          <button onClick="{{setDelivery}}" aria-pressed="{{isDelivery}}" style="border: 0; cursor: pointer; border-radius: 15px; padding: 12px; text-align: left; display: flex; flex-direction: column; gap: 4px; {{delivCard}}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="17.5" r="3"></circle><circle cx="18.5" cy="17.5" r="3"></circle><path d="M15 6h3l3 8M5.5 17.5 9 9h6l3.5 8.5M9 9 7 6H5"></path></svg>
+            <span style="font: 800 15px Inter, 'Noto Sans Georgian', sans-serif">{{L.delivery}}</span>
+            <span style="font: 500 12px Inter, 'Noto Sans Georgian', sans-serif; opacity: 0.85">{{L.delivSub}}</span>
+          </button>
+          <button onClick="{{setPickup}}" aria-pressed="{{isPickup}}" style="border: 0; cursor: pointer; border-radius: 15px; padding: 12px; text-align: left; display: flex; flex-direction: column; gap: 4px; {{pickCard}}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+            <span style="font: 800 15px Inter, 'Noto Sans Georgian', sans-serif">{{L.pickup}}</span>
+            <span style="font: 500 12px Inter, 'Noto Sans Georgian', sans-serif; opacity: 0.85">{{L.pickSub}}</span>
+          </button>
+        </div>
+      </section>
+
+      <sc-if value="{{hasOrder}}" hint-placeholder-val="{{false}}">
+        <section style="padding: 10px 16px 0">
+          <button onClick="{{goStatus}}" style="width: 100%; border: 0; cursor: pointer; background: #2A1D13; color: #FBF5EA; border-radius: 18px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; font: 700 14px Inter, 'Noto Sans Georgian', sans-serif"><span>{{L.yourOrder}} {{orderNo}} · {{curStatus}}</span><span style="color: #FDC134">→</span></button>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{repeatOn}}" hint-placeholder-val="{{false}}">
+        <section style="padding: 10px 16px 0">
+          <button onClick="{{repeatLast}}" style="width: 100%; border: 0; cursor: pointer; background: #FBF5EA; color: #2A1D13; border-radius: 18px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; text-align: left; box-shadow: inset 0 0 0 1px #CDB58F">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg>
+            <span style="display: flex; flex-direction: column; gap: 2px; flex: 1"><span style="font-weight: 800">{{L.repeat}}</span><span style="font-size: 12px; color: #5C4632">{{repeatSub}}</span></span>
+            <span style="font-weight: 800">→</span>
+          </button>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{soonHome}}" hint-placeholder-val="{{false}}">
+        <section style="padding: 10px 16px 0">
+          <button onClick="{{goSoon}}" style="width: 100%; border: 0; cursor: pointer; background: #2A1D13; color: #FBF5EA; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 4px; text-align: left">
+            <span style="align-self: flex-start; background: #FDC134; color: #2A1D13; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px">{{L.soonBadge}}</span>
+            <span style="font-family: {{TH.hf}}, 'Noto Sans Georgian', sans-serif; font-weight: 900; font-size: 20px">{{soonName}}</span>
+            <span style="font-size: 13px; color: #E8DCC8">{{L.soonText}}</span>
+          </button>
+        </section>
+      </sc-if>
+
+      <section style="padding: 18px 0 4px">
+        <div style="padding: 0 16px; display: flex; justify-content: space-between; align-items: center">
+          <h2 style="margin: 0; font-family: {{TH.hf}}, 'Noto Sans Georgian', sans-serif; font-weight: 900; font-size: 22px">{{L.popular}}</h2>
+          <button onClick="{{goMenu}}" style="border: 0; background: transparent; cursor: pointer; font: 700 14px Inter, 'Noto Sans Georgian', sans-serif; color: #2A1D13; text-decoration: underline; height: 44px">{{L.allMenu}}</button>
+        </div>
+        <div style="display: flex; gap: 12px; overflow-x: auto; padding: 6px 16px 10px">
+          <sc-for list="{{featured}}" as="it" hint-placeholder-count="4">
+            <div style="flex: 0 0 168px; display: flex; flex-direction: column; gap: 8px">
+              <div style="position: relative">
+                <button onClick="{{it.open}}" aria-label="{{it.name}}" style="display: block; border: 0; padding: 0; cursor: pointer; border-radius: 20px; overflow: hidden; width: 168px; height: 168px; background: #2B2622">
+                  <img src="{{it.img}}" alt="" loading="lazy" style="width: 168px; height: 168px; object-fit: cover; display: block">
+                </button>
+                <sc-if value="{{it.hasDisc}}" hint-placeholder-val="{{true}}"><span style="position: absolute; left: 8px; top: 8px; background: #C8361F; color: #FFFFFF; font-size: 12px; font-weight: 800; padding: 4px 8px; border-radius: 999px">−{{it.pct}}%</span></sc-if>
+                <sc-if value="{{it.canAdd}}" hint-placeholder-val="{{true}}">
+                  <button onClick="{{it.add}}" aria-label="{{it.addAria}}" style="position: absolute; right: 8px; bottom: 8px; border: 0; cursor: pointer; width: 44px; height: 44px; border-radius: 14px; background: #FDC134; color: #2A1D13; font: 800 22px Inter, sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.25)">{{it.addMark}}</button>
+                </sc-if>
+              </div>
+              <span style="font-weight: 700; font-size: 15px; padding: 0 2px">{{it.name}}</span>
+              <span style="display: flex; gap: 6px; align-items: baseline; padding: 0 2px"><span style="font-family: {{TH.hf}}, sans-serif; font-weight: 800; font-size: 17px">{{it.price}}</span><sc-if value="{{it.hasDisc}}" hint-placeholder-val="{{true}}"><span style="font-size: 13px; color: #5C4632; text-decoration: line-through">{{it.oldPrice}}</span></sc-if></span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="padding: 14px 16px 4px">
+        <div style="background: #2A1D13; color: #FBF5EA; border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+          <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; color: #FDC134">{{L.aboutKicker}}</span>
+          <h2 style="margin: 0; font-family: {{TH.hf}}, 'Noto Sans Georgian', sans-serif; font-weight: 900; font-size: 26px; line-height: 1.08">{{L.aboutTitle}}</h2>
+          <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #E8DCC8">{{L.aboutText}}</p>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+            <div style="background: #3A2A1D; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: {{TH.hf}}, sans-serif; font-weight: 900; font-size: 22px; color: #FDC134">2018</span><span style="font-size: 12px; color: #E8DCC8">{{L.f1}}</span></div>
+            <div style="background: #3A2A1D; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: {{TH.hf}}, sans-serif; font-weight: 900; font-size: 22px; color: #FDC134">100%</span><span style="font-size: 12px; color: #E8DCC8">{{L.f2}}</span></div>
+            <div style="background: #3A2A1D; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: {{TH.hf}}, sans-serif; font-weight: 900; font-size: 22px; color: #FDC134">{{L.n3}}</span><span style="font-size: 12px; color: #E8DCC8">{{L.f3}}</span></div>
+            <div style="background: #3A2A1D; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: {{TH.hf}}, sans-serif; font-weight: 900; font-size: 22px; color: #FDC134">{{L.n4}}</span><span style="font-size: 12px; color: #E8DCC8">{{L.f4}}</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section style="padding: 18px 0 4px; display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0 16px; font-family: {{TH.hf}}, 'Noto Sans Georgian', sans-serif; font-weight: 900; font-size: 22px">{{L.reviews}}</h2>
+        <div style="display: flex; gap: 8px; overflow-x: auto; padding: 0 16px">
+          <div style="flex: 0 0 auto; background: #FBF5EA; border-radius: 14px; padding: 10px 14px; display: flex; flex-direction: column"><span style="font-size: 12px; color: #5C4632">Wolt</span><span style="font-family: {{TH.hf}}, sans-serif; font-weight: 900; font-size: 20px">9,8</span></div>
+          <div style="flex: 0 0 auto; background: #FBF5EA; border-radius: 14px; padding: 10px 14px; display: flex; flex-direction: column"><span style="font-size: 12px; color: #5C4632">Glovo</span><span style="font-family: {{TH.hf}}, sans-serif; font-weight: 900; font-size: 20px">★ {{L.live}}</span></div>
+          <div style="flex: 0 0 auto; background: #FBF5EA; border-radius: 14px; padding: 10px 14px; display: flex; flex-direction: column"><span style="font-size: 12px; color: #5C4632">Google</span><span style="font-family: {{TH.hf}}, sans-serif; font-weight: 900; font-size: 20px">★ {{L.live}}</span></div>
+          <div style="flex: 0 0 auto; background: #FBF5EA; border-radius: 14px; padding: 10px 14px; display: flex; flex-direction: column"><span style="font-size: 12px; color: #5C4632">Yandex</span><span style="font-family: {{TH.hf}}, sans-serif; font-weight: 900; font-size: 20px">★ {{L.live}}</span></div>
+        </div>
+        <div style="display: flex; gap: 12px; overflow-x: auto; padding: 4px 16px 8px">
+          <sc-for list="{{reviewSlots}}" as="rv" hint-placeholder-count="3">
+            <div style="flex: 0 0 260px; background: #FBF5EA; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 8px">
+              <div style="display: flex; align-items: center; gap: 10px"><span style="width: 36px; height: 36px; border-radius: 999px; background: #DCC7A5"></span><div style="display: flex; flex-direction: column; gap: 4px"><span style="width: 90px; height: 10px; border-radius: 4px; background: #DCC7A5"></span><span style="color: #C98A00; font-size: 13px; letter-spacing: 2px">★★★★★</span></div></div>
+              <span style="font-size: 13px; line-height: 1.45; color: #5C4632">{{rv.text}}</span>
+              <span style="font-size: 11px; color: #5C4632; margin-top: auto">Google</span>
+            </div>
+          </sc-for>
+        </div>
+        <a href="https://www.google.com/maps/search/?api=1&amp;query=Pizza+Room+Batumi+Mall" target="_blank" rel="noopener" style="margin: 0 16px; height: 46px; border-radius: 14px; border: 1px solid #2A1D13; display: flex; align-items: center; justify-content: center; text-decoration: none; font-weight: 700; font-size: 14px">{{L.allReviews}}</a>
+      </section>
+
+      <section style="padding: 18px 16px 24px">
+        <button onClick="{{goMap}}" style="width: 100%; border: 0; cursor: pointer; padding: 0; background: #FBF5EA; border-radius: 22px; overflow: hidden; text-align: left; display: flex; flex-direction: column">
+          <svg viewBox="0 0 358 150" width="358" height="150" style="display: block; width: 100%; height: auto" aria-hidden="true">
+            <rect width="358" height="150" fill="#E3D3B6"></rect>
+            <path d="M0 0 H150 C120 40 70 70 0 96 Z" fill="#9CC3CF"></path>
+            <path d="M120 150 L240 0 M40 150 L320 40 M200 150 L358 70 M260 0 L300 150" stroke="#FBF5EA" stroke-width="7"></path>
+            <circle cx="232" cy="78" r="20" fill="#FDC134" stroke="#2A1D13" stroke-width="3"></circle>
+            <path d="M232 78 L244 78 A12 12 0 1 1 238 67.6 Z" fill="#2A1D13"></path>
+          </svg>
+          <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px"><div style="display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 800; color: #2A1D13">{{L.howToGet}}</span><span style="font-size: 13px; color: #5C4632">{{L.point}}</span></div><span style="color: #2A1D13; font-weight: 800">→</span></div>
+        </button>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{isMenu}}" hint-placeholder-val="{{false}}">
+      <section style="position: sticky; top: 55px; z-index: 9; background: {{TH.bg}}; padding: 10px 16px 8px; display: flex; flex-direction: column; gap: 10px">
+        <label for="q" style="position: relative; display: block">
+          <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">{{L.search}}</span>
+          <input id="q" type="search" value="{{q}}" onInput="{{onSearch}}" placeholder="{{L.search}}" style="width: 100%; box-sizing: border-box; height: 46px; border-radius: 14px; border: 1px solid #CDB58F; background: #FBF5EA; padding: 0 14px 0 42px; font: 400 16px Inter, 'Noto Sans Georgian', sans-serif; color: #2A1D13">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5C4632" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="position: absolute; left: 14px; top: 14px"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        </label>
+        <div style="display: flex; gap: 8px; overflow-x: auto">
+          <sc-for list="{{tags}}" as="tg" hint-placeholder-count="4">
+            <button onClick="{{tg.pick}}" style="flex-shrink: 0; border: 0; cursor: pointer; height: 38px; padding: 0 14px; border-radius: 999px; font: 700 13px Inter, 'Noto Sans Georgian', sans-serif; {{tg.style}}">{{tg.label}}</button>
+          </sc-for>
+        </div>
+      </section>
+      <sc-if value="{{soonOn}}" hint-placeholder-val="{{false}}">
+        <section style="padding: 10px 16px 20px">
+          <div style="background: #2A1D13; color: #FBF5EA; border-radius: 24px; padding: 22px 18px; display: flex; flex-direction: column; gap: 10px">
+            <span style="align-self: flex-start; background: #FDC134; color: #2A1D13; font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px">{{L.soonBadge}}</span>
+            <span style="font-family: {{TH.hf}}, 'Noto Sans Georgian', sans-serif; font-weight: 900; font-size: 26px; line-height: 1.05">{{soonName}}</span>
+            <span style="font-size: 14px; line-height: 1.45; color: #E8DCC8">{{L.soonText}}</span>
+            <sc-if value="{{soonDone}}" hint-placeholder-val="{{false}}"><span style="background: #DDE7D2; color: #22562E; border-radius: 12px; padding: 10px 12px; font-weight: 700">{{L.notifyOk}}</span></sc-if>
+            <sc-if value="{{soonForm}}" hint-placeholder-val="{{true}}">
+              <label for="w-phone" style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: #E8DCC8">{{L.phone}}
+                <input id="w-phone" type="tel" inputmode="tel" autocomplete="tel" value="{{waitPhone}}" onInput="{{onWaitPhone}}" placeholder="5XX XX XX XX" style="height: 50px; border-radius: 14px; border: 0; padding: 0 14px; font: 600 16px Inter, sans-serif; color: #2A1D13; background: #FBF5EA">
+              </label>
+              <button onClick="{{notifyMe}}" style="height: 52px; border: 0; cursor: pointer; border-radius: 14px; background: #FDC134; color: #2A1D13; font: 800 15px Inter, 'Noto Sans Georgian', sans-serif">{{L.notifyMe}}</button>
+            </sc-if>
+          </div>
+        </section>
+      </sc-if>
+      <sc-if value="{{ageNoteOn}}" hint-placeholder-val="{{false}}">
+        <p style="margin: 8px 16px 0; font-size: 12px; color: #5C4632; background: #FFF1C9; border-radius: 12px; padding: 8px 10px">{{L.ageNote}}</p>
+      </sc-if>
+      <sc-if value="{{noResults}}" hint-placeholder-val="{{false}}">
+        <p style="margin: 16px; color: #5C4632">{{L.noResults}}</p>
+      </sc-if>
+      <section style="padding: 10px 16px 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px">
+        <sc-for list="{{menu}}" as="it" hint-placeholder-count="6">
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0; {{it.fade}}">
+            <div style="position: relative">
+              <button onClick="{{it.open}}" aria-label="{{it.name}}" style="display: block; width: 100%; aspect-ratio: 1 / 1; border: 0; padding: 0; cursor: pointer; border-radius: 18px; overflow: hidden; background: #2B2622">
+                <img src="{{it.img}}" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block">
+              </button>
+              <sc-if value="{{it.hasDisc}}" hint-placeholder-val="{{false}}"><span style="position: absolute; left: 8px; top: 8px; background: #C8361F; color: #FFFFFF; font-size: 12px; font-weight: 800; padding: 4px 8px; border-radius: 999px">−{{it.pct}}%</span></sc-if>
+              <sc-if value="{{it.stopped}}" hint-placeholder-val="{{false}}"><span style="position: absolute; left: 8px; bottom: 8px; background: #FBF5EA; color: #2A1D13; font-size: 12px; font-weight: 800; padding: 6px 10px; border-radius: 999px">{{it.stopLabel}}</span></sc-if>
+              <sc-if value="{{it.canAddNew}}" hint-placeholder-val="{{true}}">
+                <button onClick="{{it.add}}" aria-label="{{it.addAria}}" style="position: absolute; right: 8px; bottom: 8px; border: 0; cursor: pointer; width: 44px; height: 44px; border-radius: 14px; background: #FDC134; color: #2A1D13; font: 800 22px Inter, sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.25)">+</button>
+              </sc-if>
+              <sc-if value="{{it.inCart}}" hint-placeholder-val="{{false}}">
+                <div style="position: absolute; left: 8px; right: 8px; bottom: 8px; display: flex; align-items: center; justify-content: space-between; background: #2A1D13; border-radius: 14px; color: #FBF5EA">
+                  <button onClick="{{it.dec}}" aria-label="−1" style="border: 0; cursor: pointer; width: 44px; height: 44px; background: transparent; color: #FBF5EA; font: 800 20px Inter, sans-serif">−</button>
+                  <span style="font-weight: 800">{{it.qty}}</span>
+                  <button onClick="{{it.add}}" aria-label="+1" style="border: 0; cursor: pointer; width: 44px; height: 44px; background: transparent; color: #FDC134; font: 800 20px Inter, sans-serif">+</button>
+                </div>
+              </sc-if>
+            </div>
+            <button onClick="{{it.open}}" style="border: 0; padding: 0 2px; background: transparent; text-align: left; cursor: pointer; font: 700 15px Inter, 'Noto Sans Georgian', sans-serif; color: #2A1D13; line-height: 1.25">{{it.name}}</button>
+            <span style="padding: 0 2px; font-size: 12px; color: #5C4632; line-height: 1.35">{{it.desc}}</span>
+            <span style="padding: 0 2px; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap"><span style="font-family: {{TH.hf}}, sans-serif; font-weight: 800; font-size: 17px">{{it.price}}</span><sc-if value="{{it.hasDisc}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; color: #5C4632; text-decoration: line-through">{{it.oldPrice}}</span></sc-if><span style="font-size: 12px; color: #5C4632">{{it.size}}</span></span>
+          </div>
+        </sc-for>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{isCart}}" hint-placeholder-val="{{false}}">
+      <section style="padding: 12px 16px 130px; display: flex; flex-direction: column; gap: 10px">
+        <sc-if value="{{cartEmpty}}" hint-placeholder-val="{{false}}">
+          <div style="padding: 48px 8px; text-align: center; display: flex; flex-direction: column; gap: 14px; align-items: center">
+            <p style="margin: 0; color: #5C4632; font-size: 15px">{{L.empty}}</p>
+            <button onClick="{{goMenu}}" style="border: 0; cursor: pointer; height: 52px; padding: 0 24px; border-radius: 16px; background: #FDC134; font: 800 16px Inter, 'Noto Sans Georgian', sans-serif; color: #2A1D13">{{L.seeMenu}}</button>
+          </div>
+        </sc-if>
+        <sc-for list="{{lines}}" as="ln" hint-placeholder-count="2">
+          <div style="background: #FBF5EA; border-radius: 20px; padding: 10px; display: flex; gap: 12px">
+            <img src="{{ln.img}}" alt="" style="width: 84px; height: 84px; border-radius: 14px; object-fit: cover; flex-shrink: 0">
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+              <div style="display: flex; justify-content: space-between; gap: 6px">
+                <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 700">{{ln.name}}</span><span style="font-size: 12px; color: #5C4632">{{ln.unit}}</span></div>
+                <button onClick="{{ln.remove}}" aria-label="{{ln.removeAria}}" style="border: 0; cursor: pointer; width: 36px; height: 36px; border-radius: 10px; background: {{TH.bg}}; color: #5C4632; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path></svg>
+                </button>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto">
+                <div style="display: flex; align-items: center; border: 1px solid #CDB58F; border-radius: 12px">
+                  <button onClick="{{ln.dec}}" aria-label="−1" style="border: 0; cursor: pointer; width: 40px; height: 38px; background: transparent; font: 800 18px Inter, sans-serif; color: #2A1D13">−</button>
+                  <span style="min-width: 20px; text-align: center; font-weight: 800">{{ln.qty}}</span>
+                  <button onClick="{{ln.inc}}" aria-label="+1" style="border: 0; cursor: pointer; width: 40px; height: 38px; background: transparent; font: 800 18px Inter, sans-serif; color: #2A1D13">+</button>
+                </div>
+                <span style="font-family: {{TH.hf}}, sans-serif; font-weight: 800; font-size: 17px">{{ln.sum}}</span>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{upsellOn}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 4px">
+            <span style="font-weight: 800">{{L.upsell}}</span>
+            <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px">
+              <sc-for list="{{upsell}}" as="u" hint-placeholder-count="3">
+                <button onClick="{{u.add}}" style="flex-shrink: 0; border: 0; cursor: pointer; background: #FBF5EA; border-radius: 16px; padding: 8px 12px 8px 8px; display: flex; align-items: center; gap: 8px; box-shadow: inset 0 0 0 1px #E4D5BA">
+                  <img src="{{u.img}}" alt="" style="width: 40px; height: 40px; border-radius: 10px; object-fit: cover">
+                  <span style="display: flex; flex-direction: column; align-items: flex-start"><span style="font: 700 13px Inter, 'Noto Sans Georgian', sans-serif; color: #2A1D13">{{u.name}}</span><span style="font: 800 13px Inter, sans-serif; color: #2A1D13">+ {{u.price}}</span></span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{hasItems}}" hint-placeholder-val="{{true}}">
+          <button onClick="{{goMenu}}" style="border: 1px dashed #A8916C; background: transparent; cursor: pointer; height: 48px; border-radius: 14px; font: 700 15px Inter, 'Noto Sans Georgian', sans-serif; color: #2A1D13">+ {{L.backToMenu}}</button>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; background: #DCC7A5; border-radius: 16px; padding: 4px">
+            <button onClick="{{setDelivery}}" style="border: 0; cursor: pointer; height: 46px; border-radius: 12px; font: 700 15px Inter, 'Noto Sans Georgian', sans-serif; {{delivStyle}}">{{L.delivery}}</button>
+            <button onClick="{{setPickup}}" style="border: 0; cursor: pointer; height: 46px; border-radius: 12px; font: 700 15px Inter, 'Noto Sans Georgian', sans-serif; {{pickStyle}}">{{L.pickup}}</button>
+          </div>
+          <div style="background: #FBF5EA; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 8px; font-size: 15px">
+            <div style="display: flex; justify-content: space-between"><span style="color: #5C4632">{{L.dishes}} · {{count}}</span><span style="font-weight: 600">{{fullLabel}}</span></div>
+            <sc-if value="{{hasSaving}}" hint-placeholder-val="{{false}}"><div style="display: flex; justify-content: space-between; color: #B42D18; font-weight: 700"><span>{{promo.name}} −{{promo.pct}}%</span><span>−{{savingLabel}}</span></div></sc-if>
+            <div style="display: flex; justify-content: space-between"><span style="color: #5C4632">{{L.deliveryFee}}</span><span style="font-weight: 600">{{feeLabel}}</span></div>
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid #E3D3B6; padding-top: 10px; align-items: baseline"><span style="font-weight: 800">{{L.total}}</span><span style="font-family: {{TH.hf}}, sans-serif; font-weight: 900; font-size: 26px">{{totalLabel}}</span></div>
+          </div>
+        </sc-if>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{isCheckout}}" hint-placeholder-val="{{false}}">
+      <section style="padding: 12px 16px 130px; display: flex; flex-direction: column; gap: 12px">
+        <div style="background: #FFF1C9; border-radius: 14px; padding: 10px 12px; font-size: 13px; line-height: 1.4; font-weight: 600">{{L.testMode}}</div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; background: #DCC7A5; border-radius: 16px; padding: 4px">
+          <button onClick="{{setDelivery}}" style="border: 0; cursor: pointer; height: 46px; border-radius: 12px; font: 700 15px Inter, 'Noto Sans Georgian', sans-serif; {{delivStyle}}">{{L.delivery}}</button>
+          <button onClick="{{setPickup}}" style="border: 0; cursor: pointer; height: 46px; border-radius: 12px; font: 700 15px Inter, 'Noto Sans Georgian', sans-serif; {{pickStyle}}">{{L.pickup}}</button>
+        </div>
+        <label for="c-name" style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">{{L.name}}
+          <input id="c-name" type="text" autocomplete="name" value="{{f.name}}" onInput="{{onName}}" style="height: 50px; border-radius: 14px; border: 1px solid {{err.nameBorder}}; background: #FBF5EA; padding: 0 14px; font: 400 16px Inter, 'Noto Sans Georgian', sans-serif; color: #2A1D13">
+          <sc-if value="{{err.name}}" hint-placeholder-val="{{false}}"><span style="color: #8A2414; font-size: 13px">{{L.required}}</span></sc-if>
+        </label>
+        <label for="c-phone" style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">{{L.phone}}
+          <input id="c-phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+995 5__ ___ ___" value="{{f.phone}}" onInput="{{onPhone}}" style="height: 50px; border-radius: 14px; border: 1px solid {{err.phoneBorder}}; background: #FBF5EA; padding: 0 14px; font: 400 16px Inter, sans-serif; color: #2A1D13">
+          <sc-if value="{{err.phone}}" hint-placeholder-val="{{false}}"><span style="color: #8A2414; font-size: 13px">{{L.phoneErr}}</span></sc-if>
+        </label>
+        <sc-if value="{{isDelivery}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">{{L.zone}}
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+              <sc-for list="{{zones}}" as="z" hint-placeholder-count="2">
+                <button onClick="{{z.pick}}" aria-pressed="{{z.pressed}}" style="border: 0; cursor: pointer; border-radius: 14px; padding: 10px 12px; text-align: left; display: flex; flex-direction: column; gap: 2px; font: 700 14px Inter, 'Noto Sans Georgian', sans-serif; {{z.style}}"><span>{{z.name}}</span><span style="font-size: 12px; font-weight: 600; opacity: 0.85">{{z.fee}} · {{z.time}}</span></button>
+              </sc-for>
+            </div>
+          </div>
+          <label for="c-addr" style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">{{L.address}}
+            <input id="c-addr" type="text" autocomplete="street-address" value="{{f.addr}}" onInput="{{onAddr}}" style="height: 50px; border-radius: 14px; border: 1px solid {{err.addrBorder}}; background: #FBF5EA; padding: 0 14px; font: 400 16px Inter, 'Noto Sans Georgian', sans-serif; color: #2A1D13">
+            <sc-if value="{{err.addr}}" hint-placeholder-val="{{false}}"><span style="color: #8A2414; font-size: 13px">{{L.required}}</span></sc-if>
+          </label>
+          <label for="c-com" style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">{{L.comment}}
+            <input id="c-com" type="text" value="{{f.com}}" onInput="{{onCom}}" style="height: 50px; border-radius: 14px; border: 1px solid #CDB58F; background: #FBF5EA; padding: 0 14px; font: 400 16px Inter, 'Noto Sans Georgian', sans-serif; color: #2A1D13">
+          </label>
+        </sc-if>
+        <sc-if value="{{isPickup}}" hint-placeholder-val="{{false}}">
+          <div style="background: #FBF5EA; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">{{L.point}}</span><span style="font-size: 14px; color: #5C4632">{{hoursLabel}}</span></div>
+        </sc-if>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 14px; font-weight: 600">{{L.pay}}</span>
+          <div style="border: 2px solid #2A1D13; border-radius: 14px; padding: 12px 14px; font-weight: 600; font-size: 15px; background: #FBF5EA; display: flex; align-items: center; gap: 10px"><span style="width: 18px; height: 18px; border-radius: 999px; border: 5px solid #2A1D13; box-sizing: border-box; flex-shrink: 0"></span>{{payNow}}</div>
+          <div style="border: 1px dashed #A8916C; border-radius: 14px; padding: 12px 14px; font-size: 14px; color: #5C4632">{{L.payOnline}}</div>
+        </div>
+        <div style="background: #FBF5EA; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 8px; font-size: 15px">
+          <div style="display: flex; justify-content: space-between"><span style="color: #5C4632">{{L.dishes}} · {{count}}</span><span style="font-weight: 600">{{fullLabel}}</span></div>
+          <sc-if value="{{hasSaving}}" hint-placeholder-val="{{false}}"><div style="display: flex; justify-content: space-between; color: #B42D18; font-weight: 700"><span>{{promo.name}} −{{promo.pct}}%</span><span>−{{savingLabel}}</span></div></sc-if>
+          <div style="display: flex; justify-content: space-between"><span style="color: #5C4632">{{L.deliveryFee}}</span><span style="font-weight: 600">{{feeLabel}}</span></div>
+          <div style="display: flex; justify-content: space-between"><span style="color: #5C4632">{{L.when}}</span><span style="font-weight: 600">{{whenLabel}}</span></div>
+          <div style="display: flex; justify-content: space-between; border-top: 1px solid #E3D3B6; padding-top: 10px; align-items: baseline"><span style="font-weight: 800">{{L.total}}</span><span style="font-family: {{TH.hf}}, sans-serif; font-weight: 900; font-size: 26px">{{totalLabel}}</span></div>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{isStatus}}" hint-placeholder-val="{{false}}">
+      <section style="padding: 14px 16px 130px; display: flex; flex-direction: column; gap: 12px">
+        <div style="background: #2A1D13; color: #FBF5EA; border-radius: 24px; padding: 18px 20px; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 13px; color: #E8DCC8">{{L.orderNo}} {{orderNo}} · {{orderSummary}}</span>
+          <span style="font-size: 15px; font-weight: 700; margin-top: 6px">{{etaTitle}}</span>
+          <div style="display: flex; align-items: baseline; gap: 10px"><span style="font-family: {{TH.hf}}, sans-serif; font-weight: 900; font-size: 44px; line-height: 1; color: #FDC134">{{etaClock}}</span><span style="font-size: 15px; color: #E8DCC8">{{etaLeft}}</span></div>
+          <div style="height: 8px; border-radius: 999px; background: #3A2A1D; overflow: hidden; margin-top: 10px"><div style="height: 100%; border-radius: 999px; background: #FDC134; width: {{trackPct}}"></div></div>
+        </div>
+        <sc-if value="{{trackMap}}" hint-placeholder-val="{{true}}">
+          <div style="position: relative; border-radius: 22px; overflow: hidden; background: #E3D3B6">
+            <svg viewBox="0 0 358 300" width="358" height="300" style="display: block; width: 100%; height: auto" role="img" aria-label="{{L.trackAlt}}">
+              <rect width="358" height="300" fill="#E3D3B6"></rect>
+              <path d="M0 0 H210 C170 60 110 120 0 170 Z" fill="#9CC3CF"></path>
+              <path d="M80 300 L300 0 M0 260 L358 90 M150 300 L358 150 M250 0 L330 300 M0 210 L220 40" stroke="#FBF5EA" stroke-width="9" fill="none"></path>
+              <path d="M244 124 L196 150 L140 200 L70 250" stroke="#2A1D13" stroke-opacity="0.25" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+              <path d="{{donePath}}" stroke="#2A1D13" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+              <circle cx="70" cy="250" r="12" fill="#2F6B3A" stroke="#FBF5EA" stroke-width="4"></circle>
+              <text x="70" y="282" text-anchor="middle" fill="#2A1D13" font-family="Inter, sans-serif" font-size="12" font-weight="800">{{L.you}}</text>
+              <circle cx="244" cy="124" r="20" fill="#FDC134" stroke="#2A1D13" stroke-width="3"></circle>
+              <text x="244" y="129" text-anchor="middle" fill="#2A1D13" font-family="Inter, sans-serif" font-size="12" font-weight="900">PR</text>
+              <sc-if value="{{courierOn}}" hint-placeholder-val="{{true}}">
+                <circle cx="{{cx}}" cy="{{cy}}" r="15" fill="#2A1D13" stroke="#FDC134" stroke-width="4"></circle>
+                <path d="M{{cxm}} {{cy}} h10 M{{cx}} {{cym}} v10" stroke="#FDC134" stroke-width="3" stroke-linecap="round"></path>
+              </sc-if>
+            </svg>
+            <span style="position: absolute; left: 10px; top: 10px; background: rgba(251,245,234,0.94); border-radius: 999px; padding: 5px 10px; font-size: 12px; font-weight: 700; color: #2A1D13">{{mapBadge}}</span>
+          </div>
+        </sc-if>
+        <ol style="list-style: none; margin: 0; padding: 4px 0; display: flex; flex-direction: column">
+          <sc-for list="{{steps}}" as="st" hint-placeholder-count="5">
+            <li style="display: flex; gap: 14px; align-items: flex-start; padding: 6px 0">
+              <span style="width: 32px; height: 32px; border-radius: 999px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font: 800 14px Inter, sans-serif; {{st.dot}}">{{st.mark}}</span>
+              <div style="display: flex; flex-direction: column; gap: 2px; padding-top: 6px"><span style="font-weight: 700; {{st.textStyle}}">{{st.label}}</span><span style="font-size: 12px; color: #5C4632">{{st.note}}</span></div>
+            </li>
+          </sc-for>
+        </ol>
+        <div style="background: #FFF1C9; border-radius: 14px; padding: 10px 12px; font-size: 13px; line-height: 1.4">{{L.trackNote}}</div>
+        <sc-if value="{{trackRunning}}" hint-placeholder-val="{{true}}">
+          <button onClick="{{skip5}}" style="border: 1px solid #2A1D13; background: transparent; cursor: pointer; height: 48px; border-radius: 14px; font: 700 15px Inter, 'Noto Sans Georgian', sans-serif; color: #2A1D13">{{L.skip}}</button>
+        </sc-if>
+        <button onClick="{{newOrder}}" style="border: 0; background: #FDC134; cursor: pointer; height: 52px; border-radius: 14px; font: 800 16px Inter, 'Noto Sans Georgian', sans-serif; color: #2A1D13">{{L.newOrder}}</button>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{isMap}}" hint-placeholder-val="{{false}}">
+      <section style="padding: 12px 16px 130px; display: flex; flex-direction: column; gap: 12px">
+        <div style="position: relative; border-radius: 22px; overflow: hidden; background: #E3D3B6">
+          <svg viewBox="0 0 358 300" width="358" height="300" style="display: block; width: 100%; height: auto" role="img" aria-label="{{L.mapAlt}}">
+            <rect width="358" height="300" fill="#E3D3B6"></rect>
+            <path d="M0 0 H210 C170 60 110 120 0 170 Z" fill="#9CC3CF"></path>
+            <text x="30" y="60" fill="#3E6F7D" font-family="Inter, sans-serif" font-size="12" font-weight="700">{{L.sea}}</text>
+            <path d="M80 300 L300 0 M0 260 L358 90 M150 300 L358 150 M250 0 L330 300 M0 210 L220 40" stroke="#FBF5EA" stroke-width="9" fill="none"></path>
+            <path d="M40 300 L250 30" stroke="#FBF5EA" stroke-width="5" fill="none"></path>
+            <sc-if value="{{hasMe}}" hint-placeholder-val="{{false}}">
+              <path d="M70 250 Q140 200 196 150 T238 128" stroke="#2A1D13" stroke-width="4" stroke-dasharray="2 8" stroke-linecap="round" fill="none"></path>
+              <circle cx="70" cy="250" r="11" fill="#2F6B3A" stroke="#FBF5EA" stroke-width="4"></circle>
+            </sc-if>
+            <circle cx="244" cy="124" r="26" fill="#FDC134" stroke="#2A1D13" stroke-width="3"></circle>
+            <text x="244" y="129" text-anchor="middle" fill="#2A1D13" font-family="Inter Tight, sans-serif" font-size="13" font-weight="900">PR</text>
+            <text x="244" y="168" text-anchor="middle" fill="#2A1D13" font-family="Inter, sans-serif" font-size="12" font-weight="800">Batumi Mall</text>
+          </svg>
+          <span style="position: absolute; left: 10px; bottom: 10px; background: rgba(251,245,234,0.92); border-radius: 999px; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #5C4632">{{L.mapNote}}</span>
+        </div>
+        <div style="background: #FBF5EA; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+          <span style="font-weight: 800; font-size: 17px">{{L.point}}</span>
+          <span style="font-size: 14px; color: #5C4632">{{hoursLabel}}</span>
+          <sc-if value="{{hasMe}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; gap: 8px">
+              <div style="flex: 1; background: #2A1D13; color: #FBF5EA; border-radius: 14px; padding: 12px; display: flex; flex-direction: column"><span style="font-size: 12px; color: #E8DCC8">{{L.distance}}</span><span style="font-family: {{TH.hf}}, sans-serif; font-weight: 900; font-size: 24px; color: #FDC134">{{distLabel}}</span></div>
+              <div style="flex: 1; background: #2A1D13; color: #FBF5EA; border-radius: 14px; padding: 12px; display: flex; flex-direction: column"><span style="font-size: 12px; color: #E8DCC8">{{L.byCar}}</span><span style="font-family: {{TH.hf}}, sans-serif; font-weight: 900; font-size: 24px; color: #FDC134">{{timeLabel}}</span></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{noMe}}" hint-placeholder-val="{{true}}">
+            <button onClick="{{locate}}" style="height: 50px; border: 0; cursor: pointer; border-radius: 14px; background: #2A1D13; color: #FBF5EA; font: 700 15px Inter, 'Noto Sans Georgian', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path><circle cx="12" cy="12" r="8"></circle></svg>
+              {{L.howFar}}
+            </button>
+          </sc-if>
+          <sc-if value="{{geoMsg}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; color: #8A2414">{{geoText}}</span></sc-if>
+          <span style="font-size: 13px; font-weight: 700; margin-top: 4px">{{L.openIn}}</span>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+            <a href="https://www.google.com/maps/dir/?api=1&amp;destination=41.64318,41.61974" target="_blank" rel="noopener" style="height: 50px; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; text-decoration: none; font-weight: 800; font-size: 13px; color: #2A1D13; border: 1px solid #CDB58F">Google Maps</a>
+            <a href="https://waze.com/ul?ll=41.64318,41.61974&amp;navigate=yes" target="_blank" rel="noopener" style="height: 50px; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; text-decoration: none; font-weight: 800; font-size: 13px; color: #2A1D13; border: 1px solid #CDB58F">Waze</a>
+            <a href="https://yandex.com/maps/?rtext=~41.64318%2C41.61974&amp;rtt=auto" target="_blank" rel="noopener" style="height: 50px; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; text-decoration: none; font-weight: 800; font-size: 13px; color: #2A1D13; border: 1px solid #CDB58F">Yandex</a>
+          </div>
+        </div>
+      </section>
+    </sc-if>
+  </div>
+
+  <div style="position: absolute; right: 12px; bottom: {{fabBottom}}; z-index: 22; display: flex; flex-direction: column; gap: 10px">
+    <a href="{{waHref}}" target="_blank" rel="noopener" aria-label="WhatsApp" style="width: 52px; height: 52px; border-radius: 999px; background: #1F8A4C; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(0,0,0,0.25)">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3z"></path></svg>
+    </a>
+    <a href="{{telHref}}" aria-label="{{L.call}}" style="width: 52px; height: 52px; border-radius: 999px; background: #FDC134; color: #2A1D13; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(0,0,0,0.25)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"></path></svg>
+    </a>
+  </div>
+
+  <sc-if value="{{showBar}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; left: 12px; right: 76px; bottom: 82px; z-index: 20">
+      <button onClick="{{barAction}}" disabled="{{barDisabled}}" style="width: 100%; height: 58px; border: 0; cursor: pointer; border-radius: 18px; {{barStyle}} display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 16px; font: 800 15px Inter, 'Noto Sans Georgian', sans-serif; box-shadow: 0 10px 28px rgba(42,29,19,0.3)">
+        <span>{{barLeft}}</span>
+        <span style="height: 44px; padding: 0 12px; border-radius: 13px; display: flex; align-items: center; {{barPill}}">{{barRight}}</span>
+      </button>
+    </div>
+  </sc-if>
+
+  <nav aria-label="{{L.nav}}" style="position: absolute; left: 0; right: 0; bottom: 0; height: 72px; padding-bottom: env(safe-area-inset-bottom); background: #FBF5EA; border-top: 1px solid {{TH.line}}; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); z-index: 25">
+    <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="4">
+      <button onClick="{{tb.go}}" aria-current="{{tb.current}}" style="border: 0; background: transparent; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font: 700 11px Inter, 'Noto Sans Georgian', sans-serif; position: relative; {{tb.style}}">
+        <sc-if value="{{tb.isHome}}" hint-placeholder-val="{{true}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg></sc-if>
+        <sc-if value="{{tb.isMenu}}" hint-placeholder-val="{{false}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 12 L21 12 A9 9 0 0 0 16.5 4.2 Z"></path></svg></sc-if>
+        <sc-if value="{{tb.isCart}}" hint-placeholder-val="{{false}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg></sc-if>
+        <sc-if value="{{tb.isMap}}" hint-placeholder-val="{{false}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-7.6 7-13a7 7 0 0 0-14 0c0 5.4 7 13 7 13z"></path><circle cx="12" cy="9" r="2.5"></circle></svg></sc-if>
+        <span>{{tb.label}}</span>
+        <sc-if value="{{tb.badge}}" hint-placeholder-val="{{false}}">
+          <span style="position: absolute; top: 8px; left: 52%; min-width: 18px; height: 18px; border-radius: 999px; background: #C8361F; color: #FFFFFF; font: 800 10px Inter, sans-serif; display: flex; align-items: center; justify-content: center; padding: 0 4px; box-sizing: border-box">{{tb.badgeText}}</span>
+        </sc-if>
+      </button>
+    </sc-for>
+  </nav>
+
+  <sc-if value="{{itemOpen}}" hint-placeholder-val="{{false}}">
+    <div role="dialog" aria-label="{{item.name}}" style="position: absolute; inset: 0; background: {{TH.bg}}; z-index: 40; display: flex; flex-direction: column">
+      <div style="flex: 1; overflow-y: auto">
+        <div style="position: relative; background: #2B2622">
+          <img src="{{item.big}}" alt="{{item.alt}}" style="display: block; width: 390px; height: 390px; object-fit: cover">
+          <button onClick="{{closeItem}}" aria-label="{{L.back}}" style="position: absolute; left: 14px; top: 14px; width: 44px; height: 44px; border: 0; border-radius: 999px; background: #FBF5EA; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #2A1D13">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+          </button>
+          <sc-if value="{{item.hasDisc}}" hint-placeholder-val="{{false}}"><span style="position: absolute; right: 14px; top: 18px; background: #C8361F; color: #FFFFFF; font-size: 14px; font-weight: 800; padding: 6px 12px; border-radius: 999px">−{{item.pct}}%</span></sc-if>
+          <span style="position: absolute; right: 12px; bottom: 12px; background: rgba(42,29,19,0.75); color: #FBF5EA; font-size: 10px; font-weight: 600; padding: 4px 8px; border-radius: 999px">{{L.photoSoon}}</span>
+        </div>
+        <div style="padding: 18px 16px 24px; display: flex; flex-direction: column; gap: 12px">
+          <h2 style="margin: 0; font-family: {{TH.hf}}, 'Noto Sans Georgian', sans-serif; font-weight: 900; font-size: 30px; line-height: 1.05">{{item.name}}</h2>
+          <p style="margin: 0; color: #5C4632; font-size: 15px; line-height: 1.5">{{item.desc}}</p>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap">
+            <span style="height: 34px; padding: 0 12px; border-radius: 999px; background: #2A1D13; color: #FBF5EA; display: flex; align-items: center; font-size: 13px; font-weight: 700">{{item.size}}</span>
+            <span style="height: 34px; padding: 0 12px; border-radius: 999px; background: #FBF5EA; display: flex; align-items: center; font-size: 13px; font-weight: 700">{{L.italian}}</span>
+          </div>
+          <sc-if value="{{item.stopped}}" hint-placeholder-val="{{false}}"><div style="background: #FBF5EA; border-radius: 14px; padding: 12px; font-weight: 700">{{L.stopNote}}</div></sc-if>
+        </div>
+      </div>
+      <div style="padding: 12px 16px calc(16px + env(safe-area-inset-bottom)); border-top: 1px solid {{TH.line}}; background: {{TH.bg}}; display: flex; gap: 10px; align-items: center">
+        <div style="display: flex; align-items: center; border: 1px solid #CDB58F; border-radius: 16px; background: #FBF5EA">
+          <button onClick="{{itemDec}}" aria-label="−1" style="border: 0; cursor: pointer; width: 46px; height: 56px; background: transparent; font: 800 22px Inter, sans-serif; color: #2A1D13">−</button>
+          <span style="min-width: 22px; text-align: center; font-weight: 800; font-size: 17px">{{itemQty}}</span>
+          <button onClick="{{itemInc}}" aria-label="+1" style="border: 0; cursor: pointer; width: 46px; height: 56px; background: transparent; font: 800 22px Inter, sans-serif; color: #2A1D13">+</button>
+        </div>
+        <button onClick="{{itemAdd}}" disabled="{{item.stopped}}" style="flex: 1; height: 58px; border: 0; cursor: pointer; border-radius: 16px; {{itemBtnStyle}} font: 800 16px Inter, 'Noto Sans Georgian', sans-serif">{{itemBtn}}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{popupOpen}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; z-index: 60; background: rgba(42,29,19,0.6); display: flex; align-items: center; justify-content: center; padding: 24px">
+      <div role="dialog" aria-label="{{promo.title}}" style="width: 100%; background: #FDC134; border-radius: 28px; overflow: hidden; display: flex; flex-direction: column">
+        <div style="background: #2A1D13; color: #FDC134; padding: 26px 22px 22px; position: relative; display: flex; flex-direction: column; gap: 6px">
+          <button onClick="{{closePopup}}" aria-label="{{L.close}}" style="position: absolute; right: 12px; top: 12px; width: 40px; height: 40px; border: 0; border-radius: 999px; background: #3A2A1D; color: #FBF5EA; cursor: pointer; font: 700 16px Inter, sans-serif">✕</button>
+          <span style="font-size: 13px; font-weight: 800; letter-spacing: 0.06em; color: #E8DCC8">{{promo.name}}</span>
+          <span style="font-family: {{TH.hf}}, sans-serif; font-weight: 900; font-size: 84px; line-height: 0.9">−{{promo.pct}}%</span>
+        </div>
+        <div style="padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 10px; color: #2A1D13">
+          <span style="font-family: {{TH.hf}}, 'Noto Sans Georgian', sans-serif; font-weight: 900; font-size: 22px; line-height: 1.1">{{promo.title}}</span>
+          <span style="font-size: 14px; line-height: 1.45">{{promo.sub}}</span>
+          <button onClick="{{popupGo}}" style="margin-top: 6px; height: 54px; border: 0; cursor: pointer; border-radius: 16px; background: #2A1D13; color: #FDC134; font: 800 16px Inter, 'Noto Sans Georgian', sans-serif">{{L.seeMenu}} →</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ageAsk}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; z-index: 70; background: rgba(42,29,19,0.6); display: flex; align-items: center; justify-content: center; padding: 24px">
+      <div role="dialog" aria-label="18+" style="width: 100%; background: #FBF5EA; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 12px; text-align: center">
+        <span style="font-family: {{TH.hf}}, sans-serif; font-weight: 900; font-size: 44px">18+</span>
+        <span style="font-weight: 800; font-size: 18px">{{L.ageQ}}</span>
+        <span style="font-size: 13px; color: #5C4632">{{L.ageNote}}</span>
+        <div style="display: flex; gap: 8px"><button onClick="{{ageNo}}" style="flex: 1; height: 52px; border: 1px solid #2A1D13; background: transparent; cursor: pointer; border-radius: 14px; font: 800 15px Inter, 'Noto Sans Georgian', sans-serif; color: #2A1D13">{{L.ageNo}}</button><button onClick="{{ageYes}}" style="flex: 1; height: 52px; border: 0; cursor: pointer; border-radius: 14px; background: #2A1D13; color: #FBF5EA; font: 800 15px Inter, 'Noto Sans Georgian', sans-serif">{{L.ageYes}}</button></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{toast}}" hint-placeholder-val="{{false}}">
+    <div role="status" style="position: absolute; left: 50%; top: 64px; transform: translateX(-50%); background: #2A1D13; color: #FBF5EA; border-radius: 999px; padding: 10px 16px; font-size: 13px; font-weight: 700; z-index: 50; white-space: nowrap; box-shadow: 0 8px 20px rgba(0,0,0,0.25)">{{toastText}}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"lang":{"editor":"enum","options":["ka","en","ru"],"default":"ru","section":"Демо"},"isOpen":{"editor":"boolean","default":true,"section":"Состояния"},"offline":{"editor":"boolean","default":false,"section":"Состояния"},"deliveryFee":{"editor":"float","default":0,"min":0,"max":20,"step":0.5,"section":"Доставка (демо)"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { lang: null, screen: 'home', mode: 'delivery', qty: {}, q: '', tag: 'all', item: null, itemQty: 1, f: { name: '', phone: '', addr: '', com: '' }, err: {}, orderNo: '', status: 0, toast: '', admin: null, popupSeen: false, me: null, geoErr: '' };
+  }
+  readAdmin() {
+    try { const raw = window.localStorage.getItem('pizzaroom_admin_v1'); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+  }
+  componentDidMount() {
+    try {
+      const raw = window.localStorage.getItem('pizzaroom_demo_v3');
+      if (raw) { const d = JSON.parse(raw); if (d && d.qty) this.setState({ qty: d.qty, mode: d.mode || 'delivery', lang: d.lang || null }); }
+    } catch (e) {}
+    const a = this.readAdmin(); this._last = JSON.stringify(a); this.setState({ admin: a });
+    this._poll = setInterval(() => { const n = this.readAdmin(); const s = JSON.stringify(n); if (s !== this._last) { this._last = s; this.setState({ admin: n, popupSeen: false }); } }, 1200);
+  }
+  componentDidUpdate() {
+    try { window.localStorage.setItem('pizzaroom_demo_v3', JSON.stringify({ qty: this.state.qty, mode: this.state.mode, lang: this.state.lang })); } catch (e) {}
+  }
+  componentWillUnmount() { clearTimeout(this._t); clearInterval(this._poll); clearInterval(this._trk); }
+  startTrack() { clearInterval(this._trk); this._trk = setInterval(() => { const t = (this.state.track || 0) + 1; this.setState({ track: t }); if (t >= 60) clearInterval(this._trk); }, 1000); }
+  flash(text) { clearTimeout(this._t); this.setState({ toast: text }); this._t = setTimeout(() => this.setState({ toast: '' }), 1400); }
+  renderVals() {
+    const THEMES = { brown: ['#EADBC2','#DCC7A5','#D9C4A2'], cream: ['#F6EEDF','#E9DCC4','#E4D5BA'], white: ['#FFFFFF','#F1ECE4','#EAE3D8'], sand: ['#E3CDA8','#D4BA8E','#CDB289'], butter: ['#FFF3D1','#F7E2A6','#F0DDA8'], caramel: ['#D9B98C','#C9A574','#C4A06E'] };
+    const th = THEMES[((this.state.admin || {}).theme) || 'sand'] || THEMES.brown;
+    const FONTS = { montserrat: "'Montserrat'", inter: "'Inter Tight'", rubik: "'Rubik'", nunito: "'Nunito'" };
+    const TH = { bg: th[0], pill: th[1], line: th[2], hf: FONTS[((this.state.admin || {}).font) || 'montserrat'] || FONTS.montserrat };
+    const lang = this.state.lang || this.props.lang || 'ru';
+    const isOpen = this.props.isOpen ?? true;
+    const offline = this.props.offline ?? false;
+    const HOL = {
+      ny: { ru: 'Новый год', en: 'New Year', ka: 'ახალი წელი' }, xmas: { ru: 'Рождество', en: 'Christmas', ka: 'შობა' }, pizza: { ru: 'Всемирный день пиццы', en: 'World Pizza Day', ka: 'პიცის მსოფლიო დღე' }, val: { ru: 'День влюблённых', en: 'Valentine’s Day', ka: 'სიყვარულის დღე' }, mom: { ru: 'День матери', en: 'Mother’s Day', ka: 'დედის დღე' }, w8: { ru: '8 Марта', en: 'Women’s Day', ka: 'ქალთა დღე' }, easter: { ru: 'Пасха', en: 'Easter', ka: 'აღდგომა' }, ind: { ru: 'День независимости', en: 'Independence Day', ka: 'დამოუკიდებლობის დღე' }, kids: { ru: 'День защиты детей', en: 'Children’s Day', ka: 'ბავშვთა დაცვის დღე' }, season: { ru: 'Открытие сезона', en: 'Summer season', ka: 'სეზონის გახსნა' }, mari: { ru: 'Мариамоба', en: 'Mariamoba', ka: 'მარიამობა' }, hall: { ru: 'Хэллоуин', en: 'Halloween', ka: 'ჰელოუინი' }, giorg: { ru: 'Гиоргоба', en: 'Giorgoba', ka: 'გიორგობა' }, bf: { ru: 'Чёрная пятница', en: 'Black Friday', ka: 'შავი პარასკევი' }, cm: { ru: 'Киберпонедельник', en: 'Cyber Monday', ka: 'კიბერორშაბათი' }, bday: { ru: 'День рождения Pizza Room', en: 'Pizza Room’s birthday', ka: 'Pizza Room-ის დაბადების დღე' }, custom: { ru: 'Акция', en: 'Special offer', ka: 'აქცია' }
+    };
+    const defAdmin = { promo: { on: false, holiday: 'bf', pct: 20, scope: 'all', ids: [], from: '27.11', to: '30.11', strip: true, popup: true }, prices: {}, stop: {}, phone: '+995514888800', wa: '995514888800', open: '11:00', close: '23:00' };
+    const A = Object.assign({}, defAdmin, this.state.admin || {});
+    const P = Object.assign({}, defAdmin.promo, A.promo || {});
+    const D = Object.assign({ zones: [{ id: 'city', fee: 7, ru: 'Батуми', en: 'Batumi', ka: 'ბათუმი' }, { id: 'airport', fee: 10, ru: 'Район аэропорта', en: 'Airport area', ka: 'აეროპორტის რაიონი' }], tmin: 35, tmax: 40 }, A.delivery || {});
+    const zone = D.zones.find((z) => z.id === this.state.zone) || D.zones[0];
+    const fee = Number(zone.fee) || 0;
+    const T = {
+      ru: { nav: 'Разделы', tabHome: 'Главная', tabMenu: 'Меню', tabCart: 'Корзина', tabMap: 'Как добраться', back: 'Назад', call: 'Позвонить', heroAlt: 'Пицца пепперони, один кусок отодвинут', firstBadge: 'С 2018 года в Батуми', photoSoon: 'Здесь будет ваше фото', open: 'Открыто', heroTitle: 'Горячая итальянская пицца — у вашей двери за 35 минут', heroSub: 'Тонкое тесто, моцарелла и томаты из Италии, щедрая начинка до самого края. Готовим в Batumi Mall с 2018 года — заберите сами или привезём по Батуми.', seeMenu: 'Смотреть меню', delivery: 'Доставка', delivSub: 'по Батуми от 7 ₾', pickup: 'Самовывоз', pickSub: 'Batumi Mall', yourOrder: 'Заказ', popular: 'Популярное', allMenu: 'Всё меню', aboutKicker: 'О НАС', aboutTitle: 'Пицца, которой Батуми ставит 9,8 из 10', aboutText: 'С 2018 года мы делаем одну вещь — пиццу, которую хочется заказать снова. Итальянские ингредиенты, контроль качества на каждом шаге и каждая пицца руками повара. Поэтому гости Wolt оценивают нас на 9,8 — это один из самых высоких рейтингов в городе.', f1: 'готовим для вас с этого года', f2: 'итальянские ингредиенты', years: 'лет', f3: 'рейтинг гостей на Wolt', cm: 'см', f4: 'минут — доставка по Батуми', reviews: 'Отзывы гостей', live: 'из API', reviewSlot: 'Здесь будут настоящие отзывы из Google: имя, оценка, текст и дата подтягиваются автоматически.', allReviews: 'Все отзывы на Google', howToGet: 'Как к нам добраться', point: 'Batumi Mall, ул. Зураба Горгиладзе, 88', search: 'Найти пиццу или ингредиент', tagAll: 'Все', tagClassic: 'Классика', tagMeat: 'С мясом', tagDrinks: 'Напитки', repeat: 'Повторить прошлый заказ', soonBadge: 'Скоро', soonText: 'Готовим новый раздел. Оставьте телефон — напишем в день открытия и дадим приветственную скидку.', notifyMe: 'Сообщите мне об открытии', notifyOk: 'Готово! Напишем вам в день открытия.', ageQ: 'Вам уже есть 18 лет?', ageYes: 'Да, есть', ageNo: 'Нет', ageNote: 'Пиво и вино продаём только с 18 лет. Курьер может попросить документ.', upsell: 'Добавить напиток?', tagCream: 'Сливочные', noResults: 'Ничего не нашли — попробуйте другое слово.', size: '33 см', add: 'Добавить', addAria: 'Добавить в корзину', added: 'добавлено', stop: 'Нет в наличии', stopNote: 'Сегодня этой пиццы нет — выберите другую.', empty: 'Корзина пока пустая', remove: 'Удалить', backToMenu: 'Добавить ещё из меню', dishes: 'Блюда', deliveryFee: 'Доставка', free: 'бесплатно', total: 'Итого', cart: 'Корзина', checkout: 'Оформление', toCheckout: 'Оформить', testMode: 'Тестовый режим: заказ никуда не отправляется и не оплачивается.', name: 'Имя', phone: 'Телефон', address: 'Улица, дом, квартира', comment: 'Комментарий курьеру (необязательно)', required: 'Заполните это поле', phoneErr: 'Проверьте номер: 9 цифр после +995', pay: 'Оплата', payCourier: 'Наличными или картой курьеру', payPlace: 'Оплата при получении', payOnline: 'Картой онлайн, Apple Pay, Google Pay — после подключения банка', when: 'Время', whenVal: 'как можно скорее', place: 'Оформить заказ', orderNo: 'Номер заказа', received: 'Заказ получен', confirmed: 'Пиццерия подтвердила', cooking: 'Готовится', ready: 'Готов к выдаче', courier: 'Передан курьеру', now: 'сейчас', testDone: 'Пробный заказ: он не отправлен в пиццерию. В рабочей версии статус меняет оператор в админке.', nextStatus: 'Следующий статус (демо)', newOrder: 'Новый заказ', closed: 'Сейчас закрыто. Заказы принимаем с открытия — корзину можно собрать заранее.', offline: 'Нет связи. Заказ ещё не отправлен — корзина и данные сохранены.', italian: 'Итальянские ингредиенты', items: 'шт.', closedBtn: 'Сейчас закрыто', offlineBtn: 'Нет связи', altPizza: 'Пицца', close: 'Закрыть', mapAlt: 'Схема: Pizza Room в Batumi Mall', sea: 'Чёрное море', mapNote: 'В рабочем сайте — живая карта с маршрутом', distance: 'До нас', byCar: 'На машине', howFar: 'Сколько до вас от меня?', openIn: 'Проложить маршрут в', geoDenied: 'Разрешите доступ к геопозиции в браузере, чтобы увидеть расстояние.', km: 'км', min: 'мин', daily: 'Каждый день', scopeAll: 'на всё меню', scopeList: 'на избранные пиццы', promoSub: 'Скидка уже учтена в ценах меню.', until: 'до', promoWA: 'Здравствуйте! Хочу заказать пиццу.' , n3: '9,8', n4: '35', zone: 'Куда везём', etaDel: 'Пицца будет у вас в', etaPick: 'Заказ будет готов в', inMin: 'через', arrived: 'Курьер у вас — приятного аппетита!', readyPick: 'Готово — ждём вас в Batumi Mall', readyPizza: 'Пицца готова', onWay: 'Курьер в пути', delivered: 'Доставлено', you: 'Вы', trackAlt: 'Карта: курьер едет от Pizza Room к вам', trackNote: 'Демо: 1 секунда = 1 минута. В рабочей версии курьер передаёт GPS со своего телефона, а время пересчитывается с учётом пробок.', skip: '+5 минут (демо)'},
+      en: { nav: 'Sections', tabHome: 'Home', tabMenu: 'Menu', tabCart: 'Cart', tabMap: 'Find us', back: 'Back', call: 'Call', heroAlt: 'Pepperoni pizza with one slice pulled out', firstBadge: 'In Batumi since 2018', photoSoon: 'Your photo goes here', open: 'Open', heroTitle: 'Hot Italian pizza at your door in 35 minutes', heroSub: 'Thin crust, Italian mozzarella and tomatoes, generous toppings right to the edge. Made at Batumi Mall since 2018 — pick it up or get it delivered across Batumi.', seeMenu: 'See menu', delivery: 'Delivery', delivSub: 'in Batumi from 7 ₾', pickup: 'Pickup', pickSub: 'Batumi Mall', yourOrder: 'Order', popular: 'Popular', allMenu: 'Full menu', aboutKicker: 'ABOUT US', aboutTitle: 'The pizza Batumi rates 9.8 out of 10', aboutText: 'Since 2018 we have done one thing: pizza you want to order again. Italian ingredients, quality checks at every step, and every pizza made by a chef’s hands. That is why Wolt guests rate us 9.8, one of the highest scores in the city.', f1: 'cooking for you since', f2: 'Italian ingredients', years: 'years', f3: 'guest rating on Wolt', cm: 'cm', f4: 'minutes — delivery in Batumi', reviews: 'Guest reviews', live: 'via API', reviewSlot: 'Real Google reviews will appear here: name, rating, text and date load automatically.', allReviews: 'All reviews on Google', howToGet: 'How to find us', point: 'Batumi Mall, 88 Zurab Gorgiladze St', search: 'Find a pizza or ingredient', tagAll: 'All', tagClassic: 'Classic', tagMeat: 'With meat', tagDrinks: 'Drinks', repeat: 'Repeat your last order', soonBadge: 'Coming soon', soonText: 'We are preparing a new section. Leave your phone — we will text you on opening day with a welcome discount.', notifyMe: 'Notify me when it opens', notifyOk: 'Done! We will text you on opening day.', ageQ: 'Are you 18 or older?', ageYes: 'Yes, I am', ageNo: 'No', ageNote: 'Beer and wine are sold to adults 18+ only. The courier may ask for ID.', upsell: 'Add a drink?', tagCream: 'Creamy', noResults: 'Nothing found — try another word.', size: '33 cm', add: 'Add', addAria: 'Add to cart', added: 'added', stop: 'Sold out', stopNote: 'This pizza is sold out today — please choose another.', empty: 'Your cart is empty', remove: 'Remove', backToMenu: 'Add more from the menu', dishes: 'Items', deliveryFee: 'Delivery', free: 'free', total: 'Total', cart: 'Cart', checkout: 'Checkout', toCheckout: 'Checkout', testMode: 'Test mode: this order is not sent anywhere and not charged.', name: 'Name', phone: 'Phone', address: 'Street, building, flat', comment: 'Note for the courier (optional)', required: 'Please fill in this field', phoneErr: 'Check the number: 9 digits after +995', pay: 'Payment', payCourier: 'Cash or card to the courier', payPlace: 'Pay on collection', payOnline: 'Card online, Apple Pay, Google Pay — once the bank is connected', when: 'Time', whenVal: 'as soon as possible', place: 'Place order', orderNo: 'Order number', received: 'Order received', confirmed: 'Pizzeria confirmed', cooking: 'Being prepared', ready: 'Ready for pickup', courier: 'With the courier', now: 'now', testDone: 'Test order: it was not sent to the pizzeria. In the live version staff update the status in the admin panel.', nextStatus: 'Next status (demo)', newOrder: 'New order', closed: 'Closed right now. We take orders from opening time — you can fill your cart in advance.', offline: 'No connection. Your order has not been sent — cart and details are saved.', italian: 'Italian ingredients', items: 'pcs', closedBtn: 'Closed now', offlineBtn: 'No connection', altPizza: 'Pizza', close: 'Close', mapAlt: 'Map: Pizza Room at Batumi Mall', sea: 'Black Sea', mapNote: 'Live map with route on the real site', distance: 'Distance', byCar: 'By car', howFar: 'How far am I from you?', openIn: 'Get directions in', geoDenied: 'Allow location access in your browser to see the distance.', km: 'km', min: 'min', daily: 'Daily', scopeAll: 'on the whole menu', scopeList: 'on selected pizzas', promoSub: 'The discount is already applied to menu prices.', until: 'until', promoWA: 'Hello! I would like to order a pizza.' , n3: '9.8', n4: '35', zone: 'Delivery area', etaDel: 'Your pizza arrives at', etaPick: 'Your order is ready at', inMin: 'in', arrived: 'Your courier is here — enjoy!', readyPick: 'Ready — see you at Batumi Mall', readyPizza: 'Pizza is ready', onWay: 'Courier on the way', delivered: 'Delivered', you: 'You', trackAlt: 'Map: the courier is riding from Pizza Room to you', trackNote: 'Demo: 1 second = 1 minute. In the live version the courier’s phone shares GPS and the time is recalculated with live traffic.', skip: '+5 minutes (demo)'},
+      ka: { nav: 'განყოფილებები', tabHome: 'მთავარი', tabMenu: 'მენიუ', tabCart: 'კალათა', tabMap: 'როგორ მოვიდეთ', back: 'უკან', call: 'დარეკვა', heroAlt: 'პეპერონი პიცა, ერთი ნაჭერი გამოწეულია', firstBadge: 'ბათუმში 2018 წლიდან', photoSoon: 'აქ იქნება თქვენი ფოტო', open: 'ღიაა', heroTitle: 'ცხელი იტალიური პიცა თქვენს კართან 35 წუთში', heroSub: 'თხელი ცომი, იტალიური მოცარელა და პომიდორი, უხვი შიგთავსი ბოლომდე. ვამზადებთ Batumi Mall-ში 2018 წლიდან — წაიღეთ თავად ან მოგიტანთ ბათუმის მასშტაბით.', seeMenu: 'მენიუს ნახვა', delivery: 'მიწოდება', delivSub: 'ბათუმში 7 ₾-დან', pickup: 'გატანა', pickSub: 'Batumi Mall', yourOrder: 'შეკვეთა', popular: 'პოპულარული', allMenu: 'სრული მენიუ', aboutKicker: 'ჩვენ შესახებ', aboutTitle: 'პიცა, რომელსაც ბათუმი 10-დან 9,8-ით აფასებს', aboutText: '2018 წლიდან ერთ საქმეს ვაკეთებთ — პიცას, რომლის ხელახლა შეკვეთაც მოგინდებათ. იტალიური ინგრედიენტები, ხარისხის კონტროლი ყოველ ეტაპზე და ყოველი პიცა მზარეულის ხელით. ამიტომ Wolt-ის სტუმრები 9,8-ით გვაფასებენ — ეს ქალაქში ერთ-ერთი უმაღლესი რეიტინგია.', f1: 'თქვენთვის ვამზადებთ ამ წლიდან', f2: 'იტალიური ინგრედიენტები', years: 'წელი', f3: 'სტუმრების შეფასება Wolt-ზე', cm: 'სმ', f4: 'წუთი — მიტანა ბათუმში', reviews: 'სტუმრების შეფასებები', live: 'API-დან', reviewSlot: 'აქ გამოჩნდება ნამდვილი შეფასებები Google-დან: სახელი, ქულა, ტექსტი და თარიღი ავტომატურად.', allReviews: 'ყველა შეფასება Google-ზე', howToGet: 'როგორ მოგვაგნოთ', point: 'Batumi Mall, ზურაბ გორგილაძის ქ. 88', search: 'იპოვეთ პიცა ან ინგრედიენტი', tagAll: 'ყველა', tagClassic: 'კლასიკა', tagMeat: 'ხორცით', tagDrinks: 'სასმელები', repeat: 'წინა შეკვეთის გამეორება', soonBadge: 'მალე', soonText: 'ვამზადებთ ახალ განყოფილებას. დატოვეთ ტელეფონი — გახსნის დღეს მოგწერთ და მოგცემთ მისასალმებელ ფასდაკლებას.', notifyMe: 'შემატყობინეთ გახსნისას', notifyOk: 'მზადაა! გახსნის დღეს მოგწერთ.', ageQ: '18 წლის ხართ?', ageYes: 'დიახ', ageNo: 'არა', ageNote: 'ლუდს და ღვინოს ვყიდით მხოლოდ 18 წლიდან. კურიერმა შეიძლება მოგთხოვოთ დოკუმენტი.', upsell: 'დავამატოთ სასმელი?', tagCream: 'ნაღების', noResults: 'ვერაფერი მოიძებნა — სცადეთ სხვა სიტყვა.', size: '33 სმ', add: 'დამატება', addAria: 'კალათაში დამატება', added: 'დაემატა', stop: 'ამოიწურა', stopNote: 'ეს პიცა დღეს ამოიწურა — აირჩიეთ სხვა.', empty: 'კალათა ჯერ ცარიელია', remove: 'წაშლა', backToMenu: 'მენიუდან დამატება', dishes: 'კერძები', deliveryFee: 'მიწოდება', free: 'უფასოდ', total: 'სულ', cart: 'კალათა', checkout: 'გაფორმება', toCheckout: 'გაფორმება', testMode: 'სატესტო რეჟიმი: შეკვეთა არსად იგზავნება და არ გადაიხდება.', name: 'სახელი', phone: 'ტელეფონი', address: 'ქუჩა, სახლი, ბინა', comment: 'კომენტარი კურიერს (არასავალდებულო)', required: 'შეავსეთ ეს ველი', phoneErr: 'შეამოწმეთ ნომერი: +995-ის შემდეგ 9 ციფრი', pay: 'გადახდა', payCourier: 'ნაღდით ან ბარათით კურიერთან', payPlace: 'გადახდა მიღებისას', payOnline: 'ბარათით ონლაინ, Apple Pay, Google Pay — ბანკის დაკავშირების შემდეგ', when: 'დრო', whenVal: 'რაც შეიძლება მალე', place: 'შეკვეთის გაფორმება', orderNo: 'შეკვეთის ნომერი', received: 'შეკვეთა მიღებულია', confirmed: 'პიცერიამ დაადასტურა', cooking: 'მზადდება', ready: 'მზადაა გასატანად', courier: 'გადაეცა კურიერს', now: 'ახლა', testDone: 'სატესტო შეკვეთა: პიცერიაში არ გაგზავნილა. სამუშაო ვერსიაში სტატუსს თანამშრომელი ცვლის ადმინ-პანელში.', nextStatus: 'შემდეგი სტატუსი (დემო)', newOrder: 'ახალი შეკვეთა', closed: 'ახლა დაკეტილია. შეკვეთებს ვიღებთ გახსნიდან — კალათა შეგიძლიათ წინასწარ შეავსოთ.', offline: 'კავშირი არ არის. შეკვეთა ჯერ არ გაგზავნილა — კალათა და მონაცემები შენახულია.', italian: 'იტალიური ინგრედიენტები', items: 'ც.', closedBtn: 'ახლა დაკეტილია', offlineBtn: 'კავშირი არ არის', altPizza: 'პიცა', close: 'დახურვა', mapAlt: 'სქემა: Pizza Room, Batumi Mall', sea: 'შავი ზღვა', mapNote: 'სამუშაო საიტზე — ცოცხალი რუკა მარშრუტით', distance: 'ჩვენამდე', byCar: 'მანქანით', howFar: 'რა მანძილია ჩემგან?', openIn: 'მარშრუტი აპლიკაციაში', geoDenied: 'მანძილის სანახავად ბრაუზერში დაუშვით მდებარეობაზე წვდომა.', km: 'კმ', min: 'წთ', daily: 'ყოველდღე', scopeAll: 'მთელ მენიუზე', scopeList: 'არჩეულ პიცებზე', promoSub: 'ფასდაკლება უკვე ასახულია მენიუს ფასებში.', until: '—', promoWA: 'გამარჯობა! მინდა პიცის შეკვეთა.' , n3: '9,8', n4: '35', zone: 'სად მოგიტანოთ', etaDel: 'პიცა მოგივათ', etaPick: 'შეკვეთა მზად იქნება', inMin: '', arrived: 'კურიერი თქვენთანაა — გემრიელად მიირთვით!', readyPick: 'მზადაა — გელოდებით Batumi Mall-ში', readyPizza: 'პიცა მზადაა', onWay: 'კურიერი გზაშია', delivered: 'მიტანილია', you: 'თქვენ', trackAlt: 'რუკა: კურიერი Pizza Room-იდან თქვენკენ მოდის', trackNote: 'დემო: 1 წამი = 1 წუთი. სამუშაო ვერსიაში კურიერის ტელეფონი GPS-ს აგზავნის, დრო კი საცობების გათვალისწინებით გადაითვლება.', skip: '+5 წუთი (დემო)'}
+    };
+    const L = T[lang];
+    const B = '/_blob/';
+    const MENU = [
+      { id: 'pep', price: 25, tags: ['classic', 'meat'], img: B + '684e05393bfd297d6d91e6e962adf468', big: B + '0196f9589a956cd65bd718f2445ef92b', n: { ru: ['Пепперони', 'Томатный соус, моцарелла, пепперони'], en: ['Pepperoni', 'Tomato sauce, mozzarella, pepperoni'], ka: ['პეპერონი', 'ტომატის სოუსი, მოცარელა, პეპერონი'] } },
+      { id: 'marg', price: 25, tags: ['classic'], img: B + 'a40f83a4cf31aec2e9a424b42b260517', big: B + 'e4d6a2bcbf560146172b0a9e0851c7f2', n: { ru: ['Маргарита', 'Томатный соус, моцарелла, базилик'], en: ['Margherita', 'Tomato sauce, mozzarella, basil'], ka: ['მარგარიტა', 'ტომატის სოუსი, მოცარელა, რეჰანი'] } },
+      { id: 'five', price: 27, tags: ['cream'], img: B + 'eaceedcee26794624c7a07a96ebb26b8', big: B + '84d8129634fb5efcdb16ec66bf676478', n: { ru: ['5 сыров', 'Пять итальянских сыров на сливочной основе'], en: ['5 cheese', 'Five Italian cheeses on a cream base'], ka: ['5 ყველი', 'ხუთი იტალიური ყველი ნაღების ბაზაზე'] } },
+      { id: 'ranch', price: 26, tags: ['meat', 'cream'], img: B + '4ce15d02e195de51dabb88659e8783dd', big: B + '0ef32e38329f0adfd3dcd4c49ae40eb1', n: { ru: ['Цыплёнок ранч', 'Соус ранч, курица, моцарелла'], en: ['Chicken ranch', 'Ranch sauce, chicken, mozzarella'], ka: ['ქათამი რანჩი', 'რანჩ სოუსი, ქათამი, მოცარელა'] } },
+      { id: 'diablo', price: 26, tags: ['meat'], img: B + '8efd1a89da2d5e7c9d8b017fa9f43d91', big: B + '8efd1a89da2d5e7c9d8b017fa9f43d91', n: { ru: ['Пепперони диабло', 'Пепперони, халапеньо, острый перец, моцарелла'], en: ['Pepperoni diablo', 'Pepperoni, jalapeño, hot pepper, mozzarella'], ka: ['პეპერონი დიაბლო', 'პეპერონი, ხალაპენიო, ცხარე წიწაკა, მოცარელა'] } },
+      { id: 'hawaii', price: 26, tags: ['meat'], img: B + 'de761f6cb49d9fd3b324080d97c649b6', big: B + 'de761f6cb49d9fd3b324080d97c649b6', n: { ru: ['Гавайская', 'Ветчина, ананас, моцарелла'], en: ['Hawaiian', 'Ham, pineapple, mozzarella'], ka: ['ჰავაის', 'ლორი, ანანასი, მოცარელა'] } },
+      { id: 'carb', price: 29, tags: ['meat', 'cream'], img: B + 'df550a34210d3738feb2e760df4a51c5', big: B + 'df550a34210d3738feb2e760df4a51c5', n: { ru: ['Карбонара', 'Сливочный соус, бекон, моцарелла, перец'], en: ['Carbonara', 'Cream sauce, bacon, mozzarella, black pepper'], ka: ['კარბონარა', 'ნაღების სოუსი, ბეკონი, მოცარელა, პილპილი'] } },
+      { id: 'salmon', price: 32, tags: ['cream'], img: B + '62511732c708f43dfe3f5ab83c659de6', big: B + '62511732c708f43dfe3f5ab83c659de6', n: { ru: ['С лососем', 'Лосось, сливочный сыр, моцарелла, зелень'], en: ['Salmon', 'Salmon, cream cheese, mozzarella, herbs'], ka: ['ორაგულით', 'ორაგული, ნაღების ყველი, მოცარელა, მწვანილი'] } }
+      ,{ id: 'burger', price: 29, tags: ['meat'], img: B + '684e05393bfd297d6d91e6e962adf468', big: B + '0196f9589a956cd65bd718f2445ef92b', n: { ru: ['Пицца-бургер', 'Говяжий фарш, соус бургер, маринованные огурцы, моцарелла'], en: ['Burger pizza', 'Ground beef, burger sauce, pickles, mozzarella'], ka: ['პიცა ბურგერი', 'საქონლის ფარში, ბურგერის სოუსი, მარინადი კიტრი, მოცარელა'] } },
+      { id: 'pepgrill', price: 27, tags: ['meat'], img: B + '684e05393bfd297d6d91e6e962adf468', big: B + '0196f9589a956cd65bd718f2445ef92b', n: { ru: ['Пепперони гриль', 'Пепперони, овощи гриль, моцарелла'], en: ['Grilled pepperoni', 'Pepperoni, grilled vegetables, mozzarella'], ka: ['პეპერონი გრილი', 'პეპერონი, გრილზე შემწვარი ბოსტნეული, მოცარელა'] } },
+      { id: 'bbq', price: 27, tags: ['meat'], img: B + '8efd1a89da2d5e7c9d8b017fa9f43d91', big: B + '8efd1a89da2d5e7c9d8b017fa9f43d91', n: { ru: ['Барбекю', 'Соус барбекю, колбаски, лук, моцарелла'], en: ['BBQ', 'BBQ sauce, sausages, onion, mozzarella'], ka: ['ბარბექიუ', 'ბარბექიუს სოუსი, სოსისი, ხახვი, მოცარელა'] } },
+      { id: 'chbbq', price: 27, tags: ['meat'], img: B + '4ce15d02e195de51dabb88659e8783dd', big: B + '0ef32e38329f0adfd3dcd4c49ae40eb1', n: { ru: ['Курица барбекю', 'Соус барбекю, курица, лук, моцарелла'], en: ['Chicken BBQ', 'BBQ sauce, chicken, onion, mozzarella'], ka: ['ქათამი ბარბექიუ', 'ბარბექიუს სოუსი, ქათამი, ხახვი, მოცარელა'] } }
+      ,{ id: 'chorizo', price: 25, tags: ['meat'], img: B + '684e05393bfd297d6d91e6e962adf468', big: B + '0196f9589a956cd65bd718f2445ef92b', n: { ru: ['Пепперони чоризо', 'Пепперони, острая колбаса чоризо, томатный соус, моцарелла'], en: ['Pepperoni chorizo', 'Pepperoni, spicy chorizo, tomato sauce, mozzarella'], ka: ['პეპერონი ჩორიზო', 'პეპერონი, ცხარე ჩორიზო, ტომატის სოუსი, მოცარელა'] } },
+      { id: 'premium', price: 32, tags: ['meat', 'cream'], img: B + 'df550a34210d3738feb2e760df4a51c5', big: B + 'df550a34210d3738feb2e760df4a51c5', n: { ru: ['Премиум', 'Фирменная пицца Pizza Room — состав допишите в админке'], en: ['Premium', 'Pizza Room signature pizza'], ka: ['პიცა პრემიუმი', 'Pizza Room-ის საფირმო პიცა'] } }
+,
+      { id: 'cola', price: 4, tags: ['drinks'], size: '0,5 л', img: B + 'b386f49293aa2566a5dd3a30b252ef1d', big: B + 'b386f49293aa2566a5dd3a30b252ef1d', n: { ru: ['Coca-Cola', 'Напиток'], en: ['Coca-Cola', 'Drink'], ka: ['კოკა-კოლა', 'სასმელი'] } },
+      { id: 'zero', price: 4, tags: ['drinks'], size: '0,5 л', img: B + '5202e7db2a483388f2b31fa34c414201', big: B + '5202e7db2a483388f2b31fa34c414201', n: { ru: ['Coca-Cola Zero', 'Напиток'], en: ['Coca-Cola Zero', 'Drink'], ka: ['კოკა-კოლა ზერო', 'სასმელი'] } },
+      { id: 'fanta', price: 4, tags: ['drinks'], size: '0,5 л', img: B + '1482aef2d125231884a985327817e198', big: B + '1482aef2d125231884a985327817e198', n: { ru: ['Fanta', 'Напиток'], en: ['Fanta', 'Drink'], ka: ['ფანტა', 'სასმელი'] } },
+      { id: 'sprite', price: 4, tags: ['drinks'], size: '0,5 л', img: B + '79a4aceb68c2a5eb6c6c1d201c834607', big: B + '79a4aceb68c2a5eb6c6c1d201c834607', n: { ru: ['Sprite', 'Напиток'], en: ['Sprite', 'Drink'], ka: ['სპრაიტი', 'სასმელი'] } },
+      { id: 'water', price: 2.5, tags: ['drinks'], size: '0,5 л', img: B + '18a40d60e579e17830a37c6ecd0ff3e9', big: B + '18a40d60e579e17830a37c6ecd0ff3e9', n: { ru: ['Вода негазированная', 'Напиток'], en: ['Still water', 'Drink'], ka: ['უგაზო წყალი', 'სასმელი'] } },
+      { id: 'borjomi', price: 3.5, tags: ['drinks'], size: '0,5 л', img: B + '85b45bf8a85642ed5aba05199a4be78b', big: B + '85b45bf8a85642ed5aba05199a4be78b', n: { ru: ['Боржоми', 'Напиток'], en: ['Borjomi', 'Drink'], ka: ['ბორჯომი', 'სასმელი'] } },
+      { id: 'juice', price: 6, tags: ['drinks'], size: '1 л', img: B + 'd0fedd2d21b433a559935dc273b3633b', big: B + 'd0fedd2d21b433a559935dc273b3633b', n: { ru: ['Сок', 'Напиток'], en: ['Juice', 'Drink'], ka: ['წვენი', 'სასმელი'] } }
+    ];
+    const prices = A.prices || {}; const stop = A.stop || {};
+    const names = A.names || {};
+    MENU.forEach((m) => {
+      if (prices[m.id] > 0) m.price = Number(prices[m.id]);
+      m.stopped = !!stop[m.id];
+      ['ru', 'en', 'ka'].forEach((lg) => { const o = names[m.id] && names[m.id][lg]; if (o) m.n[lg] = [o[0] || m.n[lg][0], o[1] || m.n[lg][1]]; });
+    });
+    const byId = {}; MENU.forEach((m) => { byId[m.id] = m; });
+    const fmt = (v) => (Math.round(v * 100) % 100 === 0 ? String(Math.round(v)) : v.toFixed(2)) + ' ₾';
+    const promoOn = !!P.on && P.pct > 0;
+    const discOf = (m) => (m.tags.indexOf('drinks') < 0 && promoOn && (P.scope === 'all' || (P.ids || []).indexOf(m.id) >= 0)) ? P.pct : 0;
+    const priceOf = (m) => Math.round(m.price * (100 - discOf(m))) / 100;
+    const hname = (HOL[P.holiday] || HOL.custom)[lang];
+    const promo = { pct: P.pct, name: hname, title: hname + ': −' + P.pct + '% ' + (P.scope === 'all' ? L.scopeAll : L.scopeList), sub: (P.from && P.to ? P.from + '–' + P.to + '. ' : '') + L.promoSub };
+    const qty = this.state.qty;
+    const setQty = (id, d) => { const q = Object.assign({}, this.state.qty); q[id] = Math.max(0, (q[id] || 0) + d); if (!q[id]) delete q[id]; this.setState({ qty: q }); };
+    const CATS = window.__PR_CATS || [];
+    const catOf = (id) => CATS.find((c) => c.id === id) || {};
+    const needAge = (m) => m.tags.some((t) => catOf(t).age18);
+    const addOne = (m, n) => { if (m.stopped) return; if (needAge(m) && !this.state.adult) { this.setState({ ageAsk: { id: m.id, n } }); return; } setQty(m.id, n); this.flash(m.n[lang][0] + ' — ' + L.added); };
+    const removeId = (id) => { const q = Object.assign({}, this.state.qty); delete q[id]; this.setState({ qty: q }); };
+    const go = (s) => this.setState({ screen: s, item: null });
+    const decorate = (m) => {
+      const k = qty[m.id] || 0; const pct = discOf(m);
+      return { name: m.n[lang][0], desc: m.n[lang][1], price: fmt(priceOf(m)), oldPrice: fmt(m.price), hasDisc: pct > 0, pct, size: m.size || L.size, img: m.img, big: m.big, alt: L.altPizza + ' ' + m.n[lang][0], qty: k, inCart: k > 0 && !m.stopped, canAddNew: k === 0 && !m.stopped, canAdd: !m.stopped, stopped: m.stopped, stopLabel: L.stop, fade: m.stopped ? 'opacity: 0.55;' : '', addMark: k > 0 ? String(k) : '+', addAria: L.addAria + ': ' + m.n[lang][0], add: () => addOne(m, 1), dec: () => setQty(m.id, -1), open: () => this.setState({ item: m.id, itemQty: 1 }) };
+    };
+    const query = this.state.q.trim().toLowerCase();
+    const tag = this.state.tag;
+    const soonCat = !query && catOf(tag).soon ? catOf(tag) : null;
+    const firstSoon = CATS.find((c) => c.soon);
+    const drinkCats = CATS.filter((c) => c.id === 'drinks').map((c) => c.id).concat(['drinks']);
+    let lastOrder = null; try { lastOrder = JSON.parse(window.localStorage.getItem('pr_last') || 'null'); } catch (e) {}
+    const lastOk = lastOrder && Object.keys(lastOrder).filter((id) => byId[id] && !byId[id].stopped);
+    const menu = MENU.filter((m) => (tag === 'all' || m.tags.indexOf(tag) >= 0) && (!query || (m.n.ka.join(' ') + ' ' + m.n.en.join(' ') + ' ' + m.n.ru.join(' ')).toLowerCase().indexOf(query) >= 0)).map(decorate);
+    const featured = ['pep', 'marg', 'five', 'ranch'].map((id) => decorate(byId[id]));
+    const lines = MENU.filter((m) => qty[m.id]).map((m) => ({ name: m.n[lang][0], img: m.img, qty: qty[m.id], unit: fmt(priceOf(m)) + ' · ' + (m.size || L.size), sum: fmt(priceOf(m) * qty[m.id]), raw: priceOf(m) * qty[m.id], full: m.price * qty[m.id], inc: () => setQty(m.id, 1), dec: () => setQty(m.id, -1), remove: () => removeId(m.id), removeAria: L.remove + ': ' + m.n[lang][0] }));
+    const subtotal = lines.reduce((s, l) => s + l.raw, 0);
+    const full = lines.reduce((s, l) => s + l.full, 0);
+    const saving = Math.round((full - subtotal) * 100) / 100;
+    const count = lines.reduce((s, l) => s + l.qty, 0);
+    const isDelivery = this.state.mode === 'delivery';
+    const total = subtotal + (isDelivery ? fee : 0);
+    const scr = this.state.screen;
+    const on = 'background: #2A1D13; color: #FBF5EA;';
+    const off = 'background: transparent; color: #2A1D13;';
+    const chipOff = 'background: #FBF5EA; color: #2A1D13;';
+    const cardOn = 'background: #2A1D13; color: #FBF5EA;';
+    const cardOff = 'background: ' + TH.bg + '; color: #2A1D13;';
+    const im = this.state.item ? byId[this.state.item] : null;
+    const item = im ? decorate(im) : { name: '', desc: '', size: '', big: '', alt: '', hasDisc: false, pct: 0, stopped: false };
+    const f = this.state.f;
+    const setF = (k) => (ev) => { const nf = Object.assign({}, this.state.f); nf[k] = ev.target.value; const ne = Object.assign({}, this.state.err); ne[k] = false; this.setState({ f: nf, err: ne }); };
+    const er = this.state.err;
+    const err = { name: !!er.name, phone: !!er.phone, addr: !!er.addr, nameBorder: er.name ? '#C8361F' : '#CDB58F', phoneBorder: er.phone ? '#C8361F' : '#CDB58F', addrBorder: er.addr ? '#C8361F' : '#CDB58F' };
+    const place = () => {
+      const digits = f.phone.replace(/\D/g, '').replace(/^995/, '');
+      const ne = { name: !f.name.trim(), phone: digits.length !== 9, addr: isDelivery && !f.addr.trim() };
+      if (ne.name || ne.phone || ne.addr) { this.setState({ err: ne }); return; }
+      try { window.localStorage.setItem('pr_last', JSON.stringify(qty)); } catch (e) {} this.startTrack(); this.setState({ orderAt: Date.now(), track: 0, orderNo: 'PR-' + String(Math.floor(1000 + Math.random() * 9000)), status: 0, screen: 'status', lastMode: this.state.mode, lastTotal: total, lastCount: count, qty: {} });
+    };
+    const lastDel = (this.state.lastMode || this.state.mode) === 'delivery';
+    const TT = lastDel ? Number(D.tmax) || 40 : 15;
+    const tr = Math.min(this.state.track || 0, TT);
+    const cookEnd = lastDel ? Math.round(TT * 0.4) : 13;
+    const readyEnd = lastDel ? cookEnd + 2 : TT;
+    const flow = lastDel ? ['received', 'cooking', 'readyPizza', 'onWay', 'delivered'] : ['received', 'cooking', 'ready'];
+    const bounds = lastDel ? [1, cookEnd, readyEnd, TT, Infinity] : [1, readyEnd, Infinity];
+    let stage = 0; while (stage < bounds.length - 1 && tr >= bounds[stage]) stage++;
+    const steps = flow.map((k, i) => {
+      const done = i < stage || (i === flow.length - 1 && stage === flow.length - 1); const cur = i === stage && !done;
+      return { label: L[k], mark: done ? '✓' : String(i + 1), note: cur ? L.now : '', dot: done ? 'background: #2F6B3A; color: #FFFFFF;' : (cur ? 'background: #FDC134; color: #2A1D13;' : 'background: ' + TH.pill + '; color: #5C4632;'), textStyle: cur || done ? 'color: #2A1D13;' : 'color: #5C4632;' };
+    });
+    const RP = [[244, 124], [196, 150], [140, 200], [70, 250]];
+    const segL = []; let totL = 0; for (let k = 1; k < RP.length; k++) { const d = Math.hypot(RP[k][0] - RP[k - 1][0], RP[k][1] - RP[k - 1][1]); segL.push(d); totL += d; }
+    const prog = lastDel ? Math.max(0, Math.min(1, (tr - readyEnd) / Math.max(1, TT - readyEnd))) : 0;
+    let want = prog * totL, cx = RP[0][0], cy = RP[0][1], donePath = 'M244 124';
+    for (let k = 0; k < segL.length; k++) {
+      if (want >= segL[k]) { want -= segL[k]; cx = RP[k + 1][0]; cy = RP[k + 1][1]; donePath += ' L' + cx + ' ' + cy; }
+      else { const f = want / segL[k]; cx = Math.round(RP[k][0] + (RP[k + 1][0] - RP[k][0]) * f); cy = Math.round(RP[k][1] + (RP[k + 1][1] - RP[k][1]) * f); donePath += ' L' + cx + ' ' + cy; break; }
+    }
+    const left = Math.max(0, TT - tr);
+    const etaD = new Date((this.state.orderAt || Date.now()) + TT * 60000);
+    const etaClock = String(etaD.getHours()).padStart(2, '0') + ':' + String(etaD.getMinutes()).padStart(2, '0');
+    const finished = tr >= TT;
+    const blocked = !isOpen || offline;
+    let showBar = false, barLeft = '', barRight = '', barAction = () => {}, barDisabled = false, barStyle = 'background: #2A1D13; color: #FBF5EA;', barPill = 'background: #FDC134; color: #2A1D13;';
+    if ((scr === 'home' || scr === 'menu' || scr === 'map') && count > 0) { showBar = true; barLeft = L.cart + ' · ' + count; barRight = fmt(subtotal) + ' →'; barAction = () => go('cart'); }
+    if (scr === 'cart' && count > 0) { showBar = true; barLeft = L.toCheckout; barRight = fmt(total) + ' →'; barAction = () => go('checkout'); }
+    if (scr === 'checkout' && count > 0) { showBar = true; barLeft = L.place; barRight = fmt(total); barAction = place; if (blocked) { barDisabled = true; barLeft = offline ? L.offlineBtn : L.closedBtn; barStyle = 'background: #DCC7A5; color: #5C4632;'; barPill = 'background: transparent; color: #5C4632;'; } }
+    if (this.state.item) showBar = false;
+    const titles = { menu: L.tabMenu, cart: L.cart, checkout: L.checkout, status: L.orderNo, map: L.tabMap };
+    const tabDefs = [['home', L.tabHome], ['menu', L.tabMenu], ['cart', L.tabCart], ['map', L.tabMap]];
+    const activeTab = scr === 'checkout' ? 'cart' : scr;
+    const tabs = tabDefs.map(([k, label]) => ({ label, isHome: k === 'home', isMenu: k === 'menu', isCart: k === 'cart', isMap: k === 'map', current: k === activeTab ? 'page' : 'false', style: k === activeTab ? 'color: #2A1D13;' : 'color: #7A6450;', badge: k === 'cart' && count > 0, badgeText: String(count), go: () => go(k) }));
+    const wa = String(A.wa || '995514888800').replace(/\D/g, '');
+    const tel = '+' + String(A.phone || '+995514888800').replace(/\D/g, '');
+    const hoursLabel = L.daily + ' ' + (A.open || '11:00') + '–' + (A.close || '23:00');
+    const me = this.state.me;
+    let distLabel = '', timeLabel = '';
+    if (me) {
+      const R = 6371, toR = (d) => d * Math.PI / 180, lat2 = 41.64318, lon2 = 41.61974;
+      const dLat = toR(lat2 - me.lat), dLon = toR(lon2 - me.lon);
+      const h = Math.sin(dLat / 2) ** 2 + Math.cos(toR(me.lat)) * Math.cos(toR(lat2)) * Math.sin(dLon / 2) ** 2;
+      const km = 2 * R * Math.asin(Math.sqrt(h)) * 1.25;
+      distLabel = (km < 10 ? km.toFixed(1) : Math.round(km)) + ' ' + L.km;
+      timeLabel = '~' + Math.max(3, Math.round(km / 28 * 60 + 2)) + ' ' + L.min;
+    }
+    const popupOpen = promoOn && !!P.popup && !this.state.popupSeen && scr === 'home';
+    return {
+      TH, L, promo, isHome: scr === 'home', isMenu: scr === 'menu', isCart: scr === 'cart', isCheckout: scr === 'checkout', isStatus: scr === 'status', isMap: scr === 'map',
+      showLogo: scr === 'home', showTitle: scr !== 'home', title: titles[scr] || '', closed: !isOpen, offline,
+      showStrip: promoOn && !!P.strip, openPromo: () => this.setState({ popupSeen: false, screen: 'home' }),
+      popupOpen, closePopup: () => this.setState({ popupSeen: true }), popupGo: () => this.setState({ popupSeen: true, screen: 'menu' }),
+      openLabel: L.open + ' · ' + (A.open || '11:00') + '–' + (A.close || '23:00'), hoursLabel,
+      langs: [['ka', 'ქართული', 'KA'], ['en', 'English', 'EN'], ['ru', 'Русский', 'RU']].map(([k, full, code]) => ({ code, full, style: k === lang ? on : off, pick: () => this.setState({ lang: k }) })),
+      goMenu: () => go('menu'), goMap: () => go('map'), goStatus: () => go('status'),
+      setDelivery: () => this.setState({ mode: 'delivery' }), setPickup: () => this.setState({ mode: 'pickup' }),
+      delivStyle: isDelivery ? on : off, pickStyle: isDelivery ? off : on, delivCard: isDelivery ? cardOn : cardOff, pickCard: isDelivery ? cardOff : cardOn,
+      isDelivery, isPickup: !isDelivery,
+      featured, menu, noResults: menu.length === 0 && !soonCat, q: this.state.q,
+      repeatOn: !!(lastOk && lastOk.length) && count === 0, repeatSub: lastOk ? lastOk.map((id) => lastOrder[id] + ' × ' + byId[id].n[lang][0]).join(', ') : '',
+      repeatLast: () => { const q = {}; (lastOk || []).forEach((id) => { q[id] = lastOrder[id]; }); this.setState({ qty: q, screen: 'cart' }); },
+      soonHome: !!firstSoon, soonName: firstSoon ? (firstSoon['name_' + lang] || firstSoon.name_ru) : '', goSoon: () => this.setState({ screen: 'menu', tag: firstSoon ? firstSoon.id : 'all', q: '' }),
+      soonOn: !!soonCat, soonDone: !!(soonCat && (this.state.waitDone || {})[soonCat.id]), soonForm: !!soonCat && !(this.state.waitDone || {})[soonCat.id],
+      waitPhone: this.state.waitPhone || '', onWaitPhone: (ev) => this.setState({ waitPhone: ev.target.value }),
+      notifyMe: () => {
+        const digits = (this.state.waitPhone || '').replace(/\D/g, '').replace(/^995/, '');
+        if (!/^5\d{8}$/.test(digits)) { this.flash(L.badPhone || L.phoneErr || '5XX XX XX XX'); return; }
+        const done = () => { const w = Object.assign({}, this.state.waitDone || {}); w[soonCat.id] = true; this.setState({ waitDone: w }); };
+        if (!window.__PR_CATS) { done(); return; }
+        fetch('/api/public/waitlist', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone: digits, category_id: soonCat.id, lang }) })
+          .then((r) => r.json().then((d) => ({ ok: r.ok, d }))).then(({ ok, d }) => { if (ok) done(); else this.flash(d.message || 'Error'); }).catch(() => this.flash(L.offline));
+      },
+      ageNoteOn: !soonCat && !!catOf(tag).age18,
+      upsellOn: count > 0 && !MENU.some((m) => qty[m.id] && m.tags.some((t) => drinkCats.indexOf(t) >= 0)),
+      upsell: MENU.filter((m) => m.tags.some((t) => drinkCats.indexOf(t) >= 0) && !m.stopped).slice(0, 6).map((m) => ({ name: m.n[lang][0] + (m.size ? ' ' + m.size : ''), price: fmt(priceOf(m)), img: m.img, add: () => addOne(m, 1) })),
+      ageAsk: !!this.state.ageAsk,
+      ageYes: () => { const a = this.state.ageAsk; this.setState({ adult: true, ageAsk: null }); const m = byId[a.id]; if (m) { setQty(m.id, a.n); this.flash(m.n[lang][0] + ' — ' + L.added); } },
+      ageNo: () => this.setState({ ageAsk: null }),
+      tags: [['all', L.tagAll], ['classic', L.tagClassic], ['meat', L.tagMeat], ['cream', L.tagCream], ['drinks', L.tagDrinks]].map(([k, label]) => ({ label, style: k === tag ? on : chipOff, pick: () => this.setState({ tag: k }) })),
+      onSearch: (ev) => this.setState({ q: ev.target.value }),
+      reviewSlots: [1, 2, 3].map(() => ({ text: L.reviewSlot })),
+      lines, hasItems: count > 0, cartEmpty: count === 0, count,
+      fullLabel: fmt(full), hasSaving: saving > 0, savingLabel: fmt(saving),
+      feeLabel: isDelivery ? (fee > 0 ? fmt(fee) : L.free) : '—', totalLabel: fmt(total),
+      f, err, onName: setF('name'), onPhone: setF('phone'), onAddr: setF('addr'), onCom: setF('com'),
+      payNow: isDelivery ? L.payCourier : L.payPlace,
+      hasOrder: !!this.state.orderNo && scr === 'home', orderNo: this.state.orderNo, curStatus: L[flow[stage]],
+      orderSummary: (this.state.lastCount || 0) + ' ' + L.items + ' · ' + fmt(this.state.lastTotal || 0) + ' · ' + ((this.state.lastMode || 'delivery') === 'delivery' ? L.delivery : L.pickup),
+      steps, trackMap: lastDel, courierOn: lastDel && stage >= 3, cx, cy, cxm: cx - 5, cym: cy - 5, donePath, trackPct: Math.round(tr / TT * 100) + '%',
+      etaTitle: finished ? (lastDel ? L.arrived : L.readyPick) : (lastDel ? L.etaDel : L.etaPick), etaClock, etaLeft: finished ? '' : L.inMin + ' ' + left + ' ' + L.min,
+      mapBadge: stage >= 3 ? L.onWay + ' · ' + left + ' ' + L.min : (stage === 2 ? L.readyPizza : L.cooking), trackRunning: !finished, skip5: () => this.setState({ track: Math.min(TT, (this.state.track || 0) + 5) }),
+      zones: D.zones.map((z) => ({ name: z[lang] || z.ru, fee: fmt(Number(z.fee) || 0), time: D.tmin + '–' + D.tmax + ' ' + L.min, pressed: z.id === zone.id ? 'true' : 'false', style: z.id === zone.id ? 'background: #2A1D13; color: #FBF5EA;' : 'background: #FBF5EA; color: #2A1D13; box-shadow: inset 0 0 0 1px #CDB58F;', pick: () => this.setState({ zone: z.id }) })),
+      whenLabel: isDelivery ? D.tmin + '–' + D.tmax + ' ' + L.min : L.whenVal,
+      newOrder: () => { clearInterval(this._trk); this.setState({ screen: 'menu', status: 0, orderNo: '', track: 0 }); },
+      showBar, barLeft, barRight, barAction, barDisabled, barStyle, barPill,
+      fabBottom: showBar ? '86px' : '86px',
+      tabs,
+      waHref: 'https://wa.me/' + wa + '?text=' + encodeURIComponent(L.promoWA), telHref: 'tel:' + tel,
+      hasMe: !!me, noMe: !me, distLabel, timeLabel, geoMsg: !!this.state.geoErr, geoText: this.state.geoErr,
+      locate: () => {
+        try {
+          navigator.geolocation.getCurrentPosition((pos) => this.setState({ me: { lat: pos.coords.latitude, lon: pos.coords.longitude }, geoErr: '' }), () => this.setState({ geoErr: L.geoDenied }), { timeout: 8000 });
+        } catch (e) { this.setState({ geoErr: L.geoDenied }); }
+      },
+      itemOpen: !!this.state.item, item, itemQty: this.state.itemQty,
+      itemInc: () => this.setState({ itemQty: this.state.itemQty + 1 }),
+      itemDec: () => this.setState({ itemQty: Math.max(1, this.state.itemQty - 1) }),
+      itemBtn: im && im.stopped ? L.stop : L.add + ' · ' + (im ? fmt(priceOf(im) * this.state.itemQty) : ''),
+      itemBtnStyle: im && im.stopped ? 'background: #DCC7A5; color: #5C4632;' : 'background: #FDC134; color: #2A1D13;',
+      itemAdd: () => { if (im && !im.stopped) { addOne(im, this.state.itemQty); this.setState({ item: null }); } },
+      closeItem: () => this.setState({ item: null }),
+      toast: !!this.state.toast, toastText: this.state.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

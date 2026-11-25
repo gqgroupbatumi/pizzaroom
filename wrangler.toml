@@ -9,6 +9,9 @@ mode = "smart"
 # Программа кассы (папка public) раздаётся с того же адреса, сервер отвечает на /api/...
 [assets]
 directory = "./public"
+binding = "ASSETS"
+# главная страница сначала проходит через сервер: он подставляет язык, цены и данные для Google/Яндекса
+run_worker_first = ["/"]
 
 [[d1_databases]]
 binding = "DB"

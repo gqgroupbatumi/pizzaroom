@@ -1,0 +1,174 @@
+.pr-map{width:100%;height:100%;min-height:300px}
+.pr-map{background:#E6CC9C!important}
+.pr-map .leaflet-tile-pane{filter:url(#prduo)}
+.pr-map .leaflet-control-attribution{font-size:9px;background:rgba(42,29,19,.7);color:#E6CC9C}.pr-map .leaflet-control-attribution a{color:#FDC134}
+.pr-pin{display:flex;flex-direction:column;align-items:center}
+.pr-pin .pr-pin-in{width:46px;height:46px;border-radius:999px;background:#FDC134;border:3px solid #2A1D13;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(42,29,19,.35);overflow:hidden}
+.pr-pin img{width:36px;height:36px;object-fit:contain}
+.pr-pin span{margin-top:3px;background:#2A1D13;color:#FDC134;font:800 11px Inter,sans-serif;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.pr-me{display:flex;flex-direction:column;align-items:center}
+.pr-me div{width:20px;height:20px;border-radius:999px;background:#2F6B3A;border:4px solid #FBF5EA;box-shadow:0 0 0 6px rgba(47,107,58,.25)}
+.pr-me span{margin-top:3px;background:#FBF5EA;color:#2A1D13;font:800 11px Inter,"Noto Sans Georgian",sans-serif;padding:1px 7px;border-radius:999px}
+.pr-tip{background:#2A1D13;color:#FBF5EA;border:0;border-radius:999px;font:700 11px Inter,"Noto Sans Georgian",sans-serif;padding:3px 8px;box-shadow:none}
+.pr-tip::before{display:none}
+.pr-info{background:#2A1D13;color:#FBF5EA;border-radius:14px;padding:8px 12px;display:flex;flex-direction:column;gap:2px;font:600 12px Inter,"Noto Sans Georgian",sans-serif;box-shadow:0 6px 16px rgba(42,29,19,.3)}
+.pr-info b{color:#FDC134;font:900 18px Montserrat,Inter,sans-serif}
+.pr-map{border-radius:22px}
+.pr-me div{animation:prpulse 1.6s ease-out infinite}
+@keyframes prpulse{0%{box-shadow:0 0 0 0 rgba(47,107,58,.45)}100%{box-shadow:0 0 0 16px rgba(47,107,58,0)}}
+.leaflet-control-zoom a{background:#FBF5EA!important;color:#2A1D13!important;border-color:#E3D3B6!important}
+/* ── главный блок с логотипом ── */
+.pr-hero-card{height:300px;background:radial-gradient(120% 90% at 85% 60%,#3a322b 0%,#221c17 70%)!important}
+.pr-hero-pizza{position:absolute;right:-70px;top:50%;transform:translateY(-50%);width:300px;height:300px;object-fit:cover;border-radius:50%;box-shadow:0 20px 50px rgba(0,0,0,.55);-webkit-mask-image:radial-gradient(circle,#000 66%,transparent 70%);mask-image:radial-gradient(circle,#000 66%,transparent 70%)}
+.pr-hero-logo{position:absolute;left:18px;top:50%;transform:translateY(-38%);width:56%;max-width:260px;height:auto;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
+/* ── компьютер: полноценный сайт ── */
+.pr-dnav{display:none}
+@media (min-width:900px){
+  .pr-root{max-width:none!important;box-shadow:none}
+  .pr-scroll{bottom:0!important}
+  .pr-tabs{display:none!important}
+  .pr-head{padding:12px max(24px,calc((100% - 1180px)/2))!important}
+  .pr-head img{height:54px!important}
+  .pr-dnav{display:flex;gap:6px;margin-left:auto;margin-right:16px}
+  .pr-dnav button{border:0;background:transparent;cursor:pointer;font:700 15px Inter,"Noto Sans Georgian",sans-serif;padding:10px 16px;border-radius:999px;position:relative}
+  .pr-dnav button:hover{background:#EAD9B8}
+  .pr-dnav button[aria-current="page"]{background:#2A1D13;color:#FDC134!important}
+  .pr-dnav b{margin-left:6px;background:#C8361F;color:#fff;border-radius:999px;padding:1px 7px;font-size:12px}
+  .pr-scroll>*:not(header):not(.pr-hero){max-width:1180px;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box}
+  .pr-scroll section{max-width:1180px;margin-left:auto;margin-right:auto;box-sizing:border-box}
+  .pr-hero{display:grid;grid-template-columns:1.05fr 1fr;grid-template-areas:"txt img" "ways img";column-gap:40px;max-width:1180px;margin:0 auto;padding:36px 16px 10px;box-sizing:border-box;align-items:center}
+  .pr-hero>section{margin:0!important;width:100%;max-width:none!important}
+  .pr-hero-img{grid-area:img;padding:0!important}
+  .pr-hero-txt{grid-area:txt;padding:0!important;gap:16px!important}
+  .pr-hero-ways{grid-area:ways;padding:10px 0 0!important;align-self:start}
+  .pr-hero-txt h1{font-size:54px!important}
+  .pr-hero-txt p{font-size:18px!important;max-width:540px}
+  .pr-hero-txt button{max-width:360px}
+  .pr-hero-card{height:460px}
+  .pr-hero-pizza{width:430px;height:430px;right:-130px}
+  .pr-hero-logo{width:52%;max-width:300px;left:32px}
+  .pr-grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))!important;gap:26px 22px!important}
+  [role="dialog"]{max-width:560px;margin:0 auto;left:0;right:0;box-shadow:0 0 0 100vmax rgba(42,29,19,.45)}
+}
+@media (min-width:1100px){.pr-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:22px 16px!important}}
+
+/* ── комбо ── */
+.pr-cstrip{scrollbar-width:none}.pr-cstrip::-webkit-scrollbar{display:none}
+.pr-cstrip>button{scroll-snap-align:start}
+.pr-cmodal{position:fixed;inset:0;z-index:100000;background:rgba(42,29,19,.55);display:flex;align-items:flex-end;justify-content:center;font-family:Inter,"Noto Sans Georgian",sans-serif}
+.pr-csheet{position:relative;background:#FBF5EA;color:#2A1D13;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;border-radius:24px 24px 0 0}
+.pr-csheet>img{display:block;width:100%;height:210px;object-fit:cover}
+.pr-cx{position:absolute;right:12px;top:12px;width:40px;height:40px;border:0;border-radius:999px;background:#FBF5EA;font:700 24px Inter,sans-serif;cursor:pointer;color:#2A1D13}
+.pr-cbody{padding:16px 16px 20px;display:flex;flex-direction:column;gap:12px}
+.pr-cbody h3{margin:0;font:900 24px Montserrat,Inter,"Noto Sans Georgian",sans-serif}
+.pr-cbody p{margin:0;color:#5C4632;font-size:14px}
+.pr-cslot{display:flex;flex-direction:column;gap:8px}
+.pr-copts{display:flex;flex-wrap:wrap;gap:6px}
+.pr-copts button{border:0;cursor:pointer;background:#EAD9B8;color:#2A1D13;border-radius:999px;padding:9px 13px;font:700 13px Inter,"Noto Sans Georgian",sans-serif}
+.pr-copts button.on{background:#2A1D13;color:#FDC134}
+.pr-copts i{font-style:normal;opacity:.75;font-weight:600}
+.pr-cage{display:flex;gap:8px;align-items:center;font-weight:700;padding:10px 12px;border-radius:12px;background:#FFF3D1}
+.pr-cage.err{outline:2px solid #C8361F}
+.pr-cadd{border:0;cursor:pointer;height:54px;border-radius:16px;background:#FDC134;color:#2A1D13;font:800 17px Inter,"Noto Sans Georgian",sans-serif;position:sticky;bottom:0;box-shadow:0 -10px 20px #FBF5EA}
+@media (min-width:900px){.pr-cmodal{align-items:center}.pr-csheet{border-radius:24px}}
+
+/* полоса корзины на компьютере — компактная кнопка справа внизу, не перекрывает страницу */
+@media (min-width:900px){.pr-bar{position:fixed!important;left:auto!important;right:96px!important;bottom:24px!important;width:420px;z-index:60!important}}
+.pr-noapps .pr-apps{display:none!important}
+
+.pr-msticky{top:66px!important}
+@media (min-width:821px){.pr-msticky{top:78px!important}}
+
+/* ── «О нас»: история ── */
+.pr-hide,.pr-hero,.pr-hero-txt,.pr-hero-ways{display:none!important}
+.pr-story{padding:14px 16px 6px;display:flex;flex-direction:column;gap:14px;color:#2A1D13}
+.pr-story h2{margin:10px 0 0;font:900 24px Montserrat,Inter,'Noto Sans Georgian',sans-serif}
+.pr-st-hero{background:#2A1D13;color:#FBF5EA;border-radius:24px;padding:22px 20px;display:flex;flex-direction:column;gap:10px;background-image:radial-gradient(circle at 100% 0,rgba(253,193,52,.22),transparent 55%)}
+.pr-st-k{align-self:flex-start;justify-self:start;background:#FDC134;color:#2A1D13;font:900 12px Inter,'Noto Sans Georgian',sans-serif;letter-spacing:.06em;padding:5px 10px;border-radius:999px}
+.pr-st-hero h1{margin:0;font:900 28px/1.15 Montserrat,Inter,'Noto Sans Georgian',sans-serif;color:#FDC134}
+.pr-st-hero p{margin:0;font-size:16px;line-height:1.55;color:#EADBC2}
+.pr-st-nums{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:6px}
+.pr-st-nums div{background:rgba(251,245,234,.08);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:2px}
+.pr-st-nums b{font:900 26px Montserrat,Inter,sans-serif;color:#FDC134}.pr-st-nums span{font-size:13px;color:#EADBC2}
+.pr-st-tl{display:grid;grid-template-columns:1fr;gap:10px;position:relative}
+.pr-st-ev{background:#FBF5EA;border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;border-left:6px solid #FDC134}
+.pr-st-ev b{font:900 22px Montserrat,Inter,sans-serif;color:#C8361F}.pr-st-ev strong{font-size:17px}.pr-st-ev span{font-size:14px;line-height:1.5;color:#5C4632}
+.pr-st-vals{display:grid;grid-template-columns:1fr;gap:10px}
+.pr-st-v{background:#fff;border-radius:18px;padding:14px 16px;display:grid;grid-template-columns:44px 1fr;column-gap:12px;row-gap:2px;align-items:start}
+.pr-st-v i{grid-row:span 2;font-style:normal;font-size:30px;line-height:44px;text-align:center;background:#F6EBD6;border-radius:12px}
+.pr-st-v strong{font-size:16px}.pr-st-v span{font-size:14px;line-height:1.5;color:#5C4632}
+.pr-st-cta{margin-top:6px;height:54px;border:0;border-radius:16px;background:#FDC134;color:#2A1D13;font:900 17px Inter,'Noto Sans Georgian',sans-serif;cursor:pointer}
+@media (min-width:821px){
+  .pr-story{padding:22px 16px 6px;gap:18px}
+  .pr-st-hero{padding:36px 40px;display:grid;grid-template-columns:1.2fr 1fr;column-gap:36px;align-items:center}
+  .pr-st-hero .pr-st-k,.pr-st-hero h1,.pr-st-hero p{grid-column:1}.pr-st-hero h1{font-size:40px}
+  .pr-st-nums{grid-column:2;grid-row:1 / span 3;margin:0}.pr-st-nums b{font-size:34px}
+  .pr-st-tl{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .pr-st-vals{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pr-st-cta{align-self:flex-start;padding:0 40px}
+}
+.pr-grid .pr-gcombo{width:100%;min-width:0}
+@media (max-width:820px){.pr-grid .pr-gcombo{grid-column:span 2}.pr-tabs button{font-size:10px!important}}
+.pr-hcall{display:inline-flex;align-items:center;gap:6px;background:#2A1D13;color:#FDC134;text-decoration:none;border-radius:999px;padding:8px 12px;font:900 14px Inter,'Noto Sans Georgian',sans-serif;white-space:nowrap;flex-shrink:0}
+@media (max-width:820px){.pr-hcall{font-size:13px;padding:8px 10px;margin-left:auto;margin-right:6px}}
+@media (min-width:821px){.pr-hcall{order:3}}
+/* карточка товара — окно по центру, не на весь экран */
+.pr-itemov{position:fixed;inset:0;z-index:60;background:rgba(42,29,19,.6);display:flex;align-items:center;justify-content:center;padding:16px}
+.pr-itemcard{width:100%;max-width:440px;max-height:92vh;border-radius:24px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.pr-itemimg{height:min(42vh,340px)}
+.pr-itemx{width:48px!important;height:48px!important;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+@media (max-width:820px){.pr-itemov{align-items:flex-end;padding:0}.pr-itemcard{max-width:none;border-radius:24px 24px 0 0;max-height:88vh}.pr-itemimg{height:min(36vh,300px)}}
+/* фото в карточке — меньше и целиком (без «крупного плана») */
+.pr-itemimg{object-fit:contain!important;height:min(30vh,240px)!important;background:#25211d;padding:10px 0}
+@media (max-width:820px){.pr-itemimg{height:min(26vh,210px)!important}}
+.pr-gcombo img{height:auto!important;aspect-ratio:800/560}
+.pr-gcombo>span:last-child>span:last-child *{white-space:nowrap}
+/* карта не перекрывает окна и меню */
+.leaflet-container{isolation:isolate;z-index:0}
+/* страница «Мои заказы» */
+.pr-mypage{padding:16px;display:flex;flex-direction:column;gap:14px;max-width:560px;margin:0 auto;width:100%;box-sizing:border-box}
+.pr-mypage h2{margin:0;font:900 22px Montserrat,Inter,'Noto Sans Georgian',sans-serif}
+.pr-mylist{display:flex;flex-direction:column;gap:8px}
+.pr-mylist button{border:0;cursor:pointer;background:#2A1D13;color:#FDC134;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;font:800 15px Inter,'Noto Sans Georgian',sans-serif;text-align:left}
+.pr-myform{background:#FBF5EA;border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.pr-myform p{margin:0;color:#5C4632;line-height:1.5;font-size:14px}
+.pr-myform input{height:48px;border-radius:12px;border:1px solid #DCC7A5;padding:0 12px;font:600 16px Inter,'Noto Sans Georgian',sans-serif;background:#fff}
+.pr-myerr{color:#C0392B;font-weight:700}
+.pr-mygo{height:52px;border:0;border-radius:14px;background:#FDC134;color:#2A1D13;font:900 16px Inter,'Noto Sans Georgian',sans-serif;cursor:pointer}
+/* корзина: лента напитков */
+.pr-upsw{display:flex;align-items:center;gap:6px}
+.pr-ups{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,auto);gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin;flex:1}
+.pr-ups>button{position:relative}
+.pr-upsq{position:absolute;top:-6px;right:-4px;background:#C8361F;color:#fff;font:800 12px Inter,sans-serif;border-radius:999px;padding:2px 7px}
+.pr-upsa{flex:0 0 34px;height:34px;border-radius:50%;border:0;background:#2A1D13;color:#FDC134;font:900 20px Inter,sans-serif;cursor:pointer}
+@media (max-width:600px){.pr-upsa{display:none}}
+.pr-ups>button{width:200px;min-height:64px;justify-content:flex-start;text-align:left}
+.pr-ups>button>span{align-items:flex-start!important;text-align:left}
+.pr-ups>button>span>span:first-child{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media (max-width:600px){.pr-ups>button{width:172px}}
+/* заказ ко времени */
+.pr-when{display:flex;flex-direction:column;gap:8px;background:#FBF5EA;border-radius:16px;padding:12px}
+.pr-when>b{font:800 15px Inter,'Noto Sans Georgian',sans-serif}
+.pr-when2{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#DCC7A5;border-radius:14px;padding:4px}
+.pr-when2 button{border:0;cursor:pointer;height:44px;border-radius:11px;font:700 14px Inter,'Noto Sans Georgian',sans-serif}
+.pr-slots{display:flex;flex-wrap:wrap;gap:6px;max-height:190px;overflow-y:auto;padding:2px}
+.pr-slotw{display:contents}
+.pr-slotw i{flex-basis:100%;font:800 12px Inter,'Noto Sans Georgian',sans-serif;font-style:normal;color:#5C4632;margin-top:4px;text-transform:none}
+.pr-slots button{border:0;cursor:pointer;border-radius:10px;padding:9px 12px;font:800 14px Inter,sans-serif;box-shadow:inset 0 0 0 1px #DCC7A5}
+.pr-whenn{font-size:12px;color:#5C4632}
+.pr-whenc{font-size:13px;font-weight:700;color:#8A2414}
+/* запомнить / забыть данные */
+.pr-rem{display:flex;gap:10px;align-items:flex-start;border:0;background:transparent;cursor:pointer;text-align:left;padding:4px 0;font-family:Inter,'Noto Sans Georgian',sans-serif}
+.pr-remb{flex:0 0 22px;height:22px;border-radius:6px;border:2px solid #2A1D13;display:flex;align-items:center;justify-content:center;font-weight:900;color:#2A1D13;background:#FDC134}
+.pr-rem span:last-child{display:flex;flex-direction:column}
+.pr-rem b{font-size:14px;color:#2A1D13}
+.pr-rem i{font-size:12px;font-style:normal;color:#5C4632}
+.pr-forget{border:1px solid #DCC7A5;background:#fff;color:#2A1D13;border-radius:12px;height:44px;font:700 14px Inter,'Noto Sans Georgian',sans-serif;cursor:pointer}
+.pr-forgot{color:#1E7A46;font-weight:700;font-size:13px}
+
+.pr-payo{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border-radius:14px;padding:12px 14px;font:600 15px Inter,'Noto Sans Georgian',sans-serif;cursor:pointer;color:#2A1D13}
+.pr-payo span b{display:block;font-weight:700}.pr-payo span i{display:block;font-style:normal;font-weight:500;font-size:12px;color:#5C4632;margin-top:2px}
+.pr-payr{width:18px;height:18px;border-radius:999px;box-sizing:border-box;flex-shrink:0}
+.pr-paymsg{border-radius:18px;padding:12px 16px;font-weight:700;font-size:14px;line-height:1.4}
+.pr-legal{display:block;margin:6px 0 4px}.pr-legal a{color:#5C4632;text-decoration:underline;margin:0 6px;white-space:nowrap}
+.pr-gcombo>span:last-child>span:last-child{flex-wrap:wrap;row-gap:8px}

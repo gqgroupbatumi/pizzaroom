@@ -883,6 +883,29 @@ const ownX = (await api('POST', '/api/login', { pin: '8264', device: 'office-2' 
   ok(sm('rev') === ins.pnl.cur.revenue_tetri && sm('n') === ins.pnl.cur.orders, '«Продажи»: сумма и число чеков по дням = итог аналитики', [sm('rev'), ins.pnl.cur.revenue_tetri]);
   ok(dl.rows.every((r) => r.cash + r.card + r.online + r.platform === r.rev), '«Продажи»: наличные + терминал + онлайн + площадки = продажи дня');
   ok(Array.isArray(dl.cats) && dl.cats.length > 0, '«Продажи»: продажи по категориям'); }
+console.log('\nСайт для поисковиков: страницы, старые адреса, карта сайта');
+{ const g = async (path, host = 'https://pizzaroom.ge') => { const r = await handle(new Request(host + path, { redirect: 'manual' }), env); return { status: r.status, loc: r.headers.get('location'), text: await r.text(), ct: r.headers.get('content-type') }; };
+  // после предыдущих проверок в меню могут остаться не все пиццы — делаем активной пепперони
+  await env.DB.prepare("UPDATE products SET active = 1, archived = 0 WHERE id = 'pep'").run(); await env.DB.prepare("UPDATE categories SET active = 1 WHERE id = 'pizza'").run();
+  const old = await g('/%E1%83%9E%E1%83%94%E1%83%9E%E1%83%94%E1%83%A0%E1%83%9D%E1%83%9C%E1%83%98-%D0%BF%D0%B5%D0%BF%D0%BF%D0%B5%D1%80%D0%BE%D0%BD%D0%B8-pepperoni-p110725413');
+  ok(old.status === 301 && /\/pizza\/pepperoni$/.test(old.loc), 'старая страница пиццы (WordPress/Ecwid) → 301 на новую страницу пиццы', old);
+  const oldru = await g('/ru/sprite-0-33-l-p111933096'); ok(oldru.status === 301 && /\/ru\/menu$/.test(oldru.loc), 'старая страница напитка (русская) → меню на русском', oldru.loc);
+  const pz = await g('/ru/pizza/pepperoni'); ok(pz.status === 200 && /<title>Пицца Пепперони — \d+ ₾/.test(pz.text) && /"@type":"Product"/.test(pz.text) && /hreflang="en" href="https:\/\/pizzaroom.ge\/en\/pizza\/pepperoni"/.test(pz.text) && /rel="canonical" href="https:\/\/pizzaroom.ge\/ru\/pizza\/pepperoni"/.test(pz.text), 'страница пиццы: заголовок с ценой, данные для Google, языковые версии', pz.status + ' ' + pz.text.slice(0, 300));
+  ok((await g('/pizza/pep')).status === 301, 'адрес пиццы по коду → основной адрес');
+  const mn = await g('/en/menu'); ok(mn.status === 200 && /"@type":"Menu"/.test(mn.text) && /Pepperoni/.test(mn.text) && /mc\.yandex\.ru\/metrika/.test(mn.text) && /yandex-verification/.test(mn.text), 'меню с ценами + Метрика + подтверждение Яндекса', mn.status);
+  const sm = await g('/sitemap.xml'); ok(sm.status === 200 && /<loc>https:\/\/pizzaroom.ge\/ru\/pizza\/pepperoni<\/loc>/.test(sm.text) && (sm.text.match(/<url>/g) || []).length >= 12, 'карта сайта собирается из меню', (sm.text.match(/<url>/g) || []).length);
+  ok((await g('/wp-login.php')).status === 410 && (await g('/xmlrpc.php')).status === 410, 'адреса старого WordPress — «удалено навсегда»');
+  const nf = await g('/no-such-page'); ok(nf.status === 404 && /text\/html/.test(nf.ct) && /noindex/.test(nf.text), 'неизвестный адрес — понятная страница 404, а не код');
+  ok((await g('/ka/menu')).loc === 'https://pizzaroom.ge/menu' && (await g('/cart')).status === 301 && (await g('/sitemap-misc.xml')).loc === 'https://pizzaroom.ge/sitemap.xml', 'служебные адреса старого сайта перенаправляются');
+  ok((await g('/menu', 'https://www.pizzaroom.ge')).loc === 'https://pizzaroom.ge/menu', 'www → без www');
+  { const idx = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8'); const env2 = Object.assign(Object.create(env), { ASSETS: { fetch: async () => new Response(idx, { headers: { 'content-type': 'text/html; charset=utf-8', etag: 'x' } }) } });
+    const h = async (path) => { const r = await handle(new Request('https://pizzaroom.ge' + path, { redirect: 'manual' }), env2); return { status: r.status, text: await r.text(), csp: r.headers.get('content-security-policy') || '', loc: r.headers.get('location') }; };
+    const ru = await h('/ru/'); ok(ru.status === 200 && /<html lang="ru"/.test(ru.text) && /<title>Пицца в Батуми с доставкой/.test(ru.text) && /href="https:\/\/pizzaroom.ge\/ru\/" id="seo-canon"/.test(ru.text) && /<div id="seo"[^>]*><h1>Пицца в Батуми — Pizza Room<\/h1>/.test(ru.text) && /href="\/ru\/pizza\/pepperoni"/.test(ru.text) && /"@type":"Restaurant"/.test(ru.text) && /mc\.yandex\.ru/.test(ru.csp), 'русская главная /ru/: язык, заголовок, ссылки на пиццы, разрешена Метрика', ru.text.slice(0, 200));
+    const ka = await h('/'); ok(ka.status === 200 && /<html lang="ka"/.test(ka.text) && /<title>პიცა ბათუმში მიტანით/.test(ka.text) && (ka.text.match(/application\/ld\+json/g) || []).length === 1 && /id="app"/.test(ka.text), 'грузинская главная: приложение на месте, одна разметка schema.org');
+    ok((await h('/ru')).loc === 'https://pizzaroom.ge/ru/', '/ru → /ru/');
+    ok((await h('/en/')).text.includes('Pizza delivery in Batumi'), 'английская главная /en/'); }
+  ok((await g('/terms')).status === 200 && (await api('GET', '/api/public/menu')).status === 200, 'юридические страницы и API работают как раньше');
+}
 console.log('\nЗащита сайта от ботов и подделки запросов');
 { CLIENT_IP = '198.51.100.7';
   const base = { name: 'Бот', phone: '555777001', mode: 'pickup', items: [{ product_id: 'marg', qty: 1 }] };

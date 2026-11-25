@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ka">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pizza Room Batumi — პიცა · Пицца · Pizza · Batumi Mall</title>
+<meta name="description" content="Pizza Room — ცხელი იტალიური პიცა Batumi Mall-ში 2018 წლიდან. Горячая итальянская пицца в Батуми, доставка 35–40 минут. Hot Italian pizza in Batumi.">
+<meta name="theme-color" content="#E3CDA8">
+<link rel="icon" href="/icon-192.png">
+<link rel="preload" as="image" href="/img/hero-square-720.webp">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+%%HELMET%%
+<style>html,body{margin:0;background:#E3CDA8}#app>div{box-shadow:0 0 40px rgba(42,29,19,.12)}
+#boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#E3CDA8}#boot img{height:90px;animation:pr 1.2s ease-in-out infinite alternate}@keyframes pr{from{opacity:.5}to{opacity:1}}
+%%CSS%%</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Restaurant","name":"Pizza Room","servesCuisine":"Pizza","telephone":"+995514888800","address":{"@type":"PostalAddress","streetAddress":"Zurab Gorgiladze St 88, Batumi Mall","addressLocality":"Batumi","addressCountry":"GE"},"geo":{"@type":"GeoCoordinates","latitude":41.64318,"longitude":41.61974},"openingHours":"Mo-Su 11:00-23:00","url":"https://pizzaroom.ge"}</script>
+</head>
+<body>
+<div id="boot"><img src="/img/logo-dark.png" alt="Pizza Room"></div>
+<div id="app"></div>
+<template id="tpl">%%BODY%%</template>
+<script>
+%%RUNTIME%%
+%%LIVE%%
+%%SCRIPT%%
+(function () {
+  var nl = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  var lang = nl === 'ka' ? 'ka' : (nl === 'ru' || nl === 'uk' || nl === 'be' ? 'ru' : 'en');
+  var start = function () { document.getElementById('boot').remove(); var c = mountDC(Component, document.getElementById('tpl'), document.getElementById('app'), { lang: lang, isOpen: true, offline: false }); window.__PR_COMP = c;
+    setInterval(function () { window.PRData.load().then(function () { c.setState({ tick: Date.now() }); }).catch(function () {}); }, 120000);
+    window.addEventListener('offline', function () { c.props.offline = true; c.setState({}); }); window.addEventListener('online', function () { c.props.offline = false; c.setState({}); }); };
+  var tries = 0; var go = function () { window.PRData.load().then(start).catch(function () { if (++tries < 3) return setTimeout(go, 1200); fail(); }); }; go();
+  function fail() { document.getElementById('boot').innerHTML = '<div style="font:600 16px Inter,sans-serif;color:#2A1D13;text-align:center;padding:20px">Нет связи · No connection · კავშირი არ არის<br><br><a href="tel:+995514888800" style="color:#2A1D13">+995 514 888 800</a></div>'; }
+})();
+</script>
+</body>
+</html>
