@@ -33,7 +33,7 @@ YM = """<script>(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[
 
 def head():
     t, d = T['ka']
-    out = ['<meta name="google-site-verification" content="OVrz1XIXhZk1PymRJWYxzijz_QN6MrxeNNkcKdVLz_8">', '<meta name="yandex-verification" content="d02d5d2470bfa713">',
+    out = ['<meta name="google-site-verification" content="OVrz1XIXhZk1PymRJWYxzijz_QN6MrxeNNkcKdVLz_8">', '<meta name="yandex-verification" content="d02d5d2470bfa713">', '<meta name="yandex-verification" content="a4ba6bc3ac207bd0">',
            f'<meta name="robots" content="index, follow, max-image-preview:large">',
            f'<link rel="canonical" href="{SITE}/" id="seo-canon">']
     for l in ('ka', 'ru', 'en'): out.append(f'<link rel="alternate" hreflang="{l}" href="{url_of(l)}">')
