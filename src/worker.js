@@ -3410,7 +3410,7 @@ async function legalPage(env, doc, lang) {
 // ───────── Страницы для поисковиков (Google, Яндекс) ─────────
 // Главные на трёх языках (/, /ru/, /en/), меню с ценами, страница каждой пиццы, перенаправления со старого сайта (WordPress + Ecwid).
 const SITE = 'https://pizzaroom.ge';
-const YM_ID = 50194066; // счётчик Яндекс.Метрики старого сайта — история посещений сохраняется
+const YM_ID = 114675747; // счётчик Яндекс.Метрики владельца (аккаунт car24batumi@gmail.com)
 const SEO_VERIFY = '<meta name="google-site-verification" content="OVrz1XIXhZk1PymRJWYxzijz_QN6MrxeNNkcKdVLz_8"><meta name="yandex-verification" content="d02d5d2470bfa713"><meta name="yandex-verification" content="a4ba6bc3ac207bd0">';
 const ECWID = { 110725460: 'bbq', 125973473: 'chbbq', 141167284: 'carb', 110725414: 'marg', 125987051: 'salmon', 110725413: 'pep', 141161562: 'pepgrill', 141161999: 'diablo',
   373516604: 'burger', 110793318: 'premium', 125973474: 'ranch', 110725415: 'hawaii', 110793149: 'five' };
