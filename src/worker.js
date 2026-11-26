@@ -1850,6 +1850,7 @@ async function pnlRange(env, from, to, opts = {}) {
   const months = monthsBetween(from, to); await Promise.all(months.map((mo) => materializeRecurring(env, mo)));
   const payP = Promise.all(months.map((mo) => payroll(env, mo)));
   const wasteP = D.one(`SELECT COALESCE(SUM(cost_tetri),0) AS c FROM stock_moves WHERE kind = 'writeoff' AND ${DT('created_at')} BETWEEN ? AND ?`, from, to);
+  const buyP = D.one(`SELECT COALESCE(SUM(cost_tetri),0) AS c FROM stock_moves WHERE kind = 'receipt' AND delta > 0 AND ${DT('created_at')} BETWEEN ? AND ?`, from, to); // закупки продуктов (приход на склад)
   const exP = D.all(`SELECT category, SUM(amount_tetri) AS gross, SUM(CASE WHEN vat_included = 1 THEN amount_tetri ELSE 0 END) AS with_vat FROM expenses WHERE deleted = 0 AND date BETWEEN ? AND ? GROUP BY category`, from, to);
   const settP = opts.sett ? Promise.resolve(opts.sett) : settlementsSummary(env);
   const chansP = D.all('SELECT id, commission_bp FROM channels');
@@ -1869,7 +1870,8 @@ async function pnlRange(env, from, to, opts = {}) {
       contribution_tetri: c.total_tetri - vat - cogs - fees, avg_check_tetri: c.orders ? Math.round(c.total_tetri / c.orders) : 0 };
   });
   const sum = (k) => channels.reduce((a, c) => a + c[k], 0);
-  const waste = wasteRow.c;
+  const waste = wasteRow.c; const buy = (await buyP).c; // если закупки за период внесены — продукты считаем по закупкам (списания уже внутри), иначе по рецептам
+  const buyVat = buy && T.vatPayer ? Math.round(buy * vatK) : 0; const prodNet = buy ? buy - buyVat : null;
   // зарплаты: месячные начисления пропорционально дням периода в каждом месяце
   const prT = { gross: 0, net: 0, income_tax: 0, pension_emp: 0, pension_er: 0, employer_cost: 0, to_pay: 0, advances: 0, pool: 0 };
   for (const [i, mo] of months.entries()) {
@@ -1884,7 +1886,7 @@ async function pnlRange(env, from, to, opts = {}) {
   const expNet = expenses.reduce((a, e) => a + e.net_tetri, 0);
   const rev = sum('revenue_tetri'), netRev = sum('net_revenue_tetri'), cogs = sum('cogs_tetri'), fees = sum('platform_fees_tetri');
   const labor = prT.employer_cost;
-  const gross = netRev - cogs - waste - fees;
+  const gross = netRev - (prodNet != null ? prodNet : cogs + waste) - fees;
   const ebit = gross - labor - expNet;
   const lastDay = to > today ? today : to; const days = Math.max(1, dayDiff(from, lastDay < from ? from : lastDay)); const fullDays = dayDiff(from, to);
   const fixed = labor + expNet, varRate = netRev ? (cogs + waste + fees) / netRev : 0.35;
@@ -1903,6 +1905,7 @@ async function pnlRange(env, from, to, opts = {}) {
   if (ebit < 0) { const be = breakevenNet ? (breakevenNet / (1 - vatK) / 100 / fullDays).toFixed(0) : '—'; F.push(['bad', `Период в минусе на ${(ebit / -100).toFixed(2)} ₾. Для безубыточности нужно ≈${be} ₾ продаж в день.`, `პერიოდი მინუსშია ${(ebit / -100).toFixed(2)} ₾-ით. უზარალობისთვის საჭიროა ≈${be} ₾ გაყიდვა დღეში.`, 'loss']); }
   const partial = to > today && from <= today;
   return { from, to, days_in_period: days, vat_payer: !!T.vatPayer, channels, totals: { orders: sum('orders'), revenue_tetri: rev, vat_tetri: sum('vat_tetri'), net_revenue_tetri: netRev, cogs_tetri: cogs, waste_tetri: waste,
+      purchases_tetri: buy, purchases_vat_in_tetri: buyVat, products_mode: buy ? 'purchases' : 'recipes',
       platform_fees_tetri: fees, gross_profit_tetri: gross, labor_tetri: labor, expenses_tetri: expNet, profit_tetri: ebit, pizzas, avg_check_tetri: sum('orders') ? Math.round(rev / sum('orders')) : 0,
       profit_per_pizza_tetri: pizzas ? Math.round(ebit / pizzas) : 0, breakeven_net_tetri: breakevenNet, breakeven_per_day_tetri: breakevenNet ? Math.round(breakevenNet / (1 - vatK) / fullDays) : null,
       revenue_per_day_tetri: Math.round(rev / days),

@@ -321,7 +321,8 @@ const exl = (await api('GET', '/api/expenses?month=' + mon, null, manager)).data
 ok(exl.items.some((e) => e.category === 'rent' && e.amount_tetri === 300000), 'аренда появилась в расходах месяца автоматически');
 const PL = (await api('GET', '/api/pnl?month=' + mon, null, manager)).data;
 ok(PL.totals.revenue_tetri > 0 && PL.totals.vat_tetri === Math.round(PL.channels.reduce((a, c) => a + c.vat_tetri, 0)) && Math.abs(PL.totals.labor_tetri - Math.round(prl.totals.employer_cost * Math.min(Number(new Date(Date.now() + 4 * 3600e3).toISOString().slice(8, 10)), 31) / new Date(Date.UTC(+mon.slice(0, 4), +mon.slice(5, 7), 0)).getUTCDate())) <= 10, 'P&L: выручка, НДС, зарплаты с налогами (текущий месяц — по сегодня) — в одном отчёте', PL.totals);
-ok(PL.totals.profit_tetri === PL.totals.net_revenue_tetri - PL.totals.cogs_tetri - PL.totals.waste_tetri - PL.totals.platform_fees_tetri - PL.totals.labor_tetri - PL.totals.expenses_tetri, 'прибыль = выручка без НДС − продукты − списания − площадки − зарплаты − расходы');
+{ const TT = PL.totals; const prod = TT.products_mode === 'purchases' ? TT.purchases_tetri - TT.purchases_vat_in_tetri : TT.cogs_tetri + TT.waste_tetri;
+  ok(TT.profit_tetri === TT.net_revenue_tetri - prod - TT.platform_fees_tetri - TT.labor_tetri - TT.expenses_tetri, 'прибыль = выручка без НДС − продукты (закупки или по рецептам) − площадки − зарплаты − расходы', [TT.products_mode]); }
 ok(PL.expenses.find((e) => e.category === 'rent').net_tetri === 254237 + 550000, 'аренда 3000 ₾ с НДС → 2542,37 ₾ (НДС к зачёту) + постоянная аренда 5500 ₾ без НДС');
 ok(Array.isArray(PL.findings) && PL.findings.length > 0, 'система пишет выводы: где перерасход', PL.findings.map((f) => f[1]).join(' | ').slice(0, 160));
 ok(Array.isArray((await api('GET', '/api/setup-check', null, manager)).data), 'список «что ещё заполнить» работает');

@@ -1569,23 +1569,30 @@ const pctPill = (v, good, bad) => `<span class="pos-pill ${v <= good ? 'good' : 
 /* 📈 Прибыль наглядно: выручка → куда ушли деньги → чистая прибыль */
 function pnlVis(P) {
   const T = P.totals, pr = P.payroll || {}; const fee = (ch) => (P.channels.find((c) => c.channel === ch) || {}).platform_fees_tetri || 0;
-  const vatIn = (P.expenses || []).reduce((a, e) => a + (e.vat_in_tetri || 0), 0); const vatPay = Math.max(0, (T.vat_tetri || 0) - vatIn);
+  const exp = Object.fromEntries((P.expenses || []).map((e) => [e.category, e]));
+  const buyMode = T.products_mode === 'purchases';
+  const vatInExp = (P.expenses || []).reduce((a, e) => a + (e.vat_in_tetri || 0), 0), vatInBuy = buyMode ? (T.purchases_vat_in_tetri || 0) : 0;
+  const vatOut = T.vat_tetri || 0, vatPay = vatOut - vatInExp - vatInBuy;
   const pens = Math.max(0, (T.labor_tetri || 0) - (pr.net || 0) - (pr.income_tax || 0));
-  const EXI = { rent: '🏠', utilities: '💡', marketing: '📣', repairs: '🛠️', packaging: '📦' };
+  const EXI = { rent: '🏠', utilities: '💡', marketing: '📣', repairs: '🛠️', packaging: '📦', cleaning: '🧽', bank: '🏦', accounting: '📒', software: '💻', transport: '🚚', taxes: '📜', other: '🧾' };
+  const EXCOL = { rent: '#3A86FF', utilities: '#FFBE0B', marketing: '#FF006E', repairs: '#8D6E63', packaging: '#F4A261', cleaning: '#2EC4B6', bank: '#457B9D', accounting: '#6D597A', software: '#118AB2', transport: '#E76F51', taxes: '#9C6644', other: '#90A4AE' };
+  // [иконка, название, сумма, цвет, пояснение, вычитать?]
   const items = [
-    ['🧀', L('Продукты и списания', 'პროდუქტები და ჩამოწერა'), (T.cogs_tetri || 0) + (T.waste_tetri || 0), '#FFBE0B'],
-    ['👛', L('Зарплаты (на руки)', 'ხელფასები (ხელზე)'), pr.net || 0, '#8338EC'],
-    ['🏛️', L('Подоходный налог 20%', 'საშემოსავლო 20%'), pr.income_tax || 0, '#F15BB5'],
-    ['🧓', L('Пенсионные взносы', 'საპენსიო'), pens, '#B5179E'],
-    ['🔵', 'Wolt', fee('wolt'), '#00C2E8'], ['🟡', 'Glovo', fee('glovo'), '#FB8500'], ['🟢', 'Bolt', fee('bolt'), '#43AA8B'],
-    ...(P.expenses || []).map((e) => [EXI[e.category] || '🧾', L((EXPC[e.category] || [e.category])[0], (EXPC[e.category] || [, e.category])[1]), e.gross_tetri || 0, e.category === 'rent' ? '#3A86FF' : '#90A4AE']),
-    ['🧾', L('НДС к уплате', 'გადასახდელი დღგ') + (vatIn ? ` (${money(T.vat_tetri)} − ${L('зачёт', 'ჩათვლა')} ${money(vatIn)})` : ''), vatPay, '#E63946']].filter((x) => x[2] > 0);
-  const rev = T.revenue_tetri || 0, cost = items.reduce((a, x) => a + x[2], 0), profit = T.profit_tetri || 0; const base = Math.max(rev, cost, 1);
-  const stack = items.map((x) => `<i style="width:${(x[2] * 100) / base}%;background:${x[3]}" title="${esc(x[1])}: ${money(x[2])}"></i>`).join('') + (profit > 0 ? `<i style="width:${(profit * 100) / base}%;background:#06D6A0" title="${L('Чистая прибыль', 'წმინდა მოგება')}"></i>` : '');
-  const row = (ic, n, v, c, minus) => `<div class="pl-row"><span class="pl-ic" style="background:${c}22">${ic}</span><b style="font-size:15px">${esc(n)}</b><b style="font-size:16px;white-space:nowrap">${minus ? '−' : ''}${money(v)}</b><span class="mut" style="text-align:right">${rev ? shareP(v, rev) : 0}%</span></div>`;
-  return `<div class="card"><div class="row between"><span style="font-size:15px;font-weight:800">💰 ${L('Выручка', 'შემოსავალი')}</span><b style="font-size:26px">${money(rev)}</b></div>
+    ['🧀', buyMode ? L('Продукты (закуплено)', 'პროდუქტები (შესყიდული)') : L('Продукты (по рецептам)', 'პროდუქტები (რეცეპტებით)'), buyMode ? T.purchases_tetri : T.cogs_tetri || 0, '#FF6B35', '', true],
+    ['🗑️', L('Списания', 'ჩამოწერა'), T.waste_tetri || 0, '#BC6C25', buyMode ? L('уже входят в закупки', 'შედის შესყიდვებში') : '', !buyMode],
+    ['👛', L('Зарплаты (на руки)', 'ხელფასები (ხელზე)'), pr.net || 0, '#8338EC', '', true],
+    ['🏛️', L('Подоходный налог 20%', 'საშემოსავლო 20%'), pr.income_tax || 0, '#F15BB5', '', true],
+    ['🧓', L('Пенсионные взносы', 'საპენსიო'), pens, '#B5179E', '', true],
+    ['🔵', 'Wolt', fee('wolt'), '#00C2E8', '', true], ['🟡', 'Glovo', fee('glovo'), '#FB8500', '', true],
+    ...Object.keys(EXPC).map((k) => [EXI[k] || '🧾', L(EXPC[k][0], EXPC[k][1]), (exp[k] || {}).gross_tetri || 0, EXCOL[k] || '#90A4AE', '', true]),
+    ['🧾', L('НДС к уплате', 'გადასახდელი დღგ'), vatPay, '#E63946', `${L('с продаж', 'გაყიდვებიდან')} ${money(vatOut)} − ${L('зачёт', 'ჩათვლა')} ${money(vatInExp + vatInBuy)}`, true]];
+  const rev = T.revenue_tetri || 0; const cost = items.filter((x) => x[5]).reduce((a, x) => a + x[2], 0); const profit = rev - cost; const base = Math.max(rev, cost, 1);
+  const stack = items.filter((x) => x[5] && x[2] > 0).map((x) => `<i style="width:${(x[2] * 100) / base}%;background:${x[3]}" title="${esc(x[1])}: ${money(x[2])}"></i>`).join('') + (profit > 0 ? `<i style="width:${(profit * 100) / base}%;background:#06D6A0"></i>` : '');
+  const row = (x) => `<div class="pl-row" style="${x[2] ? '' : 'opacity:.45'}"><span class="pl-ic" style="background:${x[3]}22">${x[0]}</span><span><b style="font-size:15px">${esc(x[1])}</b>${x[4] ? `<br><span class="mut" style="font-size:12px">${esc(x[4])}</span>` : ''}</span><b style="font-size:16px;white-space:nowrap">${x[5] && x[2] ? '−' : ''}${money(x[2])}</b><span class="mut" style="text-align:right">${rev && x[5] ? shareP(x[2], rev) + '%' : ''}</span></div>`;
+  return `<div class="card"><div class="row between"><span style="font-size:17px;font-weight:900">💰 ${L('Выручка', 'შემოსავალი')}</span><b style="font-size:26px">${money(rev)}</b></div>
     <div class="pl-stack">${stack}</div>
-    ${items.map((x) => row(x[0], x[1], x[2], x[3], true)).join('') || `<div class="mut" style="padding:10px 0">${L('Расходов за период пока нет', 'ხარჯები ჯერ არ არის')}</div>`}
+    <div style="font-size:13px;font-weight:800;margin:10px 0 2px;opacity:.6">${L('РАСХОДЫ', 'ხარჯები')}</div>${items.map(row).join('')}
+    <div class="pl-row"><span></span><b style="font-size:15px">${L('Всего расходов', 'სულ ხარჯები')}</b><b style="font-size:16px">−${money(cost)}</b><span class="mut" style="text-align:right">${rev ? shareP(cost, rev) + '%' : ''}</span></div>
     <div class="pl-big" style="background:${profit < 0 ? '#FFE3E0' : '#D9F8EC'};color:${profit < 0 ? '#B3261E' : '#0B6B4B'}"><span>${profit < 0 ? '📉 ' + L('Убыток', 'ზარალი') : '✅ ' + L('Чистая прибыль', 'წმინდა მოგება')}</span><span>${money(profit)} <span style="font-size:14px;opacity:.75">${rev ? shareP(profit, rev) + '%' : ''}</span></span></div></div>`;
 }
 function viewPnl() {
@@ -1604,34 +1611,7 @@ function viewPnl() {
     [L('Аренда и прочие расходы', 'იჯარა და სხვა ხარჯები'), T.expenses_tetri || 0, '#6B5A4A'], [L('НДС', 'დღგ'), T.vat_tetri || 0, '#9AA6B2'], [L('Чистая прибыль', 'წმინდა მოგება'), Math.max(0, T.profit_tetri || 0), '#2F6B3A']];
   const whereCard = chartCard('🍕 ' + L('Куда уходит каждый лари выручки', 'სად მიდის შემოსავლის ყოველი ლარი'), donut(out.map(([l, v, c]) => ({ l, v, c, t: money(v) })), money(T.revenue_tetri), L('выручка', 'შემოსავალი')) + (T.profit_tetri < 0 ? `<div style="color:var(--redink);font-weight:800;margin-top:6px">${L('Расходы больше выручки на', 'ხარჯები შემოსავალს აჭარბებს')} ${money(-T.profit_tetri)}</div>` : ''));
   return `${aHead(L('Прибыль', 'მოგება'))}
-  ${pnlVis(P)}
-  ${pmCard}
-  <details class="card"><summary style="cursor:pointer;font-weight:800">📋 ${L('Подробнее: показатели, отчёт о прибыли, каналы', 'დეტალურად')}</summary>
-  ${(S.A.check || []).length ? `<div class="card" style="background:#FFF6DC"><b>${L('Чтобы цифры были точными, заполните:', 'რომ ციფრები ზუსტი იყოს, შეავსეთ:')}</b>${S.A.check.map((c) => `<div class="row between" style="padding:6px 0;border-top:1px solid var(--line)"><span>${esc(L(c.ru, c.ka))}</span><button class="b bw sm" data-a="tab" data-k="${c.tab}">${L('Открыть', 'გახსნა')}</button></div>`).join('')}</div>` : ''}
-  <div class="kpis"><div class="kpi"><span>${L('Выручка', 'ამონაგები')}</span><b>${money(T.revenue_tetri)}</b><span class="mut">${T.orders} ${L('заказов · средний чек', 'შეკვეთა · საშუალო ჩეკი')} ${money(T.avg_check_tetri)}</span></div>
-    <div class="kpi"><span>${L('Чистая прибыль', 'წმინდა მოგება')}</span><b class="${T.profit_tetri < 0 ? 'neg' : ''}">${money(T.profit_tetri)}</b><span class="mut">${K.profit_pct}% ${L('от выручки без НДС', 'ამონაგებიდან დღგ-ს გარეშე')}</span>${T.partial ? `<span class="mut">${L('прогноз на весь месяц', 'პროგნოზი მთელი თვისთვის')}: <b class="${T.forecast_profit_tetri < 0 ? 'neg' : ''}">${money(T.forecast_profit_tetri)}</b></span>` : ''}</div>
-    <div class="kpi"><span>${L('Прибыль с одной пиццы', 'მოგება ერთ პიცაზე')}</span><b>${money(T.profit_per_pizza_tetri)}</b><span class="mut">${T.pizzas} ${L('пицц продано', 'პიცა გაყიდულია')}</span></div>
-    <div class="kpi"><span>${L('Безубыточность в день', 'უზარალობის ზღვარი დღეში')}</span><b>${T.breakeven_per_day_tetri != null ? money(T.breakeven_per_day_tetri) : '—'}</b><span class="mut">${L('сейчас в среднем', 'ახლა საშუალოდ')} ${money(T.revenue_per_day_tetri)} ${L('в день', 'დღეში')}</span></div></div>
-  <div class="kpis"><div class="kpi"><span>${L('Продукты (food cost)', 'პროდუქტები (food cost)')}</span><b>${pctPill(K.food_cost_pct, 32, 36)}</b><span class="mut">${L('норма 28–32%', 'ნორმა 28–32%')}</span></div>
-    <div class="kpi"><span>${L('Зарплаты с налогами', 'ხელფასები გადასახადებით')}</span><b>${pctPill(K.labor_pct, 30, 35)}</b><span class="mut">${L('норма 25–30%', 'ნორმა 25–30%')}</span></div>
-    <div class="kpi"><span>${L('Площадки (Wolt, Glovo)', 'პლატფორმები (Wolt, Glovo)')}</span><b>${pctPill(K.platform_pct, 8, 15)}</b><span class="mut">${L('от всей выручки', 'მთელი ამონაგებიდან')}</span></div>
-    <div class="kpi"><span>${L('Аренда', 'იჯარა')}</span><b>${pctPill(K.rent_pct, 10, 14)}</b><span class="mut">${L('норма до 10%', 'ნორმა 10%-მდე')}</span></div>
-    <div class="kpi"><span>${L('Списания', 'ჩამოწერა')}</span><b>${pctPill(K.waste_pct, 2, 4)}</b><span class="mut">${L('норма до 2–3%', 'ნორმა 2–3%-მდე')}</span></div></div>
-  ${false && (P.findings || []).length ? `<div class="note">🤖 ${L('Выводы по прибыли теперь в «Советнике»:', 'მოგების დასკვნები ახლა „მრჩეველშია“:')} ${P.findings.length} · <button class="b bw sm" data-a="tab" data-k="advice">${L('Открыть', 'გახსნა')}</button></div>` : ''}
-  <div class="card"><b>${L('Отчёт о прибыли за', 'მოგების ანგარიში:')} ${P.month || (P.from + ' — ' + P.to)}</b><table>
-    ${line(L('Выручка (все оплаты)', 'ამონაგები (ყველა გადახდა)'), T.revenue_tetri, '', '')}
-    ${P.vat_payer ? line('− ' + L('НДС 18% в бюджет', 'დღგ 18% ბიუჯეტში'), -T.vat_tetri, 'mut') : ''}
-    ${line(L('= Выручка без НДС', '= ამონაგები დღგ-ს გარეშე'), T.net_revenue_tetri, 'ptot')}
-    ${line('− ' + L('Продукты по рецептам', 'პროდუქტები რეცეპტებით'), -T.cogs_tetri)}
-    ${line('− ' + L('Списания', 'ჩამოწერა'), -T.waste_tetri)}
-    ${line('− ' + L('Wolt, Glovo, Bolt (реальная стоимость)', 'Wolt, Glovo (რეალური ღირებულება)'), -T.platform_fees_tetri)}
-    ${line(L('= Валовая прибыль', '= მთლიანი მოგება'), T.gross_profit_tetri, 'ptot')}
-    ${line('− ' + L('Зарплаты + налоги', 'ხელფასები + გადასახადები'), -T.labor_tetri, '', isBoss() ? `(${L('на руки', 'ხელზე')} ${money(P.payroll.net)}, ${L('из них бонус 1%', 'მათ შორის ბონუსი 1%')} ${money(P.payroll.pool || 0)}, ${L('налоги', 'გადასახადები')} ${money(P.payroll.income_tax + P.payroll.pension_emp + P.payroll.pension_er)}${P.month ? '' : ', ' + L('пропорционально дням', 'დღეების პროპორციულად')})` : '')}
-    ${P.expenses.map((e) => line('− ' + L(EXPC[e.category][0], EXPC[e.category][1]), -e.net_tetri, '', e.vat_in_tetri ? L('без НДС', 'დღგ-ს გარეშე') : '')).join('')}
-    ${line(L('= Чистая прибыль', '= წმინდა მოგება'), T.profit_tetri, 'ptot')}
-  </table><p class="mut" style="margin:6px 0 0">${P.vat_payer ? L('Компания отмечена как плательщик НДС: из выручки вычтен НДС 18%, из расходов с НДС — НДС к зачёту.', 'კომპანია მონიშნულია დღგ-ს გადამხდელად: ამონაგებიდან გამოკლებულია დღგ 18%, დღგ-იანი ხარჯებიდან — ჩასათვლელი დღგ.') : L('Компания отмечена как НЕ плательщик НДС.', 'კომპანია მონიშნულია, როგორც დღგ-ს არაგადამხდელი.')} ${isOwner() ? `<button class="b bw sm" data-a="taxEdit">${L('Налоги', 'გადასახადები')}</button>` : ''}</p></div>
-  <div class="card"><b>${L('Сколько зарабатываем: зал, сайт, Wolt, Glovo', 'რამდენს ვგამოიმუშავებთ: დარბაზი, საიტი, Wolt, Glovo')}</b><table><tr><th>${L('Канал', 'არხი')}</th><th class="n">${L('Заказы', 'შეკვეთები')}</th><th class="n">${L('Средний чек', 'საშუალო ჩეკი')}</th><th class="n">${L('Выручка', 'ამონაგები')}</th><th class="n">${L('Продукты', 'პროდუქტები')}</th><th class="n">${L('Площадка', 'პლატფორმა')}</th><th class="n">${L('Остаётся нам', 'ჩვენ გვრჩება')}</th><th class="n">%</th></tr>
-    ${P.channels.map((c) => `<tr><td><b>${CHN[c.channel] || c.channel}</b></td><td class="n">${c.orders}</td><td class="n">${money(c.avg_check_tetri)}</td><td class="n">${money(c.revenue_tetri)}</td><td class="n">${money(c.cogs_tetri)}</td><td class="n">${c.platform_fees_tetri ? money(c.platform_fees_tetri) + ` <span class="mut">${c.platform_rate_pct}%</span>` : '—'}</td><td class="n"><b>${money(c.contribution_tetri)}</b></td><td class="n">${c.revenue_tetri ? Math.round(c.contribution_tetri * 100 / c.revenue_tetri) : 0}%</td></tr>`).join('')}</table></div></details>`;
+  ${pnlVis(P)}`;
 }
 function viewPnlYear() {
   const Y0 = S.A.pyr; if (!Y0) return ''; const Y = Object.assign({}, Y0, { months: Y0.months.filter((m) => m.orders || m.labor_tetri || m.expenses_tetri) });
