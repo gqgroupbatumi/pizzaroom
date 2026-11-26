@@ -2654,7 +2654,7 @@ const schemaReady = new WeakSet();
 const schemaRun = new WeakMap();
 // Каждый запрос сам доводит обновление базы до конца (миграции повторяемые, шаги помечаются в data_v).
 // Нельзя ждать промис другого запроса: в Cloudflare Workers он может так и не завершиться — тогда сайт «висит».
-const SCHEMA_MARK = 'm57';   // меняйте при добавлении новой миграции
+const SCHEMA_MARK = 'm58';   // меняйте при добавлении новой миграции
 async function ensureSchema(env) {
   if (schemaReady.has(env.DB)) return;
   try { const r = await env.DB.prepare(`SELECT value FROM settings WHERE key = 'schema_mark'`).first(); if (r && r.value === SCHEMA_MARK) { schemaReady.add(env.DB); return; } } catch (e) {}
@@ -3135,6 +3135,16 @@ async function migrate(env) {
     if (dv && Number(dv.value) < 3) await D.batch([
       D.stmt(`UPDATE products SET active = 0, archived = 1 WHERE id = 'pepsi-zero-c0c2' AND EXISTS (SELECT 1 FROM products WHERE id = 'pepsi_zero' AND active = 1)`),
       D.stmt(`INSERT INTO settings (key, value) VALUES ('drinks_v', '3') ON CONFLICT(key) DO UPDATE SET value = '3'`)]);
+  }
+  { // 26.11.2026: квас и лимонад — наверх, рядом с Pepsi; соки и холодный чай — дальше
+    const dv = await D.one(`SELECT value FROM settings WHERE key = 'drinks_v'`).catch(() => null);
+    if (dv && Number(dv.value) < 4) {
+      const ORD = ['water', 'borjomi', 'bakhmaro', 'cola', 'zero', 'sprite', 'fanta', 'pepsi', 'pepsi_zero', 'kvass', 'burakhi', 'limon_fresh',
+        'icetea_peach', 'icetea_lemon', 'icetea_mango', 'icetea_berry', 'cappy_apple', 'cappy_cherry', 'cappy_orange', 'cappy_berry', 'cappy_peach', 'cappy_grapefruit', 'juice', 'juice_orange', 'juice_apple'];
+      await D.batch([...ORD.map((id, i) => D.stmt(`UPDATE products SET sort = ? WHERE id = ? AND category_id = 'drinks'`, 101 + i, id)),
+        D.stmt(`UPDATE products SET sort = 150 WHERE category_id = 'drinks' AND id NOT IN (${ORD.map(() => '?').join(',')}) AND sort < 150`, ...ORD),
+        D.stmt(`INSERT INTO settings (key, value) VALUES ('drinks_v', '4') ON CONFLICT(key) DO UPDATE SET value = '4'`)]);
+    }
   }
   await D.run(`INSERT INTO settings (key, value) VALUES ('schema_mark', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, SCHEMA_MARK);
   schemaReady.add(env.DB);
