@@ -3572,7 +3572,7 @@ function seoBlock(l, cat) {
   const T = SEO_T[l];
   const li = cat.pizzas.map((p) => `<li><a href="${LP[l]}/pizza/${slugOf(p)}"><b>${escH(NM(p, l))}</b></a> — ${escH(DS(p, l))}${p.size ? ', ' + escH(p.size) : ''} · ${gelS(p.price_tetri)} ₾</li>`).join('');
   return `<div id="seo" style="max-width:560px;margin:0 auto;padding:16px;font:15px/1.5 Inter,sans-serif;color:#2A1D13"><h1>${escH(T.h1)}</h1><p>${escH(T.lead)}</p><h2>${escH(T.pizzas)}</h2><ul>${li}</ul>
-<p><a href="${LP[l]}/menu">${escH(T.menu)}</a> · ${escH(T.hours)} 11:00–23:00 · <a href="tel:+995514888800">+995 514 88 88 00</a></p><p><a href="/">ქართული</a> · <a href="/ru/">Русский</a> · <a href="/en/">English</a> · <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a></p></div>`;
+<p><a href="${LP[l]}/menu">${escH(T.menu)}</a> · <a href="${LP[l]}/delivery">${escH(SEO_P[l].del)}</a> · <a href="${LP[l]}/about">${escH(SEO_P[l].about)}</a> · ${escH(T.hours)} 11:00–23:00 · <a href="tel:+995514888800">+995 514 88 88 00</a></p><p><a href="/">ქართული</a> · <a href="/ru/">Русский</a> · <a href="/en/">English</a> · <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a></p></div>`;
 }
 async function seoHome(request, env, l) {
   if (!env.ASSETS) return null;
@@ -3613,7 +3613,7 @@ table{width:100%;border-collapse:collapse}td{padding:8px 4px;border-bottom:1px s
 <script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>${ymSnippet()}</head>
 <body><main><header><a href="${LP[l]}/"><img src="/logo-dark.png" alt="Pizza Room"></a><span>${langs}</span></header>${body}
 <footer><div class="card"><b>Pizza Room</b> · ${escH(T.addrv)}<br>${escH(T.hours)} 11:00–23:00 · <a href="tel:+995514888800">+995 514 88 88 00</a><br>${escH(T.del)} · ${escH(T.pick)}</div>
-<a href="${LP[l]}/">${escH(T.home)}</a> · <a href="${LP[l]}/menu">${escH(T.menu)}</a> · <a href="/terms?lang=${l}">Terms</a> · <a href="/privacy?lang=${l}">Privacy</a></footer></main></body></html>`;
+<a href="${LP[l]}/">${escH(T.home)}</a> · <a href="${LP[l]}/menu">${escH(T.menu)}</a> · <a href="${LP[l]}/delivery">${escH(SEO_P[l].del)}</a> · <a href="${LP[l]}/about">${escH(SEO_P[l].about)}</a> · <a href="/terms?lang=${l}">Terms</a> · <a href="/privacy?lang=${l}">Privacy</a></footer></main></body></html>`;
 }
 const htmlRes = (html, status = 200, maxAge = 300) => new Response(html, { status, headers: Object.assign({ 'content-type': 'text/html; charset=utf-8', 'cache-control': `public, max-age=${maxAge}`, 'content-security-policy': SEO_CSP }, SEC_HEADERS) });
 async function seoPizza(env, l, slug) {
@@ -3643,12 +3643,64 @@ function seo404(l) {
   const T = SEO_T[l];
   return htmlRes(seoShell(l, { title: T.nf + ' — Pizza Room', desc: T.desc, path: '/', body: `<h1>${escH(T.nf)}</h1><p>${escH(T.nfp)}</p><p><a class="btn" href="${LP[l]}/">${escH(T.order)}</a></p><p><a href="${LP[l]}/menu">${escH(T.menu)}</a></p>`, ld: {} }).replace('<meta name="robots" content="index, follow, max-image-preview:large">', '<meta name="robots" content="noindex">'), 404, 60);
 }
+/* SEO-страницы под главные запросы: «доставка пиццы Батуми», «пиццерия Батуми» — на 3 языках */
+const SEO_P = {
+  ka: { dTitle: 'პიცის მიტანა ბათუმში 35–40 წუთში — Pizza Room', dDesc: 'ცხელი იტალიური პიცის მიტანა ბათუმში 35–40 წუთში. შეკვეთა საიტზე ან ტელეფონით, გადახდა ნაღდით ან ბარათით. Pizza Room — Batumi Mall, 2017 წლიდან.',
+    dH1: 'პიცის მიტანა ბათუმში', dLead: 'ცხელ იტალიურ პიცას ბათუმის ნებისმიერ მისამართზე 35–40 წუთში მოგიტანთ. ვაცხობთ შეკვეთისთანავე, მხოლოდ იტალიური ინგრედიენტებით.',
+    zones: 'მიტანის ზონები და ფასი', how: 'როგორ შევუკვეთოთ', steps: ['აირჩიეთ პიცა საიტზე ან დარეკეთ +995 514 88 88 00', 'მიუთითეთ მისამართი — საიტი თავად დაითვლის მანძილს და მიტანის დროს', 'გადაიხადეთ ონლაინ ბარათით ან კურიერთან ნაღდით/ბარათით', 'ადევნეთ თვალი შეკვეთას საიტზე — მზადაა, კურიერი გზაშია'],
+    faq: [['რამდენ ხანში მოიტანთ?', 'ჩვეულებრივ 35–40 წუთში. დატვირთულ საათებში შეიძლება ცოტა მეტი დასჭირდეს — საიტზე ზუსტ დროს ნახავთ.'], ['რა ღირს მიტანა?', 'ბათუმში — %CITY% ₾, აეროპორტის რაიონში — %AIR% ₾.'], ['რა საათებში მუშაობთ?', 'ყოველდღე 11:00–23:00.'], ['შეიძლება თვითონ წავიღო?', 'დიახ, Batumi Mall-იდან (ზურაბ გორგილაძის ქ. 88) — უფასოდ.']],
+    aTitle: 'პიცერია ბათუმში — Pizza Room, Batumi Mall · 2017 წლიდან', aDesc: 'Pizza Room — ბათუმის ერთ-ერთი პირველი პიცერია: იტალიური პიცა იტალიური ინგრედიენტებით 2017 წლიდან. Batumi Mall, ზურაბ გორგილაძის ქ. 88. დარბაზი, წასაღები, მიტანა.',
+    aH1: 'პიცერია ბათუმში — Pizza Room', aLead: '2017 წლიდან ვაცხობთ ნამდვილ იტალიურ პიცას ბათუმში. რეცეპტები არ იცვლება, ინგრედიენტები — მხოლოდ იტალიიდან.',
+    aPts: [['📍 სად ვართ', 'Batumi Mall, ზურაბ გორგილაძის ქ. 88, ბათუმი'], ['🕚 საათები', 'ყოველდღე 11:00–23:00'], ['🍕 რას ვაცხობთ', 'იტალიური პიცა 33 სმ — მარგარიტადან ორაგულამდე, კომბო, სასმელები, ყავა'], ['🛵 მიტანა', 'ბათუმში 35–40 წუთში, ასევე Wolt-სა და Glovo-ზე']],
+    map: 'რუკაზე', del: 'პიცის მიტანა', about: 'პიცერიის შესახებ' },
+  ru: { dTitle: 'Доставка пиццы в Батуми за 35–40 минут — Pizza Room', dDesc: 'Доставка горячей итальянской пиццы по Батуми за 35–40 минут. Заказ на сайте или по телефону, оплата наличными или картой. Pizza Room — Batumi Mall, с 2017 года.',
+    dH1: 'Доставка пиццы в Батуми', dLead: 'Привезём горячую итальянскую пиццу в любую точку Батуми за 35–40 минут. Готовим сразу после заказа, только на итальянских продуктах.',
+    zones: 'Зоны и стоимость доставки', how: 'Как заказать', steps: ['Выберите пиццу на сайте или позвоните +995 514 88 88 00', 'Укажите адрес — сайт сам покажет расстояние и время доставки', 'Оплатите картой онлайн или курьеру наличными / картой', 'Следите за заказом на сайте: готовится, курьер в пути'],
+    faq: [['Сколько ждать доставку?', 'Обычно 35–40 минут. В часы пик может быть чуть дольше — точное время видно на сайте при заказе.'], ['Сколько стоит доставка?', 'По Батуми — %CITY% ₾, район аэропорта — %AIR% ₾.'], ['Когда вы работаете?', 'Ежедневно с 11:00 до 23:00.'], ['Можно забрать самому?', 'Да, бесплатно — из Batumi Mall (ул. Зураба Горгиладзе, 88).']],
+    aTitle: 'Пиццерия в Батуми — Pizza Room в Batumi Mall · с 2017 года', aDesc: 'Pizza Room — одна из первых пиццерий Батуми: итальянская пицца на итальянских продуктах с 2017 года. Batumi Mall, ул. Зураба Горгиладзе, 88. Зал, с собой, доставка.',
+    aH1: 'Пиццерия в Батуми — Pizza Room', aLead: 'С 2017 года печём настоящую итальянскую пиццу в Батуми. Рецепты не меняем, продукты — только из Италии.',
+    aPts: [['📍 Где мы', 'Batumi Mall, ул. Зураба Горгиладзе, 88, Батуми'], ['🕚 Часы работы', 'Ежедневно 11:00–23:00'], ['🍕 Что готовим', 'Итальянская пицца 33 см — от Маргариты до пиццы с лососем, комбо, напитки, кофе'], ['🛵 Доставка', 'По Батуми за 35–40 минут, а также на Wolt и Glovo']],
+    map: 'На карте', del: 'Доставка пиццы', about: 'О пиццерии' },
+  en: { dTitle: 'Pizza delivery in Batumi in 35–40 minutes — Pizza Room', dDesc: 'Hot Italian pizza delivered anywhere in Batumi in 35–40 minutes. Order online or by phone, pay by card or cash. Pizza Room — Batumi Mall, since 2017.',
+    dH1: 'Pizza delivery in Batumi', dLead: 'We deliver hot Italian pizza anywhere in Batumi in 35–40 minutes. Baked right after you order, with Italian ingredients only.',
+    zones: 'Delivery areas and fees', how: 'How to order', steps: ['Pick your pizza on the website or call +995 514 88 88 00', 'Enter your address — the site shows distance and delivery time', 'Pay online by card, or cash / card to the courier', 'Track your order live: baking, courier on the way'],
+    faq: [['How long does delivery take?', 'Usually 35–40 minutes. At peak times it may take a little longer — the site shows the exact time.'], ['How much is delivery?', 'Batumi — %CITY% GEL, airport area — %AIR% GEL.'], ['What are your hours?', 'Every day 11:00–23:00.'], ['Can I pick up myself?', 'Yes, free — at Batumi Mall, 88 Zurab Gorgiladze St.']],
+    aTitle: 'Pizzeria in Batumi — Pizza Room at Batumi Mall · since 2017', aDesc: 'Pizza Room — one of the first pizzerias in Batumi: Italian pizza with Italian ingredients since 2017. Batumi Mall, 88 Zurab Gorgiladze St. Dine-in, takeaway, delivery.',
+    aH1: 'Pizzeria in Batumi — Pizza Room', aLead: 'Since 2017 we have been baking real Italian pizza in Batumi. Our recipes never change, and our ingredients come from Italy.',
+    aPts: [['📍 Where we are', 'Batumi Mall, 88 Zurab Gorgiladze St., Batumi'], ['🕚 Opening hours', 'Every day 11:00–23:00'], ['🍕 What we bake', '33 cm Italian pizza — from Margherita to salmon, combos, drinks, coffee'], ['🛵 Delivery', 'Across Batumi in 35–40 minutes, also on Wolt and Glovo']],
+    map: 'On the map', del: 'Pizza delivery', about: 'About the pizzeria' } };
+async function seoDelivery(env, l) {
+  const T = SEO_T[l], P = SEO_P[l]; const S = await getSettings(env); const Z = (S.delivery && S.delivery.zones) || [];
+  const fee = (id, d) => { const z = Z.find((x) => x.id === id); return z ? z.fee : d; };
+  const faq = P.faq.map(([q, a]) => [q, a.replace('%CITY%', fee('city', 7)).replace('%AIR%', fee('airport', 10))]);
+  const cat = await seoCatalog(env); const top = cat.pizzas.slice().sort((a, b) => a.price_tetri - b.price_tetri).slice(0, 6);
+  const ld = [{ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) },
+    { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Pizza Room', item: homeUrl(l) }, { '@type': 'ListItem', position: 2, name: P.del, item: `${SITE}${LP[l]}/delivery` }] }];
+  const body = `<nav class="bc"><a href="${LP[l]}/">Pizza Room</a> › ${escH(P.del)}</nav><h1>${escH(P.dH1)}</h1><p>${escH(P.dLead)}</p><p><a class="btn" href="${LP[l]}/">${escH(T.order)}</a></p>
+<h2>${escH(P.zones)}</h2><table>${Z.map((z) => `<tr><td><b>${escH(z[l] || z.ru)}</b></td><td class="p">${z.fee} ₾</td></tr>`).join('')}<tr><td>${escH(l === 'ru' ? 'Время доставки' : l === 'en' ? 'Delivery time' : 'მიტანის დრო')}</td><td class="p">${(S.delivery || {}).tmin || 35}–${(S.delivery || {}).tmax || 40} ${l === 'ru' ? 'мин' : l === 'en' ? 'min' : 'წთ'}</td></tr></table>
+<h2>${escH(P.how)}</h2><ol>${P.steps.map((x) => `<li>${escH(x)}</li>`).join('')}</ol>
+<h2>${escH(T.pizzas)}</h2><div class="grid">${top.map((x) => `<a href="${LP[l]}/pizza/${slugOf(x)}"><img src="${escH(photoOf(x))}" alt="${escH(NM(x, l))}" loading="lazy" width="300" height="300"><b>${escH(NM(x, l))}</b><br>${gelS(x.price_tetri)} ₾</a>`).join('')}</div><p><a href="${LP[l]}/menu">${escH(T.all)} →</a></p>
+<h2>FAQ</h2>${faq.map(([q, a]) => `<div class="card"><b>${escH(q)}</b><br>${escH(a)}</div>`).join('')}<p><a href="${LP[l]}/about">${escH(P.about)} →</a></p>`;
+  return htmlRes(seoShell(l, { title: P.dTitle, desc: P.dDesc, path: '/delivery', body, ld }));
+}
+async function seoAbout(env, l) {
+  const T = SEO_T[l], P = SEO_P[l];
+  const ld = [{ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Pizza Room', item: homeUrl(l) }, { '@type': 'ListItem', position: 2, name: P.about, item: `${SITE}${LP[l]}/about` }] },
+    { '@context': 'https://schema.org', '@type': 'Restaurant', '@id': SITE + '/#restaurant', name: 'Pizza Room', url: SITE + '/', telephone: '+995514888800', servesCuisine: ['Pizza', 'Italian'], priceRange: '₾₾', foundingDate: '2017',
+      address: { '@type': 'PostalAddress', streetAddress: 'Zurab Gorgiladze St. 88 (Batumi Mall)', addressLocality: 'Batumi', addressCountry: 'GE' }, geo: { '@type': 'GeoCoordinates', latitude: 41.64318, longitude: 41.61974 },
+      openingHoursSpecification: [{ '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], opens: '11:00', closes: '23:00' }], hasMenu: `${SITE}${LP[l]}/menu` }];
+  const body = `<nav class="bc"><a href="${LP[l]}/">Pizza Room</a> › ${escH(P.about)}</nav><h1>${escH(P.aH1)}</h1><p>${escH(P.aLead)}</p>
+${P.aPts.map(([t, d]) => `<div class="card"><b>${escH(t)}</b><br>${escH(d)}</div>`).join('')}
+<p><a class="btn" href="${LP[l]}/">${escH(T.order)}</a> &nbsp; <a href="https://www.google.com/maps/search/?api=1&query=41.64318,41.61974" rel="noopener">${escH(P.map)}: Google</a> · <a href="https://yandex.com/maps/?pt=41.61974,41.64318&z=17" rel="noopener">Yandex</a></p>
+<p><a href="${LP[l]}/delivery">${escH(P.del)} →</a> · <a href="${LP[l]}/menu">${escH(T.menu)} →</a></p>`;
+  return htmlRes(seoShell(l, { title: P.aTitle, desc: P.aDesc, path: '/about', body, ld }));
+}
 async function seoSitemap(env) {
   const cat = await seoCatalog(env); const today = isoNow().slice(0, 10);
   const alt = (path) => ['ka', 'ru', 'en'].map((l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${SITE}${LP[l]}${path}"/>`).join('') + `<xhtml:link rel="alternate" hreflang="x-default" href="${SITE}${path}"/>`;
   const urls = [];
   const add = (path, pr, cf) => ['ka', 'ru', 'en'].forEach((l) => urls.push(`<url><loc>${SITE}${LP[l]}${path}</loc><lastmod>${today}</lastmod><changefreq>${cf}</changefreq><priority>${pr}</priority>${alt(path)}</url>`));
-  add('/', '1.0', 'daily'); add('/menu', '0.9', 'weekly'); cat.pizzas.forEach((p) => add(`/pizza/${slugOf(p)}`, '0.8', 'weekly'));
+  add('/', '1.0', 'daily'); add('/menu', '0.9', 'weekly'); add('/delivery', '0.9', 'monthly'); add('/about', '0.7', 'monthly'); cat.pizzas.forEach((p) => add(`/pizza/${slugOf(p)}`, '0.8', 'weekly'));
   ['terms', 'refund', 'privacy'].forEach((d) => urls.push(`<url><loc>${SITE}/${d}</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>`));
   return new Response(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls.join('\n')}\n</urlset>`,
     { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'public, max-age=3600' } });
@@ -3676,6 +3728,7 @@ async function seoRoute(request, env, url) {
   if (rest === '/' ) { if (lm && path !== `/${l}/`) return R(`/${l}/`); try { return await seoHome(request, env, l); } catch (e) { console.error('seo_home', e && e.stack || e); return env.ASSETS ? env.ASSETS.fetch(new Request(url.origin + '/', { headers: request.headers })) : null; } }
   if (path === '/sitemap.xml') return seoSitemap(env);
   if (rest === '/menu' || rest === '/menu/') return seoMenu(env, l);
+  if (/^\/(delivery|about)\/?$/.test(rest)) return rest.startsWith('/delivery') ? seoDelivery(env, l) : seoAbout(env, l);
   const pz = rest.match(/^\/pizza\/([a-z0-9-]+)\/?$/); if (pz) return (await seoPizza(env, l, pz[1])) || seo404(l);
   // старый сайт: товары Ecwid «…-p110725413», страницы WordPress
   const ec = rest.match(/-p(\d{6,12})\/?$/);

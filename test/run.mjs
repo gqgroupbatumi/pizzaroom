@@ -900,6 +900,9 @@ console.log('\nСайт для поисковиков: страницы, ста�
   const nf = await g('/no-such-page'); ok(nf.status === 404 && /text\/html/.test(nf.ct) && /noindex/.test(nf.text), 'неизвестный адрес — понятная страница 404, а не код');
   ok((await g('/ka/menu')).loc === 'https://pizzaroom.ge/menu' && (await g('/cart')).status === 301 && (await g('/sitemap-misc.xml')).loc === 'https://pizzaroom.ge/sitemap.xml', 'служебные адреса старого сайта перенаправляются');
   ok((await g('/menu', 'https://www.pizzaroom.ge')).loc === 'https://pizzaroom.ge/menu', 'www → без www');
+  { const r1 = await handle(new Request('https://pizzaroom.ge/ru/delivery'), env); const t1 = await r1.text(); const r2 = await handle(new Request('https://pizzaroom.ge/about'), env); const t2 = await r2.text(); const sm = await (await handle(new Request('https://pizzaroom.ge/sitemap.xml'), env)).text();
+    ok(r1.status === 200 && /<h1>Доставка пиццы в Батуми<\/h1>/.test(t1) && /FAQPage/.test(t1) && /\d ₾/.test(t1), 'страница «Доставка пиццы в Батуми» с ценами и FAQ', [r1.status, t1.slice(0, 200)]);
+    ok(r2.status === 200 && /პიცერია ბათუმში/.test(t2) && /"Restaurant"/.test(t2) && sm.includes('https://pizzaroom.ge/ru/delivery') && sm.includes('https://pizzaroom.ge/en/about'), 'страница «Пиццерия в Батуми» и обе страницы в sitemap'); }
   { const kas = readFileSync(new URL('../public/kassa/index.html', import.meta.url), 'utf8'); const env3 = Object.assign(Object.create(env), { ASSETS: { fetch: async () => new Response(kas, { headers: { 'content-type': 'text/html; charset=utf-8' } }) } });
     const a = async (path) => { const r = await handle(new Request('https://pizzaroom.ge' + path, { redirect: 'manual' }), env3); return { status: r.status, text: await r.text(), loc: r.headers.get('location'), robots: r.headers.get('x-robots-tag') || '' }; };
     const pos = await a('/pos/'), kit = await a('/kitchen/');
