@@ -2654,7 +2654,7 @@ const schemaReady = new WeakSet();
 const schemaRun = new WeakMap();
 // Каждый запрос сам доводит обновление базы до конца (миграции повторяемые, шаги помечаются в data_v).
 // Нельзя ждать промис другого запроса: в Cloudflare Workers он может так и не завершиться — тогда сайт «висит».
-const SCHEMA_MARK = 'm56';   // меняйте при добавлении новой миграции
+const SCHEMA_MARK = 'm57';   // меняйте при добавлении новой миграции
 async function ensureSchema(env) {
   if (schemaReady.has(env.DB)) return;
   try { const r = await env.DB.prepare(`SELECT value FROM settings WHERE key = 'schema_mark'`).first(); if (r && r.value === SCHEMA_MARK) { schemaReady.add(env.DB); return; } } catch (e) {}
@@ -3129,6 +3129,12 @@ async function migrate(env) {
       st.push(D.stmt(`INSERT INTO settings (key, value) VALUES ('drinks_v', '2') ON CONFLICT(key) DO UPDATE SET value = '2'`));
       await D.batch(st);
     }
+  }
+  { // 26.11.2026: в админке вручную завели второй «Pepsi zero» (pepsi-zero-c0c2) со ссылкой на страницу магазина вместо фото — скрываем дубль, остаётся pepsi_zero с фото
+    const dv = await D.one(`SELECT value FROM settings WHERE key = 'drinks_v'`).catch(() => null);
+    if (dv && Number(dv.value) < 3) await D.batch([
+      D.stmt(`UPDATE products SET active = 0, archived = 1 WHERE id = 'pepsi-zero-c0c2' AND EXISTS (SELECT 1 FROM products WHERE id = 'pepsi_zero' AND active = 1)`),
+      D.stmt(`INSERT INTO settings (key, value) VALUES ('drinks_v', '3') ON CONFLICT(key) DO UPDATE SET value = '3'`)]);
   }
   await D.run(`INSERT INTO settings (key, value) VALUES ('schema_mark', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, SCHEMA_MARK);
   schemaReady.add(env.DB);
