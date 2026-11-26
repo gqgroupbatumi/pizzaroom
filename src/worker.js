@@ -2654,7 +2654,7 @@ const schemaReady = new WeakSet();
 const schemaRun = new WeakMap();
 // Каждый запрос сам доводит обновление базы до конца (миграции повторяемые, шаги помечаются в data_v).
 // Нельзя ждать промис другого запроса: в Cloudflare Workers он может так и не завершиться — тогда сайт «висит».
-const SCHEMA_MARK = 'm55';   // меняйте при добавлении новой миграции
+const SCHEMA_MARK = 'm56';   // меняйте при добавлении новой миграции
 async function ensureSchema(env) {
   if (schemaReady.has(env.DB)) return;
   try { const r = await env.DB.prepare(`SELECT value FROM settings WHERE key = 'schema_mark'`).first(); if (r && r.value === SCHEMA_MARK) { schemaReady.add(env.DB); return; } } catch (e) {}
@@ -3111,6 +3111,24 @@ async function migrate(env) {
       D.stmt(`UPDATE products SET photo = '/img/beer-estrella05-c-600.webp', name_ru = 'Estrella Galicia', name_en = 'Estrella Galicia', name_ka = 'ესტრელა გალისია', size = '0,5 л' WHERE id = 'estrella'`),
       D.stmt(`UPDATE ingredients SET name = REPLACE(REPLACE(name, 'Estrella Damm', 'Estrella Galicia 0,5 л'), 'ESTRELLA DAMM', 'ESTRELLA GALICIA 0,5 ლ') WHERE name LIKE '%Estrella Damm%' OR name LIKE '%ESTRELLA DAMM%'`),
       D.stmt(`INSERT INTO settings (key, value) VALUES ('drinks_v', '1') ON CONFLICT(key) DO UPDATE SET value = '1'`)]);
+  }
+  { // 26.11.2026: новые напитки — Pepsi Zero 0,33 и квас «Лидский» 0,5 (зал / Wolt и Glovo)
+    const dv = await D.one(`SELECT value FROM settings WHERE key = 'drinks_v'`).catch(() => null);
+    if (!dv || Number(dv.value) < 2) {
+      const N = [['pepsi_zero', 'პეპსი ზერო', 'Pepsi Zero', 'Pepsi Zero', '0,33 л', 106, 3.3, 4, 'პეპსი ზერო 0,33 ლ · Pepsi Zero 0,33 л'],
+        ['kvass', 'კვასი ლიდსკი', 'Lidskiy kvass', 'Квас «Лидский»', '0,5 л', 142, 4.5, 5.5, 'კვასი ლიდსკი 0,5 ლ ქილა · Квас Лидский 0,5 л банка']];
+      const st = [];
+      for (const [id, ka, en, ru, size, sort, base, plat, stock] of N) {
+        st.push(D.stmt(`INSERT INTO products (id, category_id, name_ka, name_en, name_ru, size, photo, sort, active) VALUES (?, 'drinks', ?,?,?,?,?,?,1) ON CONFLICT(id) DO NOTHING`,
+          id, ka, en, ru, size, `/img/drink-${id}-c-600.webp`, sort));
+        st.push(D.stmt(`INSERT OR IGNORE INTO ingredients (id, name, unit) VALUES (?, ?, 'pcs')`, 'st_' + id, stock),
+          D.stmt('INSERT OR IGNORE INTO recipes (product_id, ingredient_id, qty) VALUES (?, ?, 1)', id, 'st_' + id));
+        for (const [pl, v] of [['base', base], ['wolt', plat], ['glovo', plat]])
+          st.push(D.stmt('INSERT INTO prices (product_id, price_list, price_tetri) VALUES (?,?,?) ON CONFLICT(product_id, price_list) DO NOTHING', id, pl, Math.round(v * 100)));
+      }
+      st.push(D.stmt(`INSERT INTO settings (key, value) VALUES ('drinks_v', '2') ON CONFLICT(key) DO UPDATE SET value = '2'`));
+      await D.batch(st);
+    }
   }
   await D.run(`INSERT INTO settings (key, value) VALUES ('schema_mark', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, SCHEMA_MARK);
   schemaReady.add(env.DB);
