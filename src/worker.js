@@ -2654,7 +2654,7 @@ const schemaReady = new WeakSet();
 const schemaRun = new WeakMap();
 // Каждый запрос сам доводит обновление базы до конца (миграции повторяемые, шаги помечаются в data_v).
 // Нельзя ждать промис другого запроса: в Cloudflare Workers он может так и не завершиться — тогда сайт «висит».
-const SCHEMA_MARK = 'm61';   // меняйте при добавлении новой миграции
+const SCHEMA_MARK = 'm62';   // меняйте при добавлении новой миграции
 async function ensureSchema(env) {
   if (schemaReady.has(env.DB)) return;
   try { const r = await env.DB.prepare(`SELECT value FROM settings WHERE key = 'schema_mark'`).first(); if (r && r.value === SCHEMA_MARK) { schemaReady.add(env.DB); return; } } catch (e) {}
@@ -3166,6 +3166,29 @@ async function migrate(env) {
     if (dv && Number(dv.value) < 7) await D.batch([
       D.stmt(`UPDATE products SET photo = '/img/drink-cappy_peach3-c-600.webp' WHERE id = 'cappy_peach' AND photo LIKE '/img/drink-cappy_peach%'`),
       D.stmt(`INSERT INTO settings (key, value) VALUES ('drinks_v', '7') ON CONFLICT(key) DO UPDATE SET value = '7'`)]);
+  }
+  { // 26.11.2026, запуск: владелец попросил обнулить все пробные заказы, оплаты, смены и кассу. Меню, товары, ингредиенты, рецепты, сотрудники и настройки остаются.
+    // Только на боевом сервере (есть ASSETS), один раз; после этого кнопка «удалить пробные продажи» считается использованной — настоящая выручка защищена.
+    const f = await D.one(`SELECT value FROM settings WHERE key = 'launch_reset'`).catch(() => null);
+    const done = await D.one(`SELECT value FROM settings WHERE key = 'sales_reset'`).catch(() => null);
+    if (!f && !done && env.ASSETS && typeof env.ASSETS.fetch === 'function') {
+      const info = await salesResetInfo(env); const C = (await D.one(`SELECT datetime('now') AS t`)).t;
+      const own = await D.one(`SELECT id FROM staff WHERE role = 'owner' ORDER BY id LIMIT 1`).catch(() => null);
+      await D.batch([
+        ...GUARDS.map(([n]) => D.stmt(`DROP TRIGGER IF EXISTS ${n}`)),
+        ...['stock_moves WHERE order_id IS NOT NULL', 'kitchen_prints', 'online_pays', 'order_stages', 'receivables', 'approvals', 'fiscal_receipts', 'voids', 'payments', 'order_items', 'orders', 'cash_moves', 'shifts']
+          .map((t) => D.stmt(`DELETE FROM ${t}`)),
+        D.stmt(`DELETE FROM settings WHERE key IN ('print_test','cash_reminded','test_mode','print_rc')`),
+        D.stmt(`INSERT INTO settings (key, value) VALUES ('sales_reset', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, JSON.stringify({ at: C, by: own ? own.id : null, orders: info.orders, total_tetri: info.total_tetri })),
+        D.stmt(`INSERT INTO settings (key, value) VALUES ('launch_reset', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, JSON.stringify({ at: C })),
+        ...GUARDS.map(([n, t, msg]) => D.stmt(`CREATE TRIGGER IF NOT EXISTS ${n} BEFORE DELETE ON ${t} BEGIN SELECT RAISE(ABORT, '${msg}'); END`))]);
+      await audit(env, own ? own.id : null, 'sales.reset', 'orders', null, { orders: info.orders, total_tetri: info.total_tetri, shifts: info.shifts, before: C, launch: true }).catch(() => {});
+      await notify(env, `🧹 Запуск: удалены все пробные продажи — ${info.orders} заказов на ${(info.total_tetri / 100).toFixed(2)} ₾, смены и касса обнулены. Меню, товары и ингредиенты на месте.`).catch(() => {});
+    }
+  }
+  { // оплата переводом от компаний убрана везде (владелец, 26.11.2026)
+    const pay = await D.one(`SELECT value FROM settings WHERE key = 'pay'`).catch(() => null);
+    if (pay) { try { const v = JSON.parse(pay.value); if (v.transfer) { v.transfer = false; await D.run(`UPDATE settings SET value = ? WHERE key = 'pay'`, JSON.stringify(v)); } } catch (e) {} }
   }
   await D.run(`INSERT INTO settings (key, value) VALUES ('schema_mark', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, SCHEMA_MARK);
   schemaReady.add(env.DB);
