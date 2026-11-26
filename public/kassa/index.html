@@ -1758,7 +1758,7 @@ function viewCustomers() {
   <div class="kpis"><div class="kpi"><span>${L('Всего клиентов', 'სულ კლიენტები')}</span><b>${(S.A.cust || []).length}</b></div><div class="kpi"><span>${L('Постоянные (3+ заказа)', 'მუდმივი (3+ შეკვეთა)')}</span><b>${(S.A.cust || []).filter((c) => c.orders >= 3).length}</b></div>
     <div class="kpi"><span>${L('«Уснули» — 30+ дней без заказа', '„დაძინებული“ — 30+ დღე შეკვეთის გარეშე')}</span><b style="color:var(--redink)">${sleeping}</b></div><div class="kpi"><span>${L('Ждут открытия «скоро»', 'ელოდებიან „მალე“-ს გახსნას')}</span><b>${(S.A.wait || []).length}</b></div></div>
   <div class="row wrap" style="gap:8px;align-items:center"><input id="cq" class="f" style="max-width:360px" placeholder="${L('Поиск по телефону или имени', 'ძებნა ტელეფონით ან სახელით')}" value="${esc(S.A.cq || '')}">
-    <button class="b by" data-a="custXlsx">⬇ ${L('Вся база в Excel', 'მთელი ბაზა Excel-ში')}</button><button class="b bd" data-a="custPdf">🖨 ${L('Вся база в PDF', 'მთელი ბაზა PDF-ში')}</button></div>
+    <button class="b bd" data-a="custPdf">📄 ${L('Вся база в PDF', 'მთელი ბაზა PDF-ში')}</button></div>
   <div class="card" style="padding:6px 8px"><table><tr><th>${L('Клиент', 'კლიენტი')}</th><th class="n">${L('Заказов', 'შეკვეთები')}</th><th class="n">${L('Сумма', 'თანხა')}</th><th class="n">${L('Средний чек', 'საშუალო ჩეკი')}</th><th>${L('Последний заказ', 'ბოლო შეკვეთა')}</th><th></th></tr>
   ${list.slice(0, 200).map((c) => { const d = days(c); return `<tr><td><b>${esc(c.name || L('без имени', 'სახელის გარეშე'))}</b>${c.site_orders ? ' <span class="pos-pill mid">' + L('сайт', 'საიტი') + '</span>' : ''}<div class="mut">${esc(c.phone)}${c.address ? ' · ' + esc(c.address) : ''}</div></td><td class="n">${c.orders}</td><td class="n">${money(c.total_tetri)}</td><td class="n">${c.paid_orders ? money(Math.round(c.total_tetri / c.paid_orders)) : '—'}</td>
     <td>${d === 0 ? L('сегодня', 'დღეს') : d + L(' дн. назад', ' დღის წინ')} ${d >= 30 && c.orders >= 2 ? `<span class="pos-pill bad">${L('уснул', 'დაძინებული')}</span>` : c.orders >= 3 ? `<span class="pos-pill good">${L('постоянный', 'მუდმივი')}</span>` : ''}</td>
@@ -1820,7 +1820,7 @@ function viewAdmin() {
   const body = { cash: viewCash, advice: viewAdvice, orders: viewOrdersAdm, promos: viewPromos, combos: viewCombos, settle: viewSettle, onlinepay: viewOnlinePay, pnl: viewPnl, apizza: () => viewProducts('pizza'), adrinks: () => viewProducts('drinks'), adays: viewDays, expenses: viewExpenses, payroll: viewPayroll, customers: viewCustomers, courier: viewCourier, analytics: viewRevenue, asales: viewSales, margin: viewMargin, finance: viewFinance, menu: viewMenu, stock: viewStock, ingredients: viewIngredients, shifts: viewShifts, settings: viewSettings, staff: viewStaff, audit: viewAudit }[S.atab];
   return `${topBar()}<div class="adm${S.mOpen ? ' mopen' : ''}"><div class="mshade" data-a="mmenu"></div><nav class="side">${sideNav()}
 </nav>
-    <main class="main">${subNav()}<div class="xbar"><button class="b bw sm" data-a="xlsx">⬇ Excel</button><button class="b bw sm" data-a="prt">🖨 ${L('Печать / PDF', 'ბეჭდვა / PDF')}</button></div>${S.A.custExport ? '' : reminder()}${(body && body()) || `<div class="mut" style="padding:60px 0;text-align:center;font-size:18px;font-weight:700">⏳ ${L('Загрузка…', 'იტვირთება…')}</div>`}</main></div>`;
+    <main class="main">${subNav()}<div class="xbar"><button class="b bd sm" data-a="prt">📄 ${L('PDF — скачать или отправить', 'PDF — ჩამოტვირთვა ან გაგზავნა')}</button></div>${S.A.custExport ? '' : reminder()}${(body && body()) || `<div class="mut" style="padding:60px 0;text-align:center;font-size:18px;font-weight:700">⏳ ${L('Загрузка…', 'იტვირთება…')}</div>`}</main></div>`;
 }
 
 /* ───────── отрисовка и события ───────── */
@@ -1860,7 +1860,7 @@ function exportXlsx() {
     ...sheets.map(([, x], i) => [`xl/worksheets/sheet${i + 1}.xml`, x])];
   const a = document.createElement('a'); a.href = URL.createObjectURL(zipStore(files)); a.download = `PizzaRoom - ${tab} - ${new Date().toISOString().slice(0, 10)}.xlsx`; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
 }
-function printAdmin() { const st = document.createElement('style'); st.textContent = '@page{size:A4 landscape;margin:8mm}'; document.head.appendChild(st); document.body.classList.add('printadm');
+function printAdmin() { document.querySelectorAll('.main details').forEach((d) => { d.open = true; }); toast(L('В окне печати выберите «Сохранить как PDF» — или «Поделиться», чтобы отправить', 'ბეჭდვის ფანჯარაში აირჩიეთ „PDF-ად შენახვა“')); const st = document.createElement('style'); st.textContent = '@page{size:A4 landscape;margin:8mm}'; document.head.appendChild(st); document.body.classList.add('printadm');
   const done = () => { document.body.classList.remove('printadm'); st.remove(); window.removeEventListener('afterprint', done); }; window.addEventListener('afterprint', done); window.print(); setTimeout(done, 60000); }
 function wrapWide() {
   document.querySelectorAll('.main table').forEach((t) => {
