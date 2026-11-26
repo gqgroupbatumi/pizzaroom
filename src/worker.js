@@ -1656,7 +1656,7 @@ async function payroll(env, month) {
     UNION ALL SELECT MIN(substr(datetime(opened_at,'+4 hours'),1,10)) FROM shifts WHERE COALESCE(is_test,0) = 0)`);
   const bizStart = (st && st.d) || tbDate(); const early = month < bizStart.slice(0, 7);
   const [people, revRow, tsAll, shAll, salesAll, adjAll, schAll] = await Promise.all([
-    D.all(`SELECT * FROM people WHERE (active = 1 AND ? = 0 AND substr(COALESCE(start_date, datetime(created_at,'+4 hours')),1,7) <= ?) OR id IN (SELECT person_id FROM payroll_adj WHERE month = ?) ORDER BY owner DESC, position, name`, early ? 1 : 0, month, month),
+    D.all(`SELECT * FROM people WHERE (active = 1 AND ? = 0 AND substr(COALESCE(start_date, datetime(created_at,'+4 hours')),1,7) <= ?) OR id IN (SELECT person_id FROM payroll_adj WHERE month = ?) ORDER BY ${PRANK}, name`, early ? 1 : 0, month, month),
     // общий бонус: % от выручки месяца делится поровну между участниками (повара и кассиры)
     D.one(`SELECT COALESCE(SUM(total_tetri),0) AS s FROM sales WHERE strftime('%Y-%m', datetime(created_at,'+4 hours')) = ?`, month),
     D.all('SELECT * FROM timesheet WHERE month = ?', month),
@@ -1715,7 +1715,7 @@ on('GET', '/api/schedule', 'payroll.manage', async ({ env, url }) => {
   const month = String(url.searchParams.get('month') || tbDate().slice(0, 7)); if (!/^\d{4}-\d{2}$/.test(month)) fail(400, 'bad_month', 'Неверный месяц');
   const D = db(env);
   const [people, rows] = await Promise.all([
-    D.all('SELECT id, name, position, owner, pay_type FROM people WHERE active = 1 ORDER BY owner DESC, position, name'),
+    D.all(`SELECT id, name, position, owner, pay_type FROM people WHERE active = 1 ORDER BY ${PRANK}, name`),
     D.all('SELECT person_id, date, code FROM schedule WHERE substr(date,1,7) = ?', month)]);
   const days = {}; for (const r of rows) (days[r.person_id] ||= {})[r.date] = r.code;
   return { month, days_in_month: monthDays(month), people, days };
@@ -1751,7 +1751,7 @@ on('POST', '/api/schedule/fill', 'payroll.manage', async ({ env, me, body }) => 
   await audit(env, me.id, 'schedule.fill', 'person', String(pid), { month, pattern: pat, from, to });
   return { ok: true };
 });
-on('GET', '/api/people', 'payroll.manage', async ({ env }) => db(env).all('SELECT * FROM people ORDER BY active DESC, name'));
+on('GET', '/api/people', 'payroll.manage', async ({ env }) => db(env).all(`SELECT * FROM people ORDER BY active DESC, ${PRANK}, name`));
 on('POST', '/api/people', 'payroll.manage', async ({ env, me, body }) => {
   const name = String(body.name || '').trim().slice(0, 80); if (!name) fail(400, 'no_name', 'Введите имя');
   const type = ['month', 'day', 'hour'].includes(body.pay_type) ? body.pay_type : 'month';
@@ -1969,6 +1969,8 @@ on('GET', '/api/setup-check', 'reports.view', async ({ env }) => {
 // ───────── Расчёты с площадками и долги по переводам ─────────
 // Площадка присылает инвойс за период: продажи, скидка партнёра, услуги площадки с НДС, штрафы/компенсации → к выплате.
 // Система сверяет их продажи с нашими заказами за те же дни и считает долг, включая ещё не выставленные периоды.
+// порядок сотрудников: совладельцы, бухгалтер, менеджер, администратор, повара, кассиры, уборщицы
+const PRANK = "CASE WHEN owner = 1 OR position LIKE '%владел%' OR position LIKE '%иректор%' THEN 0 WHEN position LIKE '%ухгалт%' THEN 1 WHEN position LIKE '%енеджер%' THEN 2 WHEN position LIKE '%дминистратор%' THEN 3 WHEN position LIKE '%овар%' THEN 4 WHEN position LIKE '%ассир%' THEN 5 WHEN position LIKE '%борщ%' THEN 6 ELSE 7 END";
 const PLATS = ['wolt', 'glovo', 'bolt'];
 const TB = (d) => `date(datetime(o.created_at, '+4 hours'))`;
 async function ourPlatformSales(env, platform, from, to) {
