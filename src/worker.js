@@ -3636,9 +3636,11 @@ async function edgeCached(request, env, ctx) {
   const u = new URL(request.url);
   if (request.method !== 'GET' || !EDGE.includes(u.pathname) || typeof caches === 'undefined' || request.headers.get('authorization')) return handle(request, env);
   const key = new Request(u.origin + u.pathname, { method: 'GET' }); const c = caches.default;
-  const hit = await c.match(key); if (hit) return hit;
+  const hit = await c.match(key); if (hit) { const r = new Response(hit.body, hit); r.headers.set('cache-control', 'no-store'); return r; }
   const res = await handle(request, env); if (res.status !== 200) return res;
   const out = new Response(res.body, res); out.headers.set('cache-control', 'public, max-age=15, s-maxage=15');
-  ctx.waitUntil(c.put(key, out.clone())); return out;
+  ctx.waitUntil(c.put(key, out.clone()));
+  // браузеру — не хранить: иначе Cloudflare (Browser Cache TTL) растягивает до 4 часов и телефоны видят старое меню
+  const cli = new Response(out.body, out); cli.headers.set('cache-control', 'no-store'); return cli;
 }
 export default { fetch: (request, env, ctx) => edgeCached(request, env, ctx), scheduled: (event, env, ctx) => ctx.waitUntil(dailyJob(env)) };

@@ -7,7 +7,7 @@ window.__PR_ISOPEN = function (open, close) {
 };
 window.PRData = {
   load: function () {
-    return Promise.all([fetch('/api/public/catalog').then(function (r) { return r.json(); }), fetch('/api/public/settings').then(function (r) { return r.json(); })]).then(function (res) {
+    return Promise.all([fetch('/api/public/catalog?t=' + Math.floor(Date.now() / 15000), { cache: 'no-store' }).then(function (r) { return r.json(); }), fetch('/api/public/settings?t=' + Math.floor(Date.now() / 15000), { cache: 'no-store' }).then(function (r) { return r.json(); })]).then(function (res) {
       var cat = res[0], st = res[1];
       window.__PR_CATS = cat.categories;
       window.__PR_COMBOS = cat.combos || [];
