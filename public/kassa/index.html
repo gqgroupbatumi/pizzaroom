@@ -123,6 +123,7 @@ th.s{cursor:pointer}
 td{padding:8px;border-bottom:1px solid #F0E6D6;vertical-align:middle}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 tr.low td{background:#FFF4F1}
+.th{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;min-width:34px;border-radius:8px;object-fit:cover;vertical-align:middle;margin-right:8px;background:#3b281a;font-size:18px;flex:none}.pl-row{display:grid;grid-template-columns:36px 1fr auto 56px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}.pl-ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}.pl-stack{display:flex;height:38px;border-radius:12px;overflow:hidden;margin:10px 0 4px;background:#EADBC2}.pl-stack i{display:block;height:100%}.pl-big{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:14px;margin-top:10px;font-weight:900;font-size:20px}
 .vis{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:8px}.tgrid{flex:1;min-width:260px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.tile{background:#FBF6EC;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:3px}.tile.zero{opacity:.55}.tic{font-size:24px}.tpc{font-size:18px}.tnm{font-size:14px}.tv{font-size:19px;font-weight:900}.pbar{height:8px;background:#EADBC2;border-radius:4px;overflow:hidden;margin-top:4px}.pbar i{display:block;height:100%;border-radius:4px}.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.pcard{background:#FBF6EC;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:4px}.pimg{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:#3b281a;display:flex;align-items:center;justify-content:center;font-size:44px}.pimg img{width:100%;height:100%;object-fit:cover}.pmed{position:absolute;top:4px;left:6px;font-size:26px}.pmed i{font-style:normal;font-size:14px;font-weight:900;background:#fff;color:#2A1D13;border-radius:20px;padding:2px 8px}.pnm{font-size:14px;line-height:1.2}
 .cal{width:320px}.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.cgrid .cwd{font-size:11px;font-weight:800;text-align:center;opacity:.55;padding:2px 0}.cgrid button{height:38px;border:0;border-radius:10px;background:transparent;font:700 15px inherit;font-family:inherit;color:inherit;cursor:pointer}.cgrid button:hover{background:rgba(0,0,0,.06)}.cgrid button.in{background:#FFE7A8;border-radius:4px}.cgrid button.on{background:#2A1D13;color:#fff}.cgrid button.now{box-shadow:inset 0 0 0 2px #FFC244}.cgrid button:disabled{opacity:.25;cursor:default}
 .abar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 2px}.abar .mpick .mpb{min-width:0;height:38px;font-size:14px}
@@ -767,7 +768,7 @@ const todayS = () => new Date(Date.now() + 4 * 3600e3).toISOString().slice(0, 10
 const addD = (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
 const DRK = ['drinks', 'beer', 'wine'];
 const CHORD = ['hall', 'takeaway', 'delivery', 'site', 'wolt', 'glovo', 'bolt'];
-const CHCOL = { hall: '#2a78d6', takeaway: '#7fb2ec', delivery: '#8e5cc2', site: '#eb6834', wolt: '#14a3d9', glovo: '#1baf7a', bolt: '#eda100' };
+const CHCOL = { hall: '#3A86FF', takeaway: '#8338EC', delivery: '#FF006E', site: '#FF6B35', wolt: '#00C2E8', glovo: '#FFBE0B', bolt: '#06D6A0' };
 const CHNM = () => ({ hall: L('Зал', 'დარბაზი'), takeaway: L('С собой', 'გატანით'), delivery: L('Наша доставка', 'ჩვენი მიტანა'), site: L('Сайт', 'საიტი'), wolt: 'Wolt', glovo: 'Glovo', bolt: 'Bolt' });
 const PAYNM = () => ({ cash: L('Наличные', 'ნაღდი'), card: L('Карта (терминал)', 'ბარათი (ტერმინალი)'), online: L('Онлайн на сайте', 'ონლაინ საიტზე'), platform: L('Через Wolt / Glovo', 'Wolt / Glovo-ს გავლით'), transfer: L('Перевод от компании', 'გადარიცხვა კომპანიიდან') });
 const shareP = (a, b) => (b ? Math.round((a * 1000) / b) / 10 : 0);
@@ -799,11 +800,11 @@ function calPop() {
 const aDays = () => { const I = S.A.ins; const a = I && I.first_day && I.first_day > S.A.f ? I.first_day : S.A.f; const b = S.A.t > todayS() ? todayS() : S.A.t; return Math.max(1, Math.round((Date.parse(b) - Date.parse(a)) / 864e5) + 1); };
 const cmp = (a, b, inv) => (S.A.range === 'all' ? '' : dlt(a, b, inv));
 /* ── диаграммы аналитики (SVG, без библиотек) ── */
-const PAL = ['#2a78d6', '#eb6834', '#1baf7a', '#8e5cc2', '#eda100', '#14a3d9', '#C0392B', '#6B5A4A', '#7fb2ec', '#9bbf3b'];
+const PAL = ['#FF6B35', '#3A86FF', '#FFBE0B', '#06D6A0', '#FF006E', '#8338EC', '#00C2E8', '#FB5607', '#43AA8B', '#F15BB5'];
 /* кольцевая диаграмма: доли целого + подписи с % */
 function donut(items, center, sub) {
   const L2 = items.filter((x) => x.v > 0); const tot = L2.reduce((s, x) => s + x.v, 0); if (!tot) return '';
-  const R = 70, r = 44, cx = 90, cy = 90; let a = -Math.PI / 2;
+  const R = 78, r = 46, cx = 90, cy = 90; let a = -Math.PI / 2;
   const arcs = L2.map((x, i) => { const f = x.v / tot; const a2 = a + f * Math.PI * 2 - (L2.length > 1 ? 0.012 : 0); const big = a2 - a > Math.PI ? 1 : 0;
     const p = (rad, ang) => [cx + rad * Math.cos(ang), cy + rad * Math.sin(ang)].map((n) => n.toFixed(2)).join(' ');
     const d = L2.length === 1 ? `M ${cx} ${cy - R} A ${R} ${R} 0 1 1 ${cx - 0.01} ${cy - R} L ${cx - 0.01} ${cy - r} A ${r} ${r} 0 1 0 ${cx} ${cy - r} Z` : `M ${p(R, a)} A ${R} ${R} 0 ${big} 1 ${p(R, a2)} L ${p(r, a2)} A ${r} ${r} 0 ${big} 0 ${p(r, a)} Z`;
@@ -873,7 +874,7 @@ function viewSales() {
 function ring(items, center, sub) {
   const tot = items.reduce((t, x) => t + Math.max(0, x.v), 0);
   if (tot) return donut(items, center, sub).replace(/<div style="display:flex;flex-direction:column;gap:6px;min-width:200px">[\s\S]*<\/div><\/div>$/, '</div>');
-  return `<svg viewBox="0 0 180 180" width="180" height="180"><circle cx="90" cy="90" r="57" fill="none" stroke="#EADBC2" stroke-width="26"/><text x="90" y="88" text-anchor="middle" font-size="15" font-weight="900" fill="#2A1D13">${esc(center || '0')}</text><text x="90" y="106" text-anchor="middle" font-size="11" fill="#7A6450">${L('пока нет продаж', 'გაყიდვები ჯერ არ არის')}</text></svg>`;
+  return `<svg viewBox="0 0 180 180" width="180" height="180"><circle cx="90" cy="90" r="62" fill="none" stroke="#EADBC2" stroke-width="32"/><text x="90" y="88" text-anchor="middle" font-size="15" font-weight="900" fill="#2A1D13">${esc(center || '0')}</text><text x="90" y="106" text-anchor="middle" font-size="11" fill="#7A6450">${L('пока нет продаж', 'გაყიდვები ჯერ არ არის')}</text></svg>`;
 }
 function tiles(items, tot) {
   return `<div class="tgrid">${items.map((x) => `<div class="tile ${x.v ? '' : 'zero'}" style="border-top:5px solid ${x.c}"><div class="row between"><span class="tic">${x.i}</span><b class="tpc">${tot ? shareP(x.v, tot) : 0}%</b></div><b class="tnm">${esc(x.l)}</b><span class="tv">${x.t}</span><span class="mut" style="font-size:12px">${x.s || ''}</span><div class="pbar"><i style="width:${tot ? Math.round((x.v * 100) / tot) : 0}%;background:${x.c}"></i></div></div>`).join('')}</div>`;
@@ -888,20 +889,21 @@ function visChannels(chans, rev, own, P, prevBy, NM) {
     <div class="vis">${ring(it, money(rev), L('выручка', 'შემოსავალი'))}${tiles(it, rev)}</div></div>`;
 }
 function visPay(pm, payTot, siteN, onlN) {
-  const PC = { cash: '#2F6B3A', card: '#2a78d6', online: '#eb6834', platform: '#14a3d9' }; const PI = { cash: '💵', card: '💳', online: '🌐', platform: '🛵' };
+  const PC = { cash: '#06D6A0', card: '#3A86FF', online: '#FF6B35', platform: '#00C2E8' }; const PI = { cash: '💵', card: '💳', online: '🌐', platform: '🛵' };
   const keys = ['cash', 'card', 'online', 'platform', ...Object.keys(pm).filter((k) => !PC[k] && k !== 'transfer')];
   const it = keys.map((k, i) => { const m = pm[k] || { n: 0, rev: 0 }; return { l: PAYNM()[k] || k, v: m.rev, c: PC[k] || PAL[i], i: PI[k] || '•', t: money(m.rev), s: m.n + ' ' + L('зак.', 'შეკვ.') }; });
   return `<div class="card"><h3 style="margin:0">💳 ${L('Как платят', 'როგორ იხდიან')}</h3><span class="mut" style="font-size:13px">${L('Заказов с сайта', 'საიტის შეკვეთები')}: <b>${siteN}</b> · ${L('оплачено онлайн', 'ონლაინ გადახდილი')}: <b>${onlN}</b></span>
     <div class="vis">${ring(it, money(payTot), L('оплачено', 'გადახდილი'))}${tiles(it, payTot)}</div></div>`;
 }
 /* витрина товаров: фото, место, сколько продано, доля, прибыль */
+const thumb = (id, em) => { const u = phOf(id); return u ? `<img class="th" src="${u}" width="34" height="34" alt="" loading="lazy">` : `<span class="th">${em || '🍕'}</span>`; };
 const phOf = (id) => { const u = (S.A.ph || {})[id]; return u ? u.replace(/-(c|v3|v6|v7)-600\.webp$/, '-$1-360.webp') : ''; };
 function prodShow(rows, T, kind) {
   if (!rows.length) return `<div class="card"><div class="mut" style="padding:30px;text-align:center;font-size:17px">${kind === 'pizza' ? '🍕' : '🥤'} ${L('За этот период продаж нет', 'ამ პერიოდში გაყიდვები არ არის')}</div></div>`;
   const mx = Math.max(1, ...rows.map((r) => r.qty)); const med = ['🥇', '🥈', '🥉'];
   const top = rows.slice(0, 7); const rest = rows.slice(7).reduce((a, r) => a + r.qty, 0);
   const pie = ring([...top.map((r, i) => ({ l: r.name, v: r.qty, c: PAL[i % PAL.length] })), ...(rest ? [{ l: L('Остальные', 'დანარჩენი'), v: rest, c: '#C9B79C' }] : [])], T.qty + ' ' + L('шт', 'ც'), L('продано', 'გაყიდულია'));
-  const leg = `<div style="display:flex;flex-direction:column;gap:6px;min-width:200px;flex:1">${top.map((r, i) => `<div class="row" style="gap:8px;font-size:14px"><i style="width:12px;height:12px;border-radius:3px;background:${PAL[i % PAL.length]};flex:none"></i><span style="flex:1">${esc(r.name)}</span><b>${shareP(r.qty, T.qty)}%</b></div>`).join('')}${rest ? `<div class="row" style="gap:8px;font-size:14px"><i style="width:12px;height:12px;border-radius:3px;background:#C9B79C;flex:none"></i><span style="flex:1">${L('Остальные', 'დანარჩენი')}</span><b>${shareP(rest, T.qty)}%</b></div>` : ''}</div>`;
+  const leg = `<div style="display:flex;flex-direction:column;gap:6px;min-width:200px;flex:1">${top.map((r, i) => `<div class="row" style="gap:8px;font-size:14px"><i style="width:12px;height:12px;border-radius:3px;background:${PAL[i % PAL.length]};flex:none"></i>${thumb(r.id, kind === 'pizza' ? '🍕' : '🥤')}<span style="flex:1">${esc(r.name)}</span><b>${shareP(r.qty, T.qty)}%</b></div>`).join('')}${rest ? `<div class="row" style="gap:8px;font-size:14px"><i style="width:12px;height:12px;border-radius:3px;background:#C9B79C;flex:none"></i><span style="flex:1">${L('Остальные', 'დანარჩენი')}</span><b>${shareP(rest, T.qty)}%</b></div>` : ''}</div>`;
   return `<div class="card"><h3 style="margin:0 0 8px">${kind === 'pizza' ? '🍕 ' + L('Какие пиццы берут', 'რომელ პიცებს იღებენ') : '🥤 ' + L('Какие напитки берут', 'რომელ სასმელებს იღებენ')}</h3><div class="vis">${pie}${leg}</div></div>
   <div class="card"><h3 style="margin:0 0 10px">🏆 ${L('Рейтинг продаж', 'გაყიდვების რეიტინგი')}</h3><div class="pgrid">${rows.map((r, i) => { const ph = phOf(r.id);
     return `<div class="pcard"><div class="pimg">${ph ? `<img src="${ph}" alt="" loading="lazy">` : `<span>${kind === 'pizza' ? '🍕' : '🥤'}</span>`}<span class="pmed">${i < 3 ? med[i] : '<i>' + (i + 1) + '</i>'}</span></div>
@@ -967,14 +969,14 @@ function viewProducts(kind) {
   // по месяцам: что сколько продано в каждом месяце
   let monthly = '';
   if (S.A.pmon && S.A.pmon.length) { const ms = [...new Set(S.A.pmon.map((r) => r.period))].sort().slice(-12); const q = {};
-    for (const r of S.A.pmon.filter((x) => sel(x.category_id))) { const k = r.product_id; q[k] = q[k] || { name: L(r.name_ru, r.name_ka), m: {} }; q[k].m[r.period] = (q[k].m[r.period] || 0) + r.qty; }
+    for (const r of S.A.pmon.filter((x) => sel(x.category_id))) { const k = r.product_id; q[k] = q[k] || { id: k, name: L(r.name_ru, r.name_ka), m: {} }; q[k].m[r.period] = (q[k].m[r.period] || 0) + r.qty; }
     const L2 = Object.values(q).sort((a, b) => ms.reduce((s, m) => s + (b.m[m] || 0), 0) - ms.reduce((s, m) => s + (a.m[m] || 0), 0));
     if (ms.length > 1 && L2.length) monthly = `<div class="card"><h3 style="margin:0">${title}: ${L('сколько продано по месяцам, шт', 'რამდენი გაიყიდა თვეების მიხედვით, ც')}</h3><div style="overflow-x:auto"><table><tr><th>${L('Позиция', 'პოზიცია')}</th>${ms.map((m) => `<th class="n">${MONS()[+m.slice(5) - 1].slice(0, 3)} ${m.slice(2, 4)}</th>`).join('')}<th class="n">${L('Всего', 'სულ')}</th></tr>
-      ${L2.map((p) => `<tr><td><b>${esc(p.name)}</b></td>${ms.map((m) => `<td class="n">${p.m[m] || '—'}</td>`).join('')}<td class="n"><b>${ms.reduce((s, m) => s + (p.m[m] || 0), 0)}</b></td></tr>`).join('')}
+      ${L2.map((p) => `<tr><td style="white-space:nowrap">${thumb(p.id, kind === 'pizza' ? '🍕' : '🥤')}<b>${esc(p.name)}</b></td>${ms.map((m) => `<td class="n">${p.m[m] || '—'}</td>`).join('')}<td class="n"><b>${ms.reduce((s, m) => s + (p.m[m] || 0), 0)}</b></td></tr>`).join('')}
       <tr class="ptot"><td><b>${L('Итого', 'სულ')}</b></td>${ms.map((m) => `<td class="n"><b>${L2.reduce((s, p) => s + (p.m[m] || 0), 0)}</b></td>`).join('')}<td class="n"><b>${L2.reduce((s, p) => s + ms.reduce((a, m) => a + (p.m[m] || 0), 0), 0)}</b></td></tr></table></div></div>`; }
   const others = kind === 'pizza' ? [] : mk((I.cur || []).filter((x) => x.cat !== 'pizza' && !DRK.includes(x.cat)));
   const tbl = (list, h) => `<div class="card"><h3 style="margin:0">${h}</h3><div style="overflow-x:auto"><table><tr><th>#</th><th>${L('Позиция', 'პოზიცია')}</th><th class="n">${L('Продано, шт', 'გაყიდულია, ც')}</th><th>${L('Доля', 'წილი')}</th>${S.A.range === 'all' ? '' : `<th class="n">${L('Прошлый период', 'წინა პერიოდი')}</th>`}<th class="n">${L('Выручка', 'შემოსავალი')}</th><th class="n">${L('Прибыль', 'მოგება')}</th><th class="n">${L('С одной шт', 'ერთ ცალზე')}</th><th class="n">${L('Маржа', 'მარჟა')}</th><th class="n" title="${L('Сколько остаётся с 1 шт по ценам каждого канала после комиссии; · кол-во', 'რამდენი რჩება 1 ცალიდან')}">${L('С 1 шт: у нас', '1 ც: ჩვენთან')}</th><th class="n">Wolt</th><th class="n">Glovo</th></tr>
-    ${list.map((r, i) => `<tr><td><span class="pos-pill ${pill(i)}">${i + 1}</span></td><td><b>${esc(r.name)}</b>${r.in_combo ? ` <span class="mut" style="font-size:12px">${L('в т.ч. в комбо', 'მათ შორის კომბოში')} ${r.in_combo}</span>` : ''}</td><td class="n"><b>${r.qty}</b></td><td style="min-width:140px"><div class="row" style="gap:8px">${hbar(r.qty, list[0].qty)}<span>${shareP(r.qty, list.reduce((s, x) => s + x.qty, 0))}%</span></div></td>
+    ${list.map((r, i) => `<tr><td><span class="pos-pill ${pill(i)}">${i + 1}</span></td><td style="white-space:nowrap">${thumb(r.id, DRK.includes(r.cat) ? '🥤' : '🍕')}<b>${esc(r.name)}</b>${r.in_combo ? ` <span class="mut" style="font-size:12px">${L('в т.ч. в комбо', 'მათ შორის კომბოში')} ${r.in_combo}</span>` : ''}</td><td class="n"><b>${r.qty}</b></td><td style="min-width:140px"><div class="row" style="gap:8px">${hbar(r.qty, list[0].qty)}<span>${shareP(r.qty, list.reduce((s, x) => s + x.qty, 0))}%</span></div></td>
       ${S.A.range === 'all' ? '' : `<td class="n">${r.pq} ${cmp(r.qty, r.pq)}</td>`}<td class="n">${money(r.rev)}</td><td class="n"><b>${money(r.profit)}</b></td><td class="n">${money(Math.round(r.unit))}</td><td class="n">${mPill(r.margin)}</td><td class="n">${pu(r.ch.own)}</td><td class="n">${pu(r.ch.wolt)}</td><td class="n">${pu(r.ch.glovo)}</td></tr>`).join('') || `<tr><td colspan="12" class="mut">${L('За этот период продаж нет', 'ამ პერიოდში გაყიდვები არ არის')}</td></tr>`}</table></div></div>`;
   const combos = kind === 'pizza' && (I.combos || []).length ? `<div class="card"><h3 style="margin:0">🍕 ${L('Комбо: сколько продано', 'კომბო: რამდენი გაიყიდა')}</h3><table><tr><th>${L('Комбо', 'კომბო')}</th><th class="n">${L('Продано', 'გაყიდულია')}</th><th class="n">${L('Выручка', 'შემოსავალი')}</th><th class="n">${L('Прибыль', 'მოგება')}</th></tr>
     ${I.combos.map((c) => `<tr><td><b>${esc(L(c.name_ru || c.id, c.name_ka || c.name_ru || c.id))}</b></td><td class="n">${c.sold}</td><td class="n">${money(c.rev)}</td><td class="n">${money(c.rev - c.cost)}</td></tr>`).join('')}</table></div>` : '';
@@ -1564,6 +1566,28 @@ const monthBar = (act, modes) => { const canY = (modes || []).includes('year'); 
     ${canY ? `<button class="b ${isY && +S.A.pyear === py ? 'bd' : 'bw'}" style="width:100%;margin-top:8px" data-a="mPickY" data-y="${py}" data-t="${act}">${L('Итоги за весь', 'შედეგები მთელი')} ${py} ${L('год', 'წელი')}</button>` : ''}</div>` : '';
   return `<div class="mpick"><button class="b bw" data-a="mStep" data-n="-1" data-t="${act}" title="${L('Предыдущий месяц', 'წინა თვე')}">‹</button><button class="b bw mpb" data-a="mOpen" title="${L('Выберите месяц', 'აირჩიეთ თვე')}">📅 ${lbl} ▾</button><button class="b bw" data-a="mStep" data-n="1" data-t="${act}" ${nextOff ? 'disabled' : ''} title="${L('Следующий месяц', 'შემდეგი თვე')}">›</button>${pop}</div>`; };
 const pctPill = (v, good, bad) => `<span class="pos-pill ${v <= good ? 'good' : v <= bad ? 'mid' : 'bad'}">${v}%</span>`;
+/* 📈 Прибыль наглядно: выручка → куда ушли деньги → чистая прибыль */
+function pnlVis(P) {
+  const T = P.totals, pr = P.payroll || {}; const fee = (ch) => (P.channels.find((c) => c.channel === ch) || {}).platform_fees_tetri || 0;
+  const vatIn = (P.expenses || []).reduce((a, e) => a + (e.vat_in_tetri || 0), 0); const vatPay = Math.max(0, (T.vat_tetri || 0) - vatIn);
+  const pens = Math.max(0, (T.labor_tetri || 0) - (pr.net || 0) - (pr.income_tax || 0));
+  const EXI = { rent: '🏠', utilities: '💡', marketing: '📣', repairs: '🛠️', packaging: '📦' };
+  const items = [
+    ['🧀', L('Продукты и списания', 'პროდუქტები და ჩამოწერა'), (T.cogs_tetri || 0) + (T.waste_tetri || 0), '#FFBE0B'],
+    ['👛', L('Зарплаты (на руки)', 'ხელფასები (ხელზე)'), pr.net || 0, '#8338EC'],
+    ['🏛️', L('Подоходный налог 20%', 'საშემოსავლო 20%'), pr.income_tax || 0, '#F15BB5'],
+    ['🧓', L('Пенсионные взносы', 'საპენსიო'), pens, '#B5179E'],
+    ['🔵', 'Wolt', fee('wolt'), '#00C2E8'], ['🟡', 'Glovo', fee('glovo'), '#FB8500'], ['🟢', 'Bolt', fee('bolt'), '#43AA8B'],
+    ...(P.expenses || []).map((e) => [EXI[e.category] || '🧾', L((EXPC[e.category] || [e.category])[0], (EXPC[e.category] || [, e.category])[1]), e.gross_tetri || 0, e.category === 'rent' ? '#3A86FF' : '#90A4AE']),
+    ['🧾', L('НДС к уплате', 'გადასახდელი დღგ') + (vatIn ? ` (${money(T.vat_tetri)} − ${L('зачёт', 'ჩათვლა')} ${money(vatIn)})` : ''), vatPay, '#E63946']].filter((x) => x[2] > 0);
+  const rev = T.revenue_tetri || 0, cost = items.reduce((a, x) => a + x[2], 0), profit = T.profit_tetri || 0; const base = Math.max(rev, cost, 1);
+  const stack = items.map((x) => `<i style="width:${(x[2] * 100) / base}%;background:${x[3]}" title="${esc(x[1])}: ${money(x[2])}"></i>`).join('') + (profit > 0 ? `<i style="width:${(profit * 100) / base}%;background:#06D6A0" title="${L('Чистая прибыль', 'წმინდა მოგება')}"></i>` : '');
+  const row = (ic, n, v, c, minus) => `<div class="pl-row"><span class="pl-ic" style="background:${c}22">${ic}</span><b style="font-size:15px">${esc(n)}</b><b style="font-size:16px;white-space:nowrap">${minus ? '−' : ''}${money(v)}</b><span class="mut" style="text-align:right">${rev ? shareP(v, rev) : 0}%</span></div>`;
+  return `<div class="card"><div class="row between"><span style="font-size:15px;font-weight:800">💰 ${L('Выручка', 'შემოსავალი')}</span><b style="font-size:26px">${money(rev)}</b></div>
+    <div class="pl-stack">${stack}</div>
+    ${items.map((x) => row(x[0], x[1], x[2], x[3], true)).join('') || `<div class="mut" style="padding:10px 0">${L('Расходов за период пока нет', 'ხარჯები ჯერ არ არის')}</div>`}
+    <div class="pl-big" style="background:${profit < 0 ? '#FFE3E0' : '#D9F8EC'};color:${profit < 0 ? '#B3261E' : '#0B6B4B'}"><span>${profit < 0 ? '📉 ' + L('Убыток', 'ზარალი') : '✅ ' + L('Чистая прибыль', 'წმინდა მოგება')}</span><span>${money(profit)} <span style="font-size:14px;opacity:.75">${rev ? shareP(profit, rev) + '%' : ''}</span></span></div></div>`;
+}
 function viewPnl() {
   if (S.A.pmode === 'year') return viewPnlYear();
   const P = S.A.pnl; if (!P) return aWait(L('Прибыль', 'მოგება'));
@@ -1580,8 +1604,9 @@ function viewPnl() {
     [L('Аренда и прочие расходы', 'იჯარა და სხვა ხარჯები'), T.expenses_tetri || 0, '#6B5A4A'], [L('НДС', 'დღგ'), T.vat_tetri || 0, '#9AA6B2'], [L('Чистая прибыль', 'წმინდა მოგება'), Math.max(0, T.profit_tetri || 0), '#2F6B3A']];
   const whereCard = chartCard('🍕 ' + L('Куда уходит каждый лари выручки', 'სად მიდის შემოსავლის ყოველი ლარი'), donut(out.map(([l, v, c]) => ({ l, v, c, t: money(v) })), money(T.revenue_tetri), L('выручка', 'შემოსავალი')) + (T.profit_tetri < 0 ? `<div style="color:var(--redink);font-weight:800;margin-top:6px">${L('Расходы больше выручки на', 'ხარჯები შემოსავალს აჭარბებს')} ${money(-T.profit_tetri)}</div>` : ''));
   return `${aHead(L('Прибыль', 'მოგება'))}
-  ${whereCard}
+  ${pnlVis(P)}
   ${pmCard}
+  <details class="card"><summary style="cursor:pointer;font-weight:800">📋 ${L('Подробнее: показатели, отчёт о прибыли, каналы', 'დეტალურად')}</summary>
   ${(S.A.check || []).length ? `<div class="card" style="background:#FFF6DC"><b>${L('Чтобы цифры были точными, заполните:', 'რომ ციფრები ზუსტი იყოს, შეავსეთ:')}</b>${S.A.check.map((c) => `<div class="row between" style="padding:6px 0;border-top:1px solid var(--line)"><span>${esc(L(c.ru, c.ka))}</span><button class="b bw sm" data-a="tab" data-k="${c.tab}">${L('Открыть', 'გახსნა')}</button></div>`).join('')}</div>` : ''}
   <div class="kpis"><div class="kpi"><span>${L('Выручка', 'ამონაგები')}</span><b>${money(T.revenue_tetri)}</b><span class="mut">${T.orders} ${L('заказов · средний чек', 'შეკვეთა · საშუალო ჩეკი')} ${money(T.avg_check_tetri)}</span></div>
     <div class="kpi"><span>${L('Чистая прибыль', 'წმინდა მოგება')}</span><b class="${T.profit_tetri < 0 ? 'neg' : ''}">${money(T.profit_tetri)}</b><span class="mut">${K.profit_pct}% ${L('от выручки без НДС', 'ამონაგებიდან დღგ-ს გარეშე')}</span>${T.partial ? `<span class="mut">${L('прогноз на весь месяц', 'პროგნოზი მთელი თვისთვის')}: <b class="${T.forecast_profit_tetri < 0 ? 'neg' : ''}">${money(T.forecast_profit_tetri)}</b></span>` : ''}</div>
@@ -1606,7 +1631,7 @@ function viewPnl() {
     ${line(L('= Чистая прибыль', '= წმინდა მოგება'), T.profit_tetri, 'ptot')}
   </table><p class="mut" style="margin:6px 0 0">${P.vat_payer ? L('Компания отмечена как плательщик НДС: из выручки вычтен НДС 18%, из расходов с НДС — НДС к зачёту.', 'კომპანია მონიშნულია დღგ-ს გადამხდელად: ამონაგებიდან გამოკლებულია დღგ 18%, დღგ-იანი ხარჯებიდან — ჩასათვლელი დღგ.') : L('Компания отмечена как НЕ плательщик НДС.', 'კომპანია მონიშნულია, როგორც დღგ-ს არაგადამხდელი.')} ${isOwner() ? `<button class="b bw sm" data-a="taxEdit">${L('Налоги', 'გადასახადები')}</button>` : ''}</p></div>
   <div class="card"><b>${L('Сколько зарабатываем: зал, сайт, Wolt, Glovo', 'რამდენს ვგამოიმუშავებთ: დარბაზი, საიტი, Wolt, Glovo')}</b><table><tr><th>${L('Канал', 'არხი')}</th><th class="n">${L('Заказы', 'შეკვეთები')}</th><th class="n">${L('Средний чек', 'საშუალო ჩეკი')}</th><th class="n">${L('Выручка', 'ამონაგები')}</th><th class="n">${L('Продукты', 'პროდუქტები')}</th><th class="n">${L('Площадка', 'პლატფორმა')}</th><th class="n">${L('Остаётся нам', 'ჩვენ გვრჩება')}</th><th class="n">%</th></tr>
-    ${P.channels.map((c) => `<tr><td><b>${CHN[c.channel] || c.channel}</b></td><td class="n">${c.orders}</td><td class="n">${money(c.avg_check_tetri)}</td><td class="n">${money(c.revenue_tetri)}</td><td class="n">${money(c.cogs_tetri)}</td><td class="n">${c.platform_fees_tetri ? money(c.platform_fees_tetri) + ` <span class="mut">${c.platform_rate_pct}%</span>` : '—'}</td><td class="n"><b>${money(c.contribution_tetri)}</b></td><td class="n">${c.revenue_tetri ? Math.round(c.contribution_tetri * 100 / c.revenue_tetri) : 0}%</td></tr>`).join('')}</table></div>`;
+    ${P.channels.map((c) => `<tr><td><b>${CHN[c.channel] || c.channel}</b></td><td class="n">${c.orders}</td><td class="n">${money(c.avg_check_tetri)}</td><td class="n">${money(c.revenue_tetri)}</td><td class="n">${money(c.cogs_tetri)}</td><td class="n">${c.platform_fees_tetri ? money(c.platform_fees_tetri) + ` <span class="mut">${c.platform_rate_pct}%</span>` : '—'}</td><td class="n"><b>${money(c.contribution_tetri)}</b></td><td class="n">${c.revenue_tetri ? Math.round(c.contribution_tetri * 100 / c.revenue_tetri) : 0}%</td></tr>`).join('')}</table></div></details>`;
 }
 function viewPnlYear() {
   const Y0 = S.A.pyr; if (!Y0) return ''; const Y = Object.assign({}, Y0, { months: Y0.months.filter((m) => m.orders || m.labor_tetri || m.expenses_tetri) });
