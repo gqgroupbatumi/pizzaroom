@@ -212,9 +212,11 @@ tr.ptot td{font-weight:900;background:#F4EAD6}
 const $app = document.getElementById('app');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = (t) => { const v = (Number(t) || 0) / 100; return (Math.round(v * 100) % 100 === 0 ? String(Math.round(v)) : v.toFixed(2)) + ' ₾'; };
+const APP = ['pos', 'kitchen'].includes(window.PR_APP) ? window.PR_APP : 'all'; // /pos/ — только касса, /kitchen/ — только кухня
+const TK = APP === 'all' ? '' : '_' + APP; // у каждого приложения свой вход: админка на том же компьютере не открывается в кассе
 const store = { get: (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 const S = {
-  token: store.get('pr_token', null), me: store.get('pr_me', null), device: store.get('pr_device', null) || ('kassa-' + Math.random().toString(36).slice(2, 7)),
+  token: store.get('pr_token' + TK, null), me: store.get('pr_me' + TK, null), device: store.get('pr_device', null) || ('kassa-' + Math.random().toString(36).slice(2, 7)),
   view: 'login', kitchen: [], kseen: new Set(), kack: new Set(), pin: '', loginErr: '', shift: null, settings: null, cats: [], menu: [], channel: 'hall', ext: '', cat: 'pizza', q: '', stopMode: false,
   draft: [], orderId: null, order: null, orders: [], modal: null, busy: false, toast: '',
   alang: store.get('pr_alang', 'ru'), atab: 'orders', A: {}
@@ -256,7 +258,7 @@ async function login() {
   const pin = S.pin; S.pin = ''; S.busy = true; render();
   try {
     const d = await api('POST', '/api/login', { pin, device: S.device });
-    S.token = d.token; S.me = d.staff; store.set('pr_token', S.token); store.set('pr_me', S.me); S.loginErr = '';
+    S.token = d.token; S.me = d.staff; store.set('pr_token' + TK, S.token); store.set('pr_me' + TK, S.me); S.loginErr = '';
     await afterLogin();
   } catch (e) { S.loginErr = errText(e, true); }
   S.busy = false; render();
@@ -269,7 +271,9 @@ async function afterLogin() {
     const sh = await api('GET', '/api/shifts/current'); S.shift = sh.open ? sh : null;
   } catch (e) { if (e.status === 401) return; }
   S.view = S.me.role === 'cook' ? 'kitchen' : isBoss() ? 'admin' : S.shift ? 'pos' : 'shift'; // владелец и администратор — сразу в админку
-  if (S.restore) { S.restore = false; try { const v = JSON.parse(sessionStorage.getItem('pr_view') || 'null'); // обновили страницу — остаёмся в том же разделе
+  if (APP === 'pos' && S.me.role === 'cook') { logout(true); S.loginErr = 'ეს სალაროა — მზარეული შედის სამზარეულოს აპლიკაციაში'; return render(); }
+  if (APP === 'pos') S.view = S.shift ? 'pos' : 'shift'; if (APP === 'kitchen') S.view = 'kitchen';
+  if (S.restore && APP !== 'all') S.restore = false; if (S.restore) { S.restore = false; try { const v = JSON.parse(sessionStorage.getItem('pr_view') || 'null'); // обновили страницу — остаёмся в том же разделе
     if (v && v.v === 'admin' && isBoss()) { S.view = 'admin'; if (v.t) S.atab = v.t; } else if (v && v.v === 'kitchen') S.view = 'kitchen'; else if (v && v.v === 'pos' && S.shift) S.view = 'pos'; } catch (e) {} }
   if (S.view === 'kitchen') { await loadKitchen(); }
   if (S.view === 'pos') { await loadMenu(); await loadOrders(); }
@@ -277,7 +281,7 @@ async function afterLogin() {
 }
 function logout(silent) {
   if (!silent && S.token) api('POST', '/api/logout').catch(() => {});
-  S.token = null; S.me = null; store.set('pr_token', null); store.set('pr_me', null);
+  S.token = null; S.me = null; store.set('pr_token' + TK, null); store.set('pr_me' + TK, null);
   S.view = 'login'; S.order = null; S.orderId = null; S.draft = []; S.modal = null; render();
 }
 async function loadMenu() { try { [S.menu, S.promoNow] = await Promise.all([api('GET', '/api/menu?channel=' + S.channel), api('GET', '/api/promo/now?channel=' + S.channel).catch(() => null)]); } catch (e) { toast(errText(e, true)); } }
@@ -517,7 +521,7 @@ const closeShift = (cash) => act(async () => { await api('POST', '/api/shifts/cl
 function viewLogin() {
   return `<div class="login"><div class="mbox">
     <img src="/logo-dark.png" alt="Pizza Room" style="height:70px;align-self:flex-start">
-    <h3>შესვლა PIN-ით</h3>
+    <h3>${APP === 'pos' ? 'სალარო · ' : APP === 'kitchen' ? 'სამზარეულო · ' : ''}შესვლა PIN-ით</h3>
     <div class="pin" aria-live="polite">${'●'.repeat(S.pin.length) + '○'.repeat(Math.max(0, 6 - S.pin.length))}</div>
     ${S.loginErr ? `<div class="err" role="alert">${esc(S.loginErr)}</div>` : ''}
     <div class="pad">${['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', 'OK'].map((k) => `<button data-a="lk" data-k="${k}" ${S.busy ? 'disabled' : ''}>${k}</button>`).join('')}</div>
@@ -534,8 +538,8 @@ function topBar() {
   const inc = S.orders.filter((o) => o.channel === 'site' && !o.accepted_at && o.status === 'open').length;
   return `<header class="top"><div class="tl">${S.view === 'admin' ? `<button class="mburg" data-a="mmenu" aria-label="Menu">☰</button>` : ''}<div class="seg tlang">${['ka', 'ru', 'en'].map((k) => `<button class="${S.alang === k ? 'on' : ''}" data-a="alang" data-k="${k}">${k.toUpperCase()}</button>`).join('')}</div>
     ${inc ? `<span class="badge" title="ახალი შეკვეთები საიტიდან">${inc}</span>` : ''}</div><img class="tlogo" src="/logo-light.png" alt="Pizza Room"><div class="tr">
-    <button class="tb ${S.view === 'kitchen' ? 'on' : ''}" data-a="goKitchen">${L('Кухня', 'სამზარეულო')}${S.kitchen.filter((o) => !o.later).length ? ' · ' + S.kitchen.filter((o) => !o.later).length : ''}</button>
-    ${S.me?.role !== 'cook' ? `<button class="tb ${S.view === 'pos' ? 'on' : ''}" data-a="goPos">${L('Касса', 'სალარო')}</button>` : ''}${isBoss() ? `<button class="tb ${S.view === 'admin' ? 'on' : ''}" data-a="goAdmin">${L('Админка', 'ადმინი')}</button>` : ''}
+    ${APP === 'pos' ? '' : `<button class="tb ${S.view === 'kitchen' ? 'on' : ''}" data-a="goKitchen">${L('Кухня', 'სამზარეულო')}${S.kitchen.filter((o) => !o.later).length ? ' · ' + S.kitchen.filter((o) => !o.later).length : ''}</button>`}
+    ${S.me?.role !== 'cook' && APP !== 'kitchen' ? `<button class="tb ${S.view === 'pos' ? 'on' : ''}" data-a="goPos">${L('Касса', 'სალარო')}</button>` : ''}${isBoss() && APP === 'all' ? `<button class="tb ${S.view === 'admin' ? 'on' : ''}" data-a="goAdmin">${L('Админка', 'ადმინი')}</button>` : ''}
     ${S.shift && S.view === 'pos' ? `<button class="tb" data-a="askClose">${L('Закрыть смену', 'ცვლის დახურვა')}</button>` : ''}
     <button class="tb" data-a="logout">${L('Выход', 'გასვლა')}</button></div></header>${S.pst && S.pst.test ? `<div style="background:repeating-linear-gradient(135deg,#FFC244 0 18px,#FFD36E 18px 36px);color:#2a1d12;font-weight:900;padding:8px 16px;font-size:15px;text-align:center">🧪 ტესტის რეჟიმი · ТЕСТОВЫЙ РЕЖИМ — ეს შეკვეთები წაიშლება</div>` : ''}${prBad() && S.view !== 'admin' ? `<div style="background:#C0392B;color:#fff;font-weight:800;padding:10px 16px;font-size:16px">🖨 სამზარეულოს პრინტერი არ ბეჭდავს — ${S.pst.pending} შეკვეთა ელოდება. შეამოწმეთ: კომპიუტერი ჩართულია, პრინტერი ჩართულია, ქაღალდი არის.${S.pst.error ? ' (' + esc(S.pst.error) + ')' : ''}</div>` : ''}`;
 }
@@ -663,6 +667,7 @@ function subNav() { const g = subOf(S.atab); if (!g) return ''; const ok = new M
   return `<div class="seg subnav">${vis.map((k) => `<button class="${S.atab === k ? 'on' : ''}" data-a="tab" data-k="${k}">${SNAME()[k]}</button>`).join('')}</div>`; }
 const tbTime = (ts) => { if (!ts) return ''; const d = new Date(String(ts).replace(' ', 'T') + (/Z|\+/.test(ts) ? '' : 'Z')); return isNaN(d) ? String(ts) : new Date(d.getTime() + 4 * 3600e3).toISOString().slice(0, 16).replace('T', ' '); };
 async function openAdmin(tab) {
+  if (APP !== 'all') return;
   if (tab === 'margin' || tab === 'finance') tab = 'analytics';
   S.view = 'admin'; S.atab = tab; render();
   try {
@@ -1877,9 +1882,9 @@ document.addEventListener('click', (e) => {
     case 'aCancel': { const r = m.reject; S.modal = null; r(null); return render(); }
     case 'logout': return logout();
     case 'openShift': return openShift(val('openCash'));
-    case 'goPos': if (!S.shift) { S.view = 'shift'; return render(); } S.view = 'pos'; return loadMenu().then(loadOrders).then(render);
-    case 'goAdmin': return openAdmin(S.atab);
-    case 'goKitchen': S.view = 'kitchen'; return loadKitchen().then(render);
+    case 'goPos': if (APP === 'kitchen') return; if (!S.shift) { S.view = 'shift'; return render(); } S.view = 'pos'; return loadMenu().then(loadOrders).then(render);
+    case 'goAdmin': if (APP !== 'all') return; return openAdmin(S.atab);
+    case 'goKitchen': if (APP === 'pos') return; S.view = 'kitchen'; return loadKitchen().then(render);
     case 'testOn': return run(async () => { S.A.test = await api('POST', '/api/test/mode', { on: true }); S.pst = Object.assign(S.pst || {}, { test: true }); toast(L('Тестовый режим включён', 'ტესტის რეჟიმი ჩართულია')); });
     case 'testOff': { if (S.A.test && S.A.test.orders && !confirm(L('Тестовые заказы ещё не удалены. Всё равно выключить режим? (их можно удалить и позже)', 'ტესტური შეკვეთები ჯერ არ წაშლილა. მაინც გამოვრთოთ?'))) return;
       return run(async () => { S.A.test = await api('POST', '/api/test/mode', { on: false }); if (S.pst) S.pst.test = false; toast(L('Тестовый режим выключен — заказы снова настоящие', 'ტესტის რეჟიმი გამორთულია')); }); }

@@ -3598,6 +3598,15 @@ async function seoSitemap(env) {
   return new Response(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls.join('\n')}\n</urlset>`,
     { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'public, max-age=3600' } });
 }
+// Отдельные приложения для персонала: /pos/ — только касса, /kitchen/ — только кухня (та же программа, но без админки и со своим входом)
+async function staffApp(env, url, app) {
+  const r = await env.ASSETS.fetch(new Request(url.origin + '/kassa/', { method: 'GET' }));
+  let html = await r.text();
+  html = html.replace(/<link rel="manifest" href="[^"]*">/, `<link rel="manifest" href="/${app}.webmanifest?v=1">`)
+    .replace('<title>Pizza Room</title>', `<title>Pizza Room · ${app === 'pos' ? 'სალარო' : 'სამზარეულო'}</title><script>window.PR_APP = '${app}';</script>`);
+  const h = new Headers(r.headers); h.set('content-type', 'text/html; charset=utf-8'); h.set('cache-control', 'no-cache'); h.set('x-robots-tag', 'noindex, nofollow'); h.delete('content-length'); h.delete('etag');
+  return new Response(html, { status: 200, headers: h });
+}
 // Возвращает ответ для «сайтовых» адресов или null, если адрес не наш (тогда работает API)
 async function seoRoute(request, env, url) {
   if (request.method !== 'GET' && request.method !== 'HEAD') return null;
@@ -3605,6 +3614,7 @@ async function seoRoute(request, env, url) {
   const R = (to) => Response.redirect(to.startsWith('http') ? to : SITE + to, 301);
   if (url.hostname.startsWith('www.') || url.protocol === 'http:') return R(path + url.search);
   try { path = decodeURIComponent(path); } catch (e) {}
+  { const am = path.match(/^\/(pos|kitchen)(\/)?$/); if (am) { if (!am[2]) return R(`/${am[1]}/`); return staffApp(env, url, am[1]); } }
   if (/^\/(terms|refund|privacy)\/?$/.test(path)) return null; // юридические страницы — свой обработчик
   const lm = path.match(/^\/(ru|en|ka)(\/.*)?$/); const l = lm ? lm[1] : 'ka'; const rest = lm ? (lm[2] || '/') : path;
   if (l === 'ka' && lm) return R(rest + url.search); // /ka/... → без префикса
