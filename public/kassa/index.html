@@ -647,10 +647,10 @@ const perUnitLabel = (u) => u === 'pcs' ? L('за шт', 'ცალზე') : u 
 const TABS = () => [...(isBoss() ? [['advice', L('Советник', 'მრჩეველი')], ['cash', L('Наличные в кассе', 'ნაღდი სალაროში')]] : []), ...(isOwner() ? [['orders', L('Заказы сейчас', 'მიმდინარე შეკვეთები')]] : []), ['asales', L('Продажи', 'გაყიდვები')], ['analytics', L('Аналитика', 'ანალიტიკა')], ['apizza', L('Пиццы', 'პიცები')], ['adrinks', L('Напитки', 'სასმელები')], ['pnl', L('Прибыль', 'მოგება')], ['adays', L('Дни и часы', 'დღეები და საათები')], ['expenses', L('Расходы', 'ხარჯები')], ...(isBoss() ? [['payroll', L('Зарплаты', 'ხელფასები')]] : []), ['promos', L('Акции и праздники', 'აქციები და დღესასწაულები')], ['combos', L('Комбо', 'კომბო')], ['settle', L('Wolt и Glovo', 'Wolt და Glovo')], ...(isOwner() ? [['onlinepay', L('Онлайн-оплата и реквизиты', 'ონლაინ გადახდა და რეკვიზიტები')]] : []), ['customers', L('Клиенты', 'კლიენტები')], ['menu', L('Меню и рецепты', 'მენიუ და რეცეპტები')], ['stock', L('Склад', 'საწყობი')], ['ingredients', L('Ингредиенты', 'ინგრედიენტები')],
   ['shifts', L('Смены и кассиры', 'ცვლები და მოლარეები')], ['settings', L('Доставка и настройки', 'მიტანა და პარამეტრები')], ['courier', L('Доставка и курьер', 'მიტანა და კურიერი')], ...(isBoss() ? [['staff', L('Сотрудники и график', 'თანამშრომლები და გრაფიკი')]] : []), ...(isOwner() ? [['audit', L('Журнал', 'ჟურნალი')]] : [])];
 // разделы сгруппированы; «Отчёты», «Склад», «Контроль кассы» — с вкладками внутри
-const SUBS = [['asales', 'analytics', 'apizza', 'adrinks', 'pnl', 'adays', 'settle'], ['payroll', 'expenses'], ['stock', 'ingredients'], ['shifts', 'audit']];
+const SUBS = [['asales', 'analytics', 'apizza', 'adrinks', 'pnl', 'adays'], ['payroll', 'expenses'], ['stock', 'ingredients'], ['shifts', 'audit']];
 const subOf = (k) => SUBS.find((g) => g.includes(k));
 const GROUPS = () => [[null, ['orders']], [L('Кухня и склад', 'სამზარეულო და საწყობი'), ['menu', 'stock']], [L('Продажи', 'გაყიდვები'), ['promos', 'combos', 'advice', 'customers', 'courier']],
-  [L('Финансы', 'ფინანსები'), ['cash', 'analytics', 'expenses', 'onlinepay']], [L('Персонал', 'პერსონალი'), ['staff', 'shifts']], ['', ['settings']]];
+  [L('Финансы', 'ფინანსები'), ['cash', 'analytics', 'settle', 'expenses', 'onlinepay']], [L('Персонал', 'პერსონალი'), ['staff', 'shifts']], ['', ['settings']]];
 const PICON = { advice: '🤖', orders: '🧾', cash: '💵', analytics: '📊', margin: '📈', finance: '🩺', expenses: '📉', payroll: '👛', settle: '🛵', onlinepay: '💳', promos: '🎉', combos: '🍕', customers: '👥', courier: '🛵', menu: '📋', stock: '📦', staff: '🧑‍🍳', shifts: '🔒', settings: '⚙️' };
 const PNAME = () => ({ courier: L('Курьер', 'კურიერი'), cash: L('Наличные', 'ნაღდი ფული'), settle: L('Wolt и Glovo', 'Wolt და Glovo'), onlinepay: L('Онлайн-оплата', 'ონლაინ გადახდა'), staff: L('Сотрудники', 'თანამშრომლები'), menu: L('Меню', 'მენიუ'), promos: L('Акции', 'აქციები'), analytics: L('Аналитика', 'ანალიტიკა'), expenses: L('Расходы', 'ხარჯები'), stock: L('Склад', 'საწყობი'), shifts: L('Контроль кассы', 'სალაროს კონტროლი'), settings: L('Настройки', 'პარამეტრები') });
 const SNAME = () => ({ asales: '🧾 ' + L('Продажи', 'გაყიდვები'), apizza: '🍕 ' + L('Пиццы', 'პიცები'), adrinks: '🥤 ' + L('Напитки', 'სასმელები'), adays: '📅 ' + L('Дни и часы', 'დღეები და საათები'), settle: '🛵 Wolt ' + L('и', 'და') + ' Glovo', payroll: '👛 ' + L('Зарплаты', 'ხელფასები'), expenses: '🧾 ' + L('Прочие расходы', 'სხვა ხარჯები'), analytics: '💰 ' + L('Выручка', 'შემოსავალი'), margin: L('Маржа и продукция', 'მარჟა და პროდუქცია'), finance: L('Финансы и ситуация', 'ფინანსები და მდგომარეობა'), pnl: '📈 ' + L('Прибыль', 'მოგება'), stock: L('Остатки и движения', 'ნაშთები და მოძრაობა'), ingredients: L('Ингредиенты', 'ინგრედიენტები'), shifts: L('Смены и кассиры', 'ცვლები და მოლარეები'), audit: L('Журнал действий', 'მოქმედებების ჟურნალი') });
@@ -1435,12 +1435,59 @@ function promoForm(p) {
     <div class="row"><button class="b bo" style="flex:1" data-a="mClose">${L('Отмена', 'გაუქმება')}</button><button class="b bd" style="flex:1" data-a="prSave">${L('Сохранить', 'შენახვა')}</button></div>` };
   render();
 }
+/* Реальная комиссия по месяцам: инвойс за период делится по дням между месяцами */
+function platSplit(p) {
+  const M = {}; const day = (x) => Date.parse(x + 'T00:00:00Z');
+  for (const i of p.invoices) { const a = day(i.period_from), b = day(i.period_to); const n = Math.max(1, Math.round((b - a) / 864e5) + 1);
+    const net = i.gross_tetri - i.partner_disc_tetri, fee = i.fees_tetri - i.adj_tetri;
+    for (let k = 0; k < n; k++) { const m = new Date(a + k * 864e5).toISOString().slice(0, 7); const r = M[m] || (M[m] = { net: 0, fee: 0, ours: 0, pay: 0, inv: new Set() });
+      r.net += net / n; r.fee += fee / n; r.ours += i.ours.net_tetri / n; r.pay += i.payout_tetri / n; r.inv.add(i.id); } }
+  return Object.entries(M).sort((x, y) => y[0].localeCompare(x[0]));
+}
+function platMonths(D) {
+  const PN = { wolt: 'Wolt', glovo: 'Glovo', bolt: 'Bolt Food' }; const withInv = D.platforms.filter((p) => p.invoices.length); if (!withInv.length) return '';
+  return withInv.map((p) => { const C = p.setting_rate_pct; const rows = platSplit(p);
+    let tot = { net: 0, fee: 0, over: 0 };
+    const tr = rows.map(([m, r]) => { const pct = r.net ? r.fee * 100 / r.net : 0; const over = r.fee - r.net * C / 100; tot.net += r.net; tot.fee += r.fee; tot.over += over;
+      return `<tr><td><b>${MONN(+m.slice(5))} ${m.slice(0, 4)}</b></td><td class="n">${money(Math.round(r.net))}</td><td class="n">${money(Math.round(r.fee))}</td><td class="n"><b class="${pct > C + 0.5 ? 'neg' : ''}">${pct.toFixed(1)}%</b></td><td class="n">${C}%</td><td class="n">${Math.abs(over) < 100 ? '<span class="pos-pill good">' + L('по договору', 'ხელშეკრულებით') + '</span>' : `<b class="${over > 0 ? 'neg' : ''}">${over > 0 ? '+' : ''}${money(Math.round(over))}</b>`}</td><td class="n">${money(Math.round(r.ours))}</td><td class="n">${Math.abs(r.net - r.ours) < 100 ? '✓' : `<b class="neg">${r.net - r.ours > 0 ? '+' : ''}${money(Math.round(r.net - r.ours))}</b>`}</td></tr>`; }).join('');
+    const tp = tot.net ? tot.fee * 100 / tot.net : 0;
+    return `<div class="card"><h3 style="margin:0">📅 ${PN[p.platform]} — ${L('реальная комиссия по месяцам', 'რეალური საკომისიო თვეების მიხედვით')}</h3>
+      <div class="mut" style="font-size:13px">${L('Считается сама из загруженных инвойсов: сколько площадка удержала (услуги, НДС, штрафы минус компенсации) от продаж после скидки партнёра. Сравнение — со ставкой в настройках канала', 'ითვლება ატვირთული ინვოისებიდან: რამდენი დაიკავა პლატფორმამ გაყიდვებიდან. შედარება — არხის პარამეტრების განაკვეთთან')} (${C}%).</div>
+      <div style="overflow-x:auto"><table style="font-size:13px"><tr><th>${L('Месяц', 'თვე')}</th><th class="n">${L('Их продажи', 'მათი გაყიდვები')}</th><th class="n">${L('Удержали', 'დაიკავეს')}</th><th class="n">${L('Реально', 'რეალურად')}</th><th class="n">${L('Договор', 'ხელშეკრულება')}</th><th class="n">${L('Переплата', 'ზედმეტი')}</th><th class="n">${L('Пробито у нас', 'ჩვენთან')}</th><th class="n">${L('Расхождение', 'სხვაობა')}</th></tr>${tr}
+      <tr class="ptot"><td><b>${L('Итого', 'სულ')}</b></td><td class="n"><b>${money(Math.round(tot.net))}</b></td><td class="n"><b>${money(Math.round(tot.fee))}</b></td><td class="n"><b>${tp.toFixed(1)}%</b></td><td class="n">${C}%</td><td class="n"><b class="${tot.over > 100 ? 'neg' : ''}">${money(Math.round(tot.over))}</b></td><td></td><td></td></tr></table></div></div>`; }).join('');
+}
+/* Расхождения по каждому инвойсу — с доводами и готовым письмом площадке */
+function platIssues(p, i) {
+  const PN = { wolt: 'Wolt', glovo: 'Glovo', bolt: 'Bolt Food' }; const C = p.setting_rate_pct; const net = i.gross_tetri - i.partner_disc_tetri; const out = [];
+  const g = (t) => (Math.abs(t) / 100).toFixed(2) + ' GEL';
+  if (Math.abs(i.diff_tetri) >= 100) {
+    if (i.diff_tetri < 0) out.push({ ru: `В инвойсе продажи после скидки ${money(net)}, а у нас пробито ${i.ours.orders} заказов на ${money(i.ours.net_tetri)} — площадка показала на ${money(-i.diff_tetri)} меньше. Требуйте список заказов за период и доплату.`,
+      en: `Your invoice shows net sales of ${g(net)} for ${i.period_from} – ${i.period_to}, while our POS recorded ${i.ours.orders} ${PN[p.platform]} orders worth ${g(i.ours.net_tetri)}. The difference is ${g(i.diff_tetri)} in your favour. Please send the order-level report for this period and pay the missing amount.` });
+    else out.push({ ru: `В инвойсе продажи ${money(net)}, а у нас пробито только ${money(i.ours.net_tetri)} (${i.ours.orders} зак.) — на ${money(i.diff_tetri)} больше, чем в кассе. Скорее всего кассир не пробил заказы: проверьте смены за эти дни.`, en: '' });
+  }
+  if (net > 0) { const pct = (i.fees_tetri - i.adj_tetri) * 100 / net; const over = (i.fees_tetri - i.adj_tetri) - net * C / 100;
+    if (pct > C + 0.5 && over >= 100) out.push({ ru: `Удержали ${pct.toFixed(1)}% вместо ${C}% по договору — переплата ${money(Math.round(over))}. Попросите расшифровку удержаний (штрафы, доставка, реклама) и возврат лишнего.`,
+      en: `For ${i.period_from} – ${i.period_to} you deducted ${g(i.fees_tetri - i.adj_tetri)}, which is ${pct.toFixed(1)}% of net sales (${g(net)}). Our agreement is ${C}% including VAT, i.e. ${g(Math.round(net * C / 100))}. Please provide a breakdown of all deductions and refund the excess of ${g(Math.round(over))}.` }); }
+  if (i.paid_at && i.paid_diff_tetri && i.paid_diff_tetri <= -100) out.push({ ru: `Перечислили ${money(i.paid_tetri)} вместо ${money(i.payout_tetri)} по инвойсу — недоплата ${money(-i.paid_diff_tetri)}.`,
+    en: `Invoice ${i.invoice_no || ''} (${i.period_from} – ${i.period_to}) states a payout of ${g(i.payout_tetri)}, but we received ${g(i.paid_tetri)}. Please transfer the remaining ${g(-i.paid_diff_tetri)}.` });
+  return out;
+}
+function platClaims(D) {
+  const PN = { wolt: 'Wolt', glovo: 'Glovo', bolt: 'Bolt Food' }; const all = [];
+  for (const p of D.platforms) for (const i of p.invoices) { const is = platIssues(p, i); if (is.length) all.push({ p, i, is }); }
+  if (!D.platforms.some((p) => p.invoices.length)) return '';
+  if (!all.length) return `<div class="note" style="background:#E3EBD8;color:var(--ink)">✅ ${L('По всем загруженным инвойсам расхождений нет: продажи совпадают с кассой, комиссия — по договору.', 'ატვირთულ ინვოისებში სხვაობა არ არის.')}</div>`;
+  return `<div class="card" style="border-left:5px solid #C0392B"><h3 style="margin:0">⚠️ ${L('Расхождения и доводы', 'სხვაობები და არგუმენტები')} · ${all.length}</h3>
+    ${all.map(({ p, i, is }) => `<div style="border-top:1px solid var(--line);padding-top:8px;margin-top:8px"><b>${PN[p.platform]} · ${i.period_from} — ${i.period_to}</b>${i.invoice_no ? ' <span class="mut">№ ' + esc(i.invoice_no) + '</span>' : ''}
+      <ul style="margin:6px 0 6px 18px;padding:0">${is.map((x) => `<li>${esc(x.ru)}</li>`).join('')}</ul>
+      ${is.some((x) => x.en) ? `<button class="b bd sm" data-a="stClaim" data-id="${i.id}">📋 ${L('Скопировать письмо площадке (EN)', 'წერილის კოპირება (EN)')}</button>` : ''}</div>`).join('')}</div>`;
+}
 function viewSettle() {
   const D = S.A.settle || { platforms: [], receivables: [], receivables_owed_tetri: 0 };
   const PN = { wolt: 'Wolt', glovo: 'Glovo', bolt: 'Bolt Food' };
   const total = D.platforms.reduce((a, p) => a + p.total_owed_tetri, 0) + D.receivables_owed_tetri;
   const diff = (t) => t == null ? '' : Math.abs(t) < 100 ? `<span class="pos-pill good">${L('сходится', 'ემთხვევა')}</span>` : `<b class="${t > 0 ? 'neg' : ''}">${t > 0 ? '+' : ''}${money(t)}</b>`;
-  return `${aHead('Wolt ' + L('и', 'და') + ' Glovo')}${platVerdict()}<div class="row between" style="margin-top:6px"><h2 style="margin:0">${L('Инвойсы, выплаты и сверка', 'ინვოისები, ჩარიცხვები და შედარება')}</h2><button class="b by" data-a="plNew">+ ${L('Инвойс площадки', 'პლატფორმის ინვოისი')}</button></div>
+  return `<h1 style="margin-bottom:0">🛵 Wolt ${L('и', 'და')} Glovo</h1>${periodBar()}${platVerdict()}${platMonths(D)}${platClaims(D)}<div class="row between" style="margin-top:6px"><h2 style="margin:0">${L('Инвойсы, выплаты и сверка', 'ინვოისები, ჩარიცხვები და შედარება')}</h2><button class="b by" data-a="plNew">+ ${L('Инвойс площадки', 'პლატფორმის ინვოისი')}</button></div>
   <div class="note">${L('Внесите инвойс Wolt или Glovo за период — система сравнит их продажи с заказами, пробитыми у нас за те же дни, и покажет, сколько они должны. Разница «+» — у площадки продаж больше, чем пробито в кассе: проверьте, не забыли ли кассиры заказы. Когда деньги придут — отметьте сумму, недоплата будет видна сразу.', 'შეიყვანეთ Wolt-ის ან Glovo-ს ინვოისი პერიოდისთვის — სისტემა შეადარებს მათ გაყიდვებს ჩვენთან იმავე დღეებში გატარებულ შეკვეთებს და გაჩვენებთ, რამდენი უნდა ჩაგვირიცხონ. სხვაობა „+“ — პლატფორმაზე მეტი გაყიდვაა, ვიდრე სალაროშია გატარებული: შეამოწმეთ, ხომ არ დაავიწყდათ მოლარეებს შეკვეთები. თანხის ჩარიცხვისას მონიშნეთ თანხა — ნაკლებად ჩარიცხული მაშინვე გამოჩნდება.')}</div>
   <div class="kpis"><div class="kpi"><span>${L('Всего нам должны', 'სულ ჩვენი მისაღები')}</span><b>${money(total)}</b></div>
   ${D.platforms.map((p) => `<div class="kpi"><span>${PN[p.platform]} ${L('должны', 'მისაღები')}</span><b>${money(p.total_owed_tetri)}</b><span class="mut">${L('по инвойсам', 'ინვოისებით')} ${money(p.invoiced_owed_tetri)} + ${L('ещё без инвойса', 'ჯერ ინვოისის გარეშე')} ≈${money(p.not_invoiced.expected_payout_tetri)} (${p.not_invoiced.orders} ${L('зак.', 'შეკვ.')})</span></div>`).join('')}
@@ -1988,6 +2035,9 @@ document.addEventListener('click', (e) => {
     case 'tab': S.A.verify = null; return openAdmin(d.k);
     case 'alang': S.alang = d.k; store.set('pr_alang', d.k); return render();
     case 'aRange': S.A.range = d.k; S.A.aOpen = false; S.A.rlabel = ''; return run(loadAnalytics);
+    case 'stClaim': { const D = S.A.settle; let txt = ''; for (const p of D.platforms) for (const i of p.invoices) if (String(i.id) === d.id) txt = 'Hello,\n\nPizza Room (LTD Pizzaroom, ID 445521016) — reconciliation of invoice ' + (i.invoice_no || '') + ' for ' + i.period_from + ' – ' + i.period_to + ':\n\n' + platIssues(p, i).filter((x) => x.en).map((x, k) => (k + 1) + '. ' + x.en).join('\n\n') + '\n\nThank you,\nPizza Room Batumi';
+      const show = () => { S.modal = { type: 'form', html: () => `<h3>${L('Письмо площадке', 'წერილი')}</h3><textarea class="f" style="height:300px">${esc(txt)}</textarea>` }; render(); };
+      try { navigator.clipboard.writeText(txt).then(() => toast(L('Письмо скопировано — вставьте в чат или почту площадки', 'წერილი დაკოპირდა')), show); } catch (e) { show(); } return; }
     case 'aOpen': S.A.aOpen = !S.A.aOpen; S.A.apy = null; S.A.cs = null; S.A.cm = null; return render();
     case 'calM': { const c = S.A.cm || (S.A.range === 'custom' && S.A.from ? S.A.from.slice(0, 7) : todayS().slice(0, 7)); const dt = new Date(Date.UTC(+c.slice(0, 4), +c.slice(5, 7) - 1 + Number(d.n), 1)); S.A.cm = dt.toISOString().slice(0, 7); return render(); }
     case 'calD': { const ds = d.d; if (!S.A.cs) { S.A.cs = ds; return render(); } const x = S.A.cs < ds ? S.A.cs : ds, y2 = S.A.cs < ds ? ds : S.A.cs;
