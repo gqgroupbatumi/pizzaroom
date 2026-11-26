@@ -2657,7 +2657,7 @@ const schemaReady = new WeakSet();
 const schemaRun = new WeakMap();
 // Каждый запрос сам доводит обновление базы до конца (миграции повторяемые, шаги помечаются в data_v).
 // Нельзя ждать промис другого запроса: в Cloudflare Workers он может так и не завершиться — тогда сайт «висит».
-const SCHEMA_MARK = 'm65';   // меняйте при добавлении новой миграции
+const SCHEMA_MARK = 'm66';   // меняйте при добавлении новой миграции
 async function ensureSchema(env) {
   if (schemaReady.has(env.DB)) return;
   try { const r = await env.DB.prepare(`SELECT value FROM settings WHERE key = 'schema_mark'`).first(); if (r && r.value === SCHEMA_MARK) { schemaReady.add(env.DB); return; } } catch (e) {}
@@ -3211,6 +3211,16 @@ async function migrate(env) {
         D.stmt(`INSERT INTO settings (key, value) VALUES ('drinks_v', '8') ON CONFLICT(key) DO UPDATE SET value = '8'`)];
       await D.batch(st);
     }
+  }
+  { // вода Бахмаро: товара в базе уже не было — создаём заново (цена как у воды «негазированная»)
+    const dv = await D.one(`SELECT value FROM settings WHERE key = 'drinks_v'`).catch(() => null);
+    if (dv && Number(dv.value) < 9) await D.batch([
+      D.stmt(`INSERT INTO products (id, category_id, name_ka, name_en, name_ru, size, photo, sort, active) VALUES ('bakhmaro', 'drinks', 'ბახმარო, მთის წყალი', 'Bakhmaro water', 'Вода Бахмаро', '0,5 л', '/img/drink-bakhmaro2-c-600.webp', 102, 1)
+        ON CONFLICT(id) DO UPDATE SET category_id = 'drinks', photo = excluded.photo, sort = 102, active = 1, archived = 0, name_ru = excluded.name_ru, name_ka = excluded.name_ka, name_en = excluded.name_en, size = excluded.size`),
+      D.stmt(`INSERT INTO prices (product_id, price_list, price_tetri) SELECT 'bakhmaro', price_list, price_tetri FROM prices WHERE product_id = 'water' AND price_list IN ('base','wolt','glovo') ON CONFLICT(product_id, price_list) DO UPDATE SET price_tetri = excluded.price_tetri`),
+      D.stmt(`INSERT OR IGNORE INTO ingredients (id, name, unit) VALUES ('st_bakhmaro', 'ბახმარო 0,5 ლ · Вода Бахмаро 0,5 л', 'pcs')`), D.stmt(`UPDATE ingredients SET archived = 0 WHERE id = 'st_bakhmaro'`),
+      D.stmt(`INSERT OR IGNORE INTO recipes (product_id, ingredient_id, qty) VALUES ('bakhmaro', 'st_bakhmaro', 1)`),
+      D.stmt(`INSERT INTO settings (key, value) VALUES ('drinks_v', '9') ON CONFLICT(key) DO UPDATE SET value = '9'`)]);
   }
   await D.run(`INSERT INTO settings (key, value) VALUES ('schema_mark', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, SCHEMA_MARK);
   schemaReady.add(env.DB);
