@@ -223,6 +223,8 @@ a{color:#2A1D13}a:hover{color:#5C4632}
 .pr-paymsg{border-radius:18px;padding:12px 16px;font-weight:700;font-size:14px;line-height:1.4}
 .pr-legal{display:block;margin:6px 0 4px}.pr-legal a{color:#5C4632;text-decoration:underline;margin:0 6px;white-space:nowrap}
 .pr-gcombo>span:last-child>span:last-child{flex-wrap:wrap;row-gap:8px}
+/* комбо: на широком экране ровно 4 в ряд (8 комбо = 2 ряда), товары — 5 в ряд */
+@media (min-width:1100px){.pr-grid{grid-template-columns:repeat(20,minmax(0,1fr))!important}.pr-grid>*{grid-column:span 4}.pr-grid>.pr-gcombo{grid-column:span 5}.pr-grid>.pr-cath{grid-column:1/-1}}
 </style>
 
 </head>

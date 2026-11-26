@@ -2112,22 +2112,15 @@ async function comboLines(env, combo, picks, channel) {
 // ───────── «Для компании»: наборы от 5 пицц + 5 Coca-Cola, общая скидка включается/выключается в админке ─────────
 // Обычные комбо — только конкретный состав (без выбора), минимум 2 пиццы, без кофе; пиво только Heineken и Corona.
 // num — номер для кассы и сотрудников («комбо №3»); наборы «Для компании» продолжают нумерацию.
-const COMBO_SETS = [ // v11: сначала по 2 пиццы, потом по 3, потом 5, 8 и 10 — всё в одном разделе «Комбо»
-  { id: 'student', num: 1, ru: 'Студент', ka: 'სტუდენტი', en: 'Student', items: ['marg', 'pep', 'cola', 'sprite'], photo: '/img/cmb-student-v6-600.webp' },
-  { id: 'duo', num: 2, ru: 'Дуэт', ka: 'დუეტი', en: 'Duet', items: ['hawaii', 'ranch', 'icetea_peach', 'icetea_mango'], photo: '/img/cmb-duo-v6-600.webp' },
-  { id: 'chicken', num: 3, ru: 'Чикен', ka: 'ჩიქენი', en: 'Chicken', items: ['chbbq', 'ranch', 'sprite', 'sprite'], photo: '/img/cmb-chicken-v6-600.webp' },
-  { id: 'cheese', num: 4, ru: 'Чиз', ka: 'ჩიზი', en: 'Cheese', items: ['five', 'carb', 'sprite', 'icetea_lemon'], photo: '/img/cmb-cheese-v6-600.webp' },
-  { id: 'burgershow', num: 5, ru: 'Бургер', ka: 'ბურგერი', en: 'Burger', items: ['burger', 'pep', 'cola', 'cola'], photo: '/img/cmb-burgershow-v6-600.webp' },
-  { id: 'fire', num: 6, ru: 'Огонь 18+', ka: 'ცეცხლი 18+', en: 'Fire 18+', items: ['diablo', 'chorizo', 'corona', 'corona'], photo: '/img/cmb-fire-v6-600.webp' },
-  { id: 'prem2', num: 7, ru: 'Премиум', ka: 'პრემიუმი', en: 'Premium', items: ['premium', 'salmon', 'limon_fresh', 'icetea_berry'], photo: '/img/cmb-prem2-v6-600.webp' },
-  { id: 'kids', num: 8, ru: 'Детский — не острый', ka: 'საბავშვო — არაცხარე', en: 'Kids — not spicy', items: ['marg', 'hawaii', 'five', 'fanta', 'cappy_orange', 'icetea_peach'], photo: '/img/cmb-kids-v7-600.webp' },
-  { id: 'friday', num: 9, ru: 'Фиеста', ka: 'ფიესტა', en: 'Fiesta', items: ['pep', 'bbq', 'diablo', 'cola', 'cola', 'sprite'], photo: '/img/cmb-friday-v7-600.webp' },
-  { id: 'sunday', num: 10, ru: 'Семейный', ka: 'საოჯახო', en: 'Family', items: ['marg', 'carb', 'five', 'cola', 'cola', 'sprite'], photo: '/img/cmb-sunday-v6-600.webp' },
-  { id: 'meat2', num: 11, ru: 'Мясной', ka: 'ხორციანი', en: 'Meat lovers', items: ['bbq', 'burger', 'chbbq', 'cola', 'pepsi', 'sprite'], photo: '/img/cmb-meat2-v6-600.webp' },
-  { id: 'evening', num: 12, ru: 'Футбол 18+', ka: 'ფეხბურთი 18+', en: 'Football 18+', items: ['pep', 'pepgrill', 'ranch', 'heineken', 'heineken', 'heineken'], photo: '/img/cmb-evening-v7-600.webp' },
-  { id: 'party-classic', num: 13, big: 5, ru: 'Пати — 5 пицц', ka: 'პარტი — 5 პიცა', en: 'Party — 5 pizzas', items: ['marg', 'pep', 'hawaii', 'chbbq', 'bbq', 'cola', 'cola', 'fanta', 'sprite', 'icetea_peach'], photo: '/img/party-classic-v6-600.webp' },
-  { id: 'party-office', num: 14, big: 8, ru: 'Офис — 8 пицц', ka: 'ოფისი — 8 პიცა', en: 'Office — 8 pizzas', items: ['marg', 'pep', 'pepgrill', 'hawaii', 'five', 'carb', 'ranch', 'chbbq', 'cola', 'cola', 'cola', 'sprite', 'sprite', 'fanta', 'icetea_lemon', 'icetea_lemon'], photo: '/img/party-office-v6-600.webp' },
-  { id: 'party-big', num: 15, big: 10, ru: 'Мега — 10 пицц', ka: 'მეგა — 10 პიცა', en: 'Mega — 10 pizzas', items: ['marg', 'pep', 'pepgrill', 'chorizo', 'hawaii', 'bbq', 'chbbq', 'ranch', 'five', 'premium', 'cola', 'cola', 'cola', 'cola', 'fanta', 'fanta', 'sprite', 'sprite', 'icetea_peach', 'icetea_peach'], photo: '/img/party-big-v6-600.webp' },
+const COMBO_SETS = [ // v13 (26.11.2026): 8 комбо — по 2, 3, 5 и 7 пицц; на сайте 4 в ряд
+  { id: 'prem2', num: 1, ru: 'Премиум', ka: 'პრემიუმი', en: 'Premium', items: ['premium', 'salmon', 'limon_fresh', 'icetea_berry'], photo: '/img/cmb-prem2-v6-600.webp' },
+  { id: 'fire', num: 2, ru: 'Чили 18+', ka: 'ჩილი 18+', en: 'Chili 18+', items: ['diablo', 'chorizo', 'corona', 'corona'], photo: '/img/cmb-fire-v6-600.webp' },
+  { id: 'kids', num: 3, ru: 'Детский — не острый', ka: 'საბავშვო — არაცხარე', en: 'Kids — not spicy', items: ['marg', 'hawaii', 'five', 'fanta', 'cappy_orange', 'icetea_peach'], photo: '/img/cmb-kids-v7-600.webp' },
+  { id: 'sunday', num: 4, ru: 'Семейный', ka: 'საოჯახო', en: 'Family', items: ['marg', 'carb', 'five', 'cola', 'cola', 'sprite'], photo: '/img/cmb-sunday-v6-600.webp' },
+  { id: 'meat2', num: 5, ru: 'Мясной', ka: 'ხორციანი', en: 'Meat lovers', items: ['bbq', 'burger', 'chbbq', 'cola', 'pepsi', 'sprite'], photo: '/img/cmb-meat2-v6-600.webp' },
+  { id: 'evening', num: 6, ru: 'Футбол 18+', ka: 'ფეხბურთი 18+', en: 'Football 18+', items: ['pep', 'pepgrill', 'ranch', 'heineken', 'heineken', 'heineken'], photo: '/img/cmb-evening-v7-600.webp' },
+  { id: 'party-classic', num: 7, big: 5, ru: 'Пати — 5 пицц', ka: 'პარტი — 5 პიცა', en: 'Party — 5 pizzas', items: ['marg', 'pep', 'hawaii', 'chbbq', 'bbq', 'cola', 'cola', 'fanta', 'sprite', 'icetea_peach'], photo: '/img/party-classic-v6-600.webp' },
+  { id: 'party-office', num: 8, big: 7, ru: 'Большая компания — 7 пицц', ka: 'დიდი კომპანია — 7 პიცა', en: 'Big group — 7 pizzas', items: ['marg', 'pep', 'pepgrill', 'hawaii', 'five', 'carb', 'chbbq', 'cola', 'cola', 'cola', 'sprite', 'sprite', 'fanta', 'icetea_lemon'], photo: '/img/party-office-v6-600.webp' },
 ];
 // Цены наборов: одинаковая прибыль, поэтому скидки разные (дорогие в себестоимости — меньше, выгодные — больше), в среднем = pct
 async function balancedPrices(env, lists, pct) {
@@ -2145,7 +2138,7 @@ function setDesc(nm, ids, l) { const k = 'name_' + l; const N = (id) => (nm[id] 
   const pz = ids.filter((id) => PIZZA_IDS.has(id)).map(N); const cnt = {}; ids.filter((id) => !PIZZA_IDS.has(id)).forEach((id) => { cnt[id] = (cnt[id] || 0) + 1; });
   return pz.join(', ') + ' + ' + Object.entries(cnt).map(([id, n]) => (n > 1 ? n + ' × ' : '') + N(id)).join(', '); }
 async function seedComboSets(env) { // один раз: заменить старые комбо «на выбор» конкретными
-  const D = db(env); const v = await D.one(`SELECT value FROM settings WHERE key = 'combos_v'`).catch(() => null); if (v && Number(v.value) >= 12) return;
+  const D = db(env); const v = await D.one(`SELECT value FROM settings WHERE key = 'combos_v'`).catch(() => null); if (v && Number(v.value) >= 13) return;
   const ids = [...new Set(COMBO_SETS.flatMap((c) => c.items))];
   const nm = Object.fromEntries((await D.all(`SELECT id, name_ru, name_ka, name_en FROM products WHERE id IN (${ids.map(() => '?').join(',')})`, ...ids)).map((x) => [x.id, x]));
   if (Object.keys(nm).length < ids.length) return; // меню ещё не загружено
@@ -2155,11 +2148,11 @@ async function seedComboSets(env) { // один раз: заменить ста�
     const pr = BP[ci];
     st.push(D.stmt(`INSERT INTO combos (id, name_ru, name_ka, name_en, desc_ru, desc_ka, desc_en, price_tetri, photo, slots, active, sort, grp) VALUES (?,?,?,?,?,?,?,?,?,?,1,?,'combo')
       ON CONFLICT(id) DO UPDATE SET name_ru = excluded.name_ru, name_ka = excluded.name_ka, name_en = excluded.name_en, desc_ru = excluded.desc_ru, desc_ka = excluded.desc_ka, desc_en = excluded.desc_en,
-        price_tetri = excluded.price_tetri, photo = excluded.photo, slots = excluded.slots, active = 1, sort = excluded.sort, grp = 'combo'`,
+        price_tetri = CASE WHEN combos.slots = excluded.slots THEN combos.price_tetri ELSE excluded.price_tetri END, photo = excluded.photo, slots = excluded.slots, active = 1, sort = excluded.sort, grp = 'combo'`,
       c.id, '№' + c.num + ' ' + c.ru, '№' + c.num + ' ' + c.ka, '№' + c.num + ' ' + c.en, setDesc(nm, c.items, 'ru'), setDesc(nm, c.items, 'ka'), setDesc(nm, c.items, 'en'), pr.price, c.photo, JSON.stringify(slots), c.num));
   }
   st.push(D.stmt(`UPDATE combos SET active = 0 WHERE id NOT IN (${COMBO_SETS.map(() => '?').join(',')})`, ...COMBO_SETS.map((c) => c.id))); // старые комбо и отдельные «Для компании» — выключены
-  st.push(D.stmt(`INSERT INTO settings (key, value) VALUES ('combos_v', '12') ON CONFLICT(key) DO UPDATE SET value = '12'`));
+  st.push(D.stmt(`INSERT INTO settings (key, value) VALUES ('combos_v', '13') ON CONFLICT(key) DO UPDATE SET value = '13'`));
   await D.batch(st);
 }
 const PHOTO_B = ['beer-argo', 'beer-corona', 'beer-estrella', 'beer-heineken', 'beer-lowenbrau', 'beer-staropramen', 'coffee-americano', 'coffee-cappuccino', 'coffee-espresso', 'coffee-latte', 'drink-bakhmaro', 'drink-borjomi', 'drink-burakhi', 'drink-cappy_apple', 'drink-cappy_berry', 'drink-cappy_cherry', 'drink-cappy_grapefruit', 'drink-cappy_orange', 'drink-cappy_peach', 'drink-cola', 'drink-fanta', 'drink-icetea_berry', 'drink-icetea_lemon', 'drink-icetea_mango', 'drink-icetea_peach', 'drink-juice-apple', 'drink-juice-cherry', 'drink-juice-orange', 'drink-limon_fresh', 'drink-pepsi', 'drink-sprite', 'drink-water', 'drink-zero', 'pizza-bbq', 'pizza-burger', 'pizza-carb', 'pizza-chbbq', 'pizza-diablo', 'pizza-five', 'pizza-hawaii', 'pizza-marg', 'pizza-pep', 'pizza-pepgrill', 'pizza-premium', 'pizza-ranch', 'pizza-salmon', 'tea-berry', 'tea-black', 'tea-green', 'wine-khikhvi', 'wine-krakhuna', 'wine-rkatsiteli', 'wine-tsolikauri']; // фото на общем коричневом фоне
