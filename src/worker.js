@@ -2240,19 +2240,21 @@ async function publicCombos(env, opts = {}) {
   const [combos0, costs, S] = await Promise.all([db(env).all('SELECT * FROM combos WHERE active = 1 ORDER BY sort, id'), productCosts(env), getSettings(env)]);
   const off = (S.combo || {}).on === false; // «Комбо» выключены: на сайте они видны с надписью «Временно недоступно», заказать нельзя
   const combos = off && !opts.showPaused ? combos0.filter((c) => c.grp === 'party') : combos0;
-  const optCache = {}; const optsFor = (s) => (optCache[JSON.stringify([s.ids, s.cat])] ||= comboOptions(env, s));
+  const SHOWP = !!opts.showPaused; const optCache = {}; const optsFor = (s) => (optCache[JSON.stringify([s.ids, s.cat])] ||= comboOptions(env, s));
   const allSlots = combos.flatMap((c) => JSON.parse(c.slots || '[]')); await Promise.all(allSlots.map(optsFor));
   for (const c of combos) {
-    const slots = JSON.parse(c.slots || '[]'); const sl = []; let age18 = false, ok = true, list = 0;
+    const slots = JSON.parse(c.slots || '[]'); const sl = []; let age18 = false, ok = true, list = 0, stopped = false;
     for (const s of slots) {
-      const opts = (await optsFor(s)).filter((o) => o.in_stock);
+      let opts = (await optsFor(s)).filter((o) => o.in_stock);
+      // на сайте комбо видно всегда: если что-то из состава в стоп-листе — показываем с надписью «Временно недоступно»
+      if (!opts.length && (await optsFor(s)).length && SHOWP) { opts = await optsFor(s); stopped = true; }
       if (!opts.length) { ok = false; break; }
       if (opts.some((o) => o.age18)) age18 = true;
       list += Math.min(...opts.map((o) => (costs[o.id] && costs[o.id].base) || 0));
       sl.push({ ka: s.ka, en: s.en, ru: s.ru, options: opts.map((o) => ({ id: o.id, ka: o.name_ka, en: o.name_en, ru: o.name_ru, extra: o.extra })) });
     }
     if (ok) out.push({ id: c.id, name_ka: c.name_ka, name_en: c.name_en, name_ru: c.name_ru, desc_ka: c.desc_ka, desc_en: c.desc_en, desc_ru: c.desc_ru,
-      price_tetri: c.price_tetri, old_price_tetri: Math.max(list, c.price_tetri), photo: c.photo, age18, slots: sl, grp: c.grp || 'combo', paused: off && c.grp !== 'party' });
+      price_tetri: c.price_tetri, old_price_tetri: Math.max(list, c.price_tetri), photo: c.photo, age18, slots: sl, grp: c.grp || 'combo', paused: (off && c.grp !== 'party') || stopped });
   }
   return out;
 }
