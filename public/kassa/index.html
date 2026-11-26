@@ -1070,6 +1070,7 @@ const defBuyUnit = (i) => buyUnits(i).length ? 'c0' : i.unit === 'g' ? 'kg' : i.
 function prodForm(p) {
   const C = S.A.cat;
   p = p ? JSON.parse(JSON.stringify(p)) : { category_id: (S.A.fcat && S.A.fcat !== 'all') ? S.A.fcat : C.categories[0]?.id, name_ru: '', name_ka: '', name_en: '', desc_ru: '', desc_ka: '', desc_en: '', size: '', photo: '', sort: 50, active: 1, prices: {}, recipe: [] }; if (!p.id && p.pack_ing === undefined && p.category_id === 'pizza' && C.ingredients.some((x) => x.id === 'box')) { p.pack_ing = 'box'; p.pack_mode = 'away'; }
+  p.sort0 = p.id ? p.sort : null;
   p.lines = p.recipe.map((r) => { const i = C.ingredients.find((x) => x.id === r.ingredient_id); const u = i?.unit === 'g' && r.qty >= 1000 ? 'kg' : i?.unit === 'ml' && r.qty >= 1000 ? 'l' : (i?.unit || 'g'); const f = fac(i, u); return { ing: r.ingredient_id, qty: r.qty / f, unit: u }; });
   S.modal = { type: 'form', wide: true, data: p, html: () => prodHtml(p) }; render();
 }
@@ -2077,7 +2078,7 @@ document.addEventListener('click', (e) => {
     case 'prodSave': { readProdForm(); const p = m.data;
       const bad = p.lines.find((l) => !l.ing || !(Number(l.qty) > 0)); if (bad) return toast(L('В составе есть пустая строка или количество 0', 'შემადგენლობაში არის ცარიელი ხაზი ან რაოდენობა 0'));
       const recipe = p.lines.map((l) => ({ ingredient_id: l.ing, qty: Math.round(Number(l.qty) * fac(S.A.cat.ingredients.find((x) => x.id === l.ing), l.unit)) }));
-      return run(async () => { await api('POST', '/api/products', { id: p.id, category_id: p.category_id, name_ru: p.name_ru, name_ka: p.name_ka, name_en: p.name_en, desc_ru: p.desc_ru, desc_ka: p.desc_ka, desc_en: p.desc_en, size: p.size, photo: p.photo, sort: p.sort, active: !!p.active, prices: p.prices, recipe, pack_ing: p.pack_ing || null, pack_qty: p.pack_qty || 1, pack_mode: p.pack_mode || 'away' });
+      return run(async () => { await api('POST', '/api/products', { id: p.id, category_id: p.category_id, name_ru: p.name_ru, name_ka: p.name_ka, name_en: p.name_en, desc_ru: p.desc_ru, desc_ka: p.desc_ka, desc_en: p.desc_en, size: p.size, photo: p.photo, sort: p.sort, sort_was: p.sort0, active: !!p.active, prices: p.prices, recipe, pack_ing: p.pack_ing || null, pack_qty: p.pack_qty || 1, pack_mode: p.pack_mode || 'away' });
         S.modal = null; S.A.cat = await api('GET', '/api/catalog'); toast(L('Товар сохранён', 'პროდუქტი შენახულია')); }); }
     case 'ingNew': return ingForm();
     case 'ingEdit': return ingForm(Object.assign({}, S.A.cat.ingredients.find((i) => i.id === d.id)));

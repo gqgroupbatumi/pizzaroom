@@ -1590,7 +1590,7 @@ on('POST', '/api/products', 'menu.edit', async ({ env, me, body }) => {
     ON CONFLICT(id) DO UPDATE SET category_id = excluded.category_id, name_ka = excluded.name_ka, name_en = excluded.name_en, name_ru = excluded.name_ru,
       desc_ka = excluded.desc_ka, desc_en = excluded.desc_en, desc_ru = excluded.desc_ru, size = excluded.size, photo = excluded.photo, sort = excluded.sort, active = excluded.active`,
     id, body.category_id, String(body.name_ka || name_ru), String(body.name_en || name_ru), name_ru, body.desc_ka ?? null, body.desc_en ?? null, body.desc_ru ?? null,
-    body.size ?? null, body.photo ?? null, int(body.sort ?? 50, 'sort'), body.active === false ? 0 : 1)];
+    body.size ?? null, body.photo ?? null, int((old && (body.sort == null || (body.sort_was != null && Number(body.sort) === Number(body.sort_was)))) ? old.sort : (body.sort ?? 50), 'sort'), body.active === false ? 0 : 1)];
   const priceChanges = [];
   if (body.active !== false && (body.prices?.base == null || body.prices.base === '') && !(old && (await D.one("SELECT 1 AS x FROM prices WHERE product_id = ? AND price_list = 'base'", id)))) fail(400, 'no_price', 'Укажите цену «зал / сайт», чтобы включить товар в продажу');
   for (const pl of ['base', 'wolt', 'glovo', 'bolt']) {
@@ -2654,7 +2654,7 @@ const schemaReady = new WeakSet();
 const schemaRun = new WeakMap();
 // Каждый запрос сам доводит обновление базы до конца (миграции повторяемые, шаги помечаются в data_v).
 // Нельзя ждать промис другого запроса: в Cloudflare Workers он может так и не завершиться — тогда сайт «висит».
-const SCHEMA_MARK = 'm58';   // меняйте при добавлении новой миграции
+const SCHEMA_MARK = 'm59';   // меняйте при добавлении новой миграции
 async function ensureSchema(env) {
   if (schemaReady.has(env.DB)) return;
   try { const r = await env.DB.prepare(`SELECT value FROM settings WHERE key = 'schema_mark'`).first(); if (r && r.value === SCHEMA_MARK) { schemaReady.add(env.DB); return; } } catch (e) {}
@@ -3144,6 +3144,15 @@ async function migrate(env) {
       await D.batch([...ORD.map((id, i) => D.stmt(`UPDATE products SET sort = ? WHERE id = ? AND category_id = 'drinks'`, 101 + i, id)),
         D.stmt(`UPDATE products SET sort = 150 WHERE category_id = 'drinks' AND id NOT IN (${ORD.map(() => '?').join(',')}) AND sort < 150`, ...ORD),
         D.stmt(`INSERT INTO settings (key, value) VALUES ('drinks_v', '4') ON CONFLICT(key) DO UPDATE SET value = '4'`)]);
+    }
+  }
+  { // 26.11.2026: вода — первой, потом Coca-Cola (старая вкладка админки вернула коле прежний порядок)
+    const dv = await D.one(`SELECT value FROM settings WHERE key = 'drinks_v'`).catch(() => null);
+    if (dv && Number(dv.value) < 5) {
+      const ORD = ['water', 'borjomi', 'bakhmaro', 'cola', 'zero', 'sprite', 'fanta', 'pepsi', 'pepsi_zero', 'kvass', 'burakhi', 'limon_fresh',
+        'icetea_peach', 'icetea_lemon', 'icetea_mango', 'icetea_berry', 'cappy_apple', 'cappy_cherry', 'cappy_orange', 'cappy_berry', 'cappy_peach', 'cappy_grapefruit', 'juice', 'juice_orange', 'juice_apple'];
+      await D.batch([...ORD.map((id, i) => D.stmt(`UPDATE products SET sort = ? WHERE id = ? AND category_id = 'drinks'`, 101 + i, id)),
+        D.stmt(`INSERT INTO settings (key, value) VALUES ('drinks_v', '5') ON CONFLICT(key) DO UPDATE SET value = '5'`)]);
     }
   }
   await D.run(`INSERT INTO settings (key, value) VALUES ('schema_mark', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, SCHEMA_MARK);
