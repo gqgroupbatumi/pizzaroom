@@ -2654,7 +2654,7 @@ const schemaReady = new WeakSet();
 const schemaRun = new WeakMap();
 // Каждый запрос сам доводит обновление базы до конца (миграции повторяемые, шаги помечаются в data_v).
 // Нельзя ждать промис другого запроса: в Cloudflare Workers он может так и не завершиться — тогда сайт «висит».
-const SCHEMA_MARK = 'm60';   // меняйте при добавлении новой миграции
+const SCHEMA_MARK = 'm61';   // меняйте при добавлении новой миграции
 async function ensureSchema(env) {
   if (schemaReady.has(env.DB)) return;
   try { const r = await env.DB.prepare(`SELECT value FROM settings WHERE key = 'schema_mark'`).first(); if (r && r.value === SCHEMA_MARK) { schemaReady.add(env.DB); return; } } catch (e) {}
@@ -3160,6 +3160,12 @@ async function migrate(env) {
     if (dv && Number(dv.value) < 6) await D.batch([
       D.stmt(`UPDATE products SET photo = '/img/drink-cappy_peach2-c-600.webp' WHERE id = 'cappy_peach' AND photo LIKE '/img/drink-cappy_peach-%'`),
       D.stmt(`INSERT INTO settings (key, value) VALUES ('drinks_v', '6') ON CONFLICT(key) DO UPDATE SET value = '6'`)]);
+  }
+  { // 26.11.2026: Cappy персик — чёткое фото производителя (прошлое было размытым)
+    const dv = await D.one(`SELECT value FROM settings WHERE key = 'drinks_v'`).catch(() => null);
+    if (dv && Number(dv.value) < 7) await D.batch([
+      D.stmt(`UPDATE products SET photo = '/img/drink-cappy_peach3-c-600.webp' WHERE id = 'cappy_peach' AND photo LIKE '/img/drink-cappy_peach%'`),
+      D.stmt(`INSERT INTO settings (key, value) VALUES ('drinks_v', '7') ON CONFLICT(key) DO UPDATE SET value = '7'`)]);
   }
   await D.run(`INSERT INTO settings (key, value) VALUES ('schema_mark', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, SCHEMA_MARK);
   schemaReady.add(env.DB);
