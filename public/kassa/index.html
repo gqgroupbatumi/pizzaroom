@@ -123,6 +123,7 @@ th.s{cursor:pointer}
 td{padding:8px;border-bottom:1px solid #F0E6D6;vertical-align:middle}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 tr.low td{background:#FFF4F1}
+.cal{width:320px}.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.cgrid .cwd{font-size:11px;font-weight:800;text-align:center;opacity:.55;padding:2px 0}.cgrid button{height:38px;border:0;border-radius:10px;background:transparent;font:700 15px inherit;font-family:inherit;color:inherit;cursor:pointer}.cgrid button:hover{background:rgba(0,0,0,.06)}.cgrid button.in{background:#FFE7A8;border-radius:4px}.cgrid button.on{background:#2A1D13;color:#fff}.cgrid button.now{box-shadow:inset 0 0 0 2px #FFC244}.cgrid button:disabled{opacity:.25;cursor:default}
 .abar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 2px}.abar .mpick .mpb{min-width:0;height:38px;font-size:14px}
 .mpick{position:relative;display:inline-flex;gap:6px;align-items:center}.mpick>.b{height:42px;min-width:42px;font-size:18px;padding:0 12px}.mpick .mpb{font-size:16px;font-weight:800;min-width:190px}.mpick .b:disabled{opacity:.35}
 .mpop{position:absolute;top:48px;right:0;z-index:50;background:var(--card,#fff);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.18);padding:12px;width:330px}.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.mgrid button{height:40px;border-radius:10px;font-weight:700;font-size:14px;background:#F4F1EA}.mgrid button.now{outline:2px solid #FFC244}.mgrid button.on{background:#1E1E1E;color:#fff}.mgrid button:disabled{opacity:.3}
@@ -349,12 +350,7 @@ function viewKitchen() {
 
 
 /* ───────── аналитика: маржа и продукция ───────── */
-function rangeBar() {
-  const R = [['week', L('7 дней', '7 დღე')], ['month', L('Этот месяц', 'ეს თვე')], ['prevmonth', L('Прошлый месяц', 'წინა თვე')], ['year', L('Этот год', 'ეს წელი')], ['all', L('Всё время', 'მთელი პერიოდი')], ['custom', L('Свои даты', 'სხვა თარიღები')]];
-  return `<div class="row wrap"><div class="seg">${R.map(([k, n]) => `<button class="${S.A.range === k ? 'on' : ''}" data-a="aRange" data-k="${k}">${n}</button>`).join('')}</div>
-    ${S.A.range === 'custom' ? `<input id="aFrom" class="f" type="date" style="width:160px" value="${S.A.from || ''}"><input id="aTo" class="f" type="date" style="width:160px" value="${S.A.to || ''}"><button class="b bd sm" data-a="aApply">OK</button>` : ''}
-    <span class="mut">${S.A.f || ''} — ${S.A.t || ''}${S.A.ins ? ' · ' + L('сравниваем с', 'ვადარებთ') + ' ' + S.A.ins.prev_from + ' — ' + S.A.ins.prev_to : ''}</span></div>`;
-}
+function rangeBar() { return periodBar(); }
 const dlt = (a, b, inv) => { if (!b) return a ? `<span class="mut" style="font-size:12px">${L('новое', 'ახალი')}</span>` : ''; const v = Math.round(((a - b) / Math.abs(b)) * 100); if (!v) return `<span class="mut" style="font-size:12px">= 0%</span>`; const up = v > 0; const good = inv ? !up : up; return `<span style="font-size:12px;font-weight:800;color:${good ? 'var(--green)' : 'var(--redink)'}">${up ? '▲' : '▼'} ${Math.abs(v)}%</span>`; };
 const mPill = (m) => `<span class="pos-pill ${m >= 65 ? 'good' : m >= 50 ? 'mid' : 'bad'}">${Math.round(m)}%</span>`;
 const hbar = (v, max, col) => `<div style="height:8px;background:#F1E6D2;border-radius:6px;overflow:hidden;min-width:80px"><div style="height:100%;width:${max ? Math.max(2, Math.round((v / max) * 100)) : 0}%;background:${col || '#2a78d6'}"></div></div>`;
@@ -698,7 +694,7 @@ async function openAdmin(tab) {
   render();
 }
 /* аналитика */
-S.A.range = 'month'; S.A.group = 'day'; S.A.sort = 'profit';
+S.A.range = 'today'; S.A.group = 'day'; S.A.sort = 'profit';
 function rangeDates() {
   const t = new Date(); const d = (n) => { const x = new Date(t); x.setDate(x.getDate() - n); return ymd(x); };
   switch (S.A.range) {
@@ -742,10 +738,7 @@ function viewAnalytics() {
   const R = [['today', L('Сегодня', 'დღეს')], ['yday', L('Вчера', 'გუშინ')], ['week', L('7 дней', '7 დღე')], ['month', L('Этот месяц', 'ეს თვე')], ['prevmonth', L('Прошлый месяц', 'წინა თვე')], ['year', L('Этот год', 'ეს წელი')], ['all', L('Всё время', 'მთელი პერიოდი')], ['custom', L('Свои даты', 'სხვა თარიღები')]];
   const perUnit = (c) => c && c.qty ? money(Math.round(c.profit / c.qty)) : '—';
   return `<h1>${L('Аналитика', 'ანალიტიკა')}</h1>
-  <div class="row wrap"><div class="seg">${R.map(([k, n]) => `<button class="${S.A.range === k ? 'on' : ''}" data-a="aRange" data-k="${k}">${n}</button>`).join('')}</div>
-    ${S.A.range === 'custom' ? `<input id="aFrom" class="f" type="date" style="width:160px" value="${S.A.from || ''}"><input id="aTo" class="f" type="date" style="width:160px" value="${S.A.to || ''}"><button class="b bd sm" data-a="aApply">OK</button>` : ''}
-    <div class="seg">${[['day', L('по дням', 'დღეების მიხედვით')], ['month', L('по месяцам', 'თვეების მიხედვით')], ['year', L('по годам', 'წლების მიხედვით')]].map(([k, n]) => `<button class="${S.A.group === k ? 'on' : ''}" data-a="aGroup" data-k="${k}">${n}</button>`).join('')}</div>
-    <span class="mut">${S.A.f || ''} — ${S.A.t || ''}</span></div>
+  ${periodBar()}<div class="row wrap"><div class="seg">${[['day', L('по дням', 'დღეების მიხედვით')], ['month', L('по месяцам', 'თვეების მიხედვით')], ['year', L('по годам', 'წლების მიხედვით')]].map(([k, n]) => `<button class="${S.A.group === k ? 'on' : ''}" data-a="aGroup" data-k="${k}">${n}</button>`).join('')}</div></div>
   <div class="kpis">
     <div class="kpi"><span>${L('Выручка', 'ამონაგები')}</span><b>${money(tot.gross_tetri)}</b></div>
     <div class="kpi"><span>${L('Комиссии Wolt/Glovo', 'Wolt/Glovo-ს საკომისიო')}</span><b>${money(tot.commission_tetri)}</b></div>
@@ -780,17 +773,27 @@ const shareP = (a, b) => (b ? Math.round((a * 1000) / b) / 10 : 0);
 const aKpi = (t, v, d, sub) => `<div class="kpi"><span>${t}</span><b>${v}</b>${d || ''}${sub ? `<span class="mut" style="font-size:12px">${sub}</span>` : ''}</div>`;
 /* скрытая таблица с итогами — чтобы KPI тоже попали в Excel */
 const xSum = (title, rows) => `<div class="card" style="display:none"><h3>${title}</h3><table><tr><th>${L('Показатель', 'მაჩვენებელი')}</th><th>${L('Значение', 'მნიშვნელობა')}</th></tr>${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table></div>`;
-function aBar() {
-  const R = [['today', L('Сегодня', 'დღეს')], ['week', L('7 дней', '7 დღე')], ['month', L('Этот месяц', 'ეს თვე')], ['year', L('Этот год', 'ეს წელი')], ['all', L('Всё время', 'მთელი პერიოდი')]];
-  const now = ymNow(); const py = +(S.A.apy || (S.A.range === 'custom' && S.A.from ? S.A.from.slice(0, 4) : now.slice(0, 4))); const pick = S.A.range === 'custom';
-  const pop = S.A.aOpen ? `<div class="mpop" style="width:350px;right:auto;left:0"><div class="row between" style="margin-bottom:8px"><button class="b bw sm" data-a="aYear" data-n="-1">‹</button><b style="font-size:18px">${py}</b><button class="b bw sm" data-a="aYear" data-n="1" ${py >= +now.slice(0, 4) ? 'disabled' : ''}>›</button></div>
-    <div class="mgrid">${MONS().map((n, i) => { const ym = py + '-' + String(i + 1).padStart(2, '0'); return `<button class="${ym === now ? 'now' : ''} ${pick && S.A.from === ym + '-01' && S.A.rkind === 'mon' ? 'on' : ''}" data-a="aMon" data-m="${ym}" ${ym > now ? 'disabled' : ''}>${n}</button>`; }).join('')}</div>
-    <button class="b bw" style="width:100%;margin-top:8px" data-a="aYr" data-y="${py}">${L('Весь', 'მთელი')} ${py} ${L('год', 'წელი')}</button>
-    <div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><b style="font-size:13px">${L('Или свои даты', 'ან საკუთარი თარიღები')}</b><div class="row" style="gap:6px;margin-top:6px"><input id="aFrom" class="f" type="date" style="flex:1" value="${S.A.from || ''}"><input id="aTo" class="f" type="date" style="flex:1" value="${S.A.to || ''}"><button class="b bd sm" data-a="aApply">OK</button></div></div></div>` : '';
-  const I = S.A.ins; const f = S.A.range === 'all' && I && I.first_day ? I.first_day : S.A.f;
-  return `<div class="abar"><div class="seg">${R.map(([k, n]) => `<button class="${S.A.range === k ? 'on' : ''}" data-a="aRange" data-k="${k}">${n}</button>`).join('')}</div>
-    <div class="mpick"><button class="b ${pick ? 'bd' : 'bw'} mpb" data-a="aOpen">📅 ${pick ? esc(S.A.rlabel || fmtD(S.A.from) + ' — ' + fmtD(S.A.to)) : L('Выбрать месяц или даты', 'თვის ან თარიღების არჩევა')} ▾</button>${pop}</div>
-    <span class="mut" style="font-size:13px">${fmtD(f)} — ${fmtD(S.A.t > todayS() ? todayS() : S.A.t)}${I && S.A.range !== 'all' ? ' · ' + L('сравнение с', 'შედარება') + ' ' + fmtD(I.prev_from) + ' — ' + fmtD(I.prev_to) : ''}</span></div>`;
+function aBar() { return periodBar(); }
+/* Период во всей аналитике: «Сегодня» или удобный календарь по дням (один день или «с — по») */
+function periodBar() {
+  const pick = S.A.range === 'custom' && S.A.from; const one = pick && S.A.from === S.A.to;
+  const lab = pick ? (one ? fmtD(S.A.from) : fmtD(S.A.from) + ' — ' + fmtD(S.A.to)) : L('Календарь', 'კალენდარი');
+  return `<div class="abar"><div class="seg"><button class="${S.A.range === 'today' ? 'on' : ''}" data-a="aRange" data-k="today">${L('Сегодня', 'დღეს')}</button></div>
+    <div class="mpick"><button class="b ${pick ? 'bd' : 'bw'} mpb" data-a="aOpen">📅 ${esc(lab)} ▾</button>${S.A.aOpen ? calPop() : ''}</div>
+    ${S.A.range === 'today' ? `<span class="mut" style="font-size:13px">${fmtD(todayS())}</span>` : ''}</div>`;
+}
+function calPop() {
+  const t0 = todayS(); const cm = S.A.cm || (S.A.range === 'custom' && S.A.from ? S.A.from.slice(0, 7) : t0.slice(0, 7));
+  const y = +cm.slice(0, 4), m = +cm.slice(5, 7); const days = new Date(Date.UTC(y, m, 0)).getUTCDate(); const off = (new Date(Date.UTC(y, m - 1, 1)).getUTCDay() + 6) % 7;
+  const a = S.A.cs || (S.A.range === 'custom' ? S.A.from : null), b = S.A.cs ? null : (S.A.range === 'custom' ? S.A.to : null);
+  const WD = S.alang === 'ka' ? ['ორ', 'სა', 'ოთ', 'ხუ', 'პა', 'შა', 'კვ'] : ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+  let cells = WD.map((w) => `<span class="cwd">${w}</span>`).join('') + '<span></span>'.repeat(off);
+  for (let d = 1; d <= days; d++) { const ds = cm + '-' + String(d).padStart(2, '0');
+    const cls = [ds === a || ds === b ? 'on' : '', a && b && ds > a && ds < b ? 'in' : '', ds === t0 ? 'now' : ''].join(' ');
+    cells += `<button class="${cls}" data-a="calD" data-d="${ds}" ${ds > t0 ? 'disabled' : ''}>${d}</button>`; }
+  return `<div class="mpop cal" style="right:auto;left:0"><div class="row between" style="margin-bottom:8px"><button class="b bw sm" data-a="calM" data-n="-1">‹</button><b style="font-size:17px">${MONN(m)} ${y}</b><button class="b bw sm" data-a="calM" data-n="1" ${cm >= t0.slice(0, 7) ? 'disabled' : ''}>›</button></div>
+    <div class="cgrid">${cells}</div>
+    <div class="mut" style="font-size:13px;margin-top:8px">${S.A.cs ? L('Теперь нажмите последний день периода — или', 'ახლა დააჭირეთ პერიოდის ბოლო დღეს — ან') + ` <button class="b by sm" data-a="calD" data-d="${S.A.cs}">${L('только', 'მხოლოდ')} ${fmtD(S.A.cs)}</button>` : L('Нажмите день. Для периода — первый и последний день.', 'დააჭირეთ დღეს. პერიოდისთვის — პირველ და ბოლო დღეს.')}</div></div>`;
 }
 const aDays = () => { const I = S.A.ins; const a = I && I.first_day && I.first_day > S.A.f ? I.first_day : S.A.f; const b = S.A.t > todayS() ? todayS() : S.A.t; return Math.max(1, Math.round((Date.parse(b) - Date.parse(a)) / 864e5) + 1); };
 const cmp = (a, b, inv) => (S.A.range === 'all' ? '' : dlt(a, b, inv));
@@ -1359,6 +1362,7 @@ function cashBar() { const c = S.A.cash; if (!c || !c.alert || S.atab === 'cash'
   return `<div class="note" style="display:flex;justify-content:space-between;align-items:center;gap:12px;background:#2F6B3A;color:#fff"><span>💵 <b>${L('В кассе', 'სალაროში')} ${money(c.now.tetri)} ${L('наличными', 'ნაღდი')}</b> — ${L('пора забрать или сдать в банк', 'დროა აიღოთ ან ჩააბაროთ ბანკში')}</span><button class="b by sm" data-a="tab" data-k="cash" style="white-space:nowrap">${L('Отметить', 'მონიშვნა')}</button></div>`; }
 function reminder() { return cashBar() + advReminder(); }
 function advReminder() {
+  return ''; // советник показывается только в своём разделе «Советник» (владелец, 26.11.2026)
   const n = advN(); if (!n || S.atab === 'advice') return '';
   const top = S.A.adv.items.filter((x) => x.kind !== 'info').slice(0, 2).map((x) => esc(L(x.title.ru, x.title.ka))).join(' · ');
   return `<div class="note" style="display:flex;justify-content:space-between;align-items:center;gap:12px;background:#E3EBD8;color:var(--ink)"><span>🤖 <b>${L('Советник', 'მრჩეველი')}: ${n} ${L(n === 1 ? 'предложение' : n < 5 ? 'предложения' : 'предложений', 'შეთავაზება')}</b> — ${top}${n > 2 ? ' …' : ''}</span><button class="b bd sm" data-a="tab" data-k="advice" style="white-space:nowrap">${L('Посмотреть', 'ნახვა')}</button></div>`;
@@ -1510,7 +1514,7 @@ function viewPnl() {
     <div class="kpi"><span>${L('Площадки (Wolt, Glovo)', 'პლატფორმები (Wolt, Glovo)')}</span><b>${pctPill(K.platform_pct, 8, 15)}</b><span class="mut">${L('от всей выручки', 'მთელი ამონაგებიდან')}</span></div>
     <div class="kpi"><span>${L('Аренда', 'იჯარა')}</span><b>${pctPill(K.rent_pct, 10, 14)}</b><span class="mut">${L('норма до 10%', 'ნორმა 10%-მდე')}</span></div>
     <div class="kpi"><span>${L('Списания', 'ჩამოწერა')}</span><b>${pctPill(K.waste_pct, 2, 4)}</b><span class="mut">${L('норма до 2–3%', 'ნორმა 2–3%-მდე')}</span></div></div>
-  ${(P.findings || []).length ? `<div class="note">🤖 ${L('Выводы по прибыли теперь в «Советнике»:', 'მოგების დასკვნები ახლა „მრჩეველშია“:')} ${P.findings.length} · <button class="b bw sm" data-a="tab" data-k="advice">${L('Открыть', 'გახსნა')}</button></div>` : ''}
+  ${false && (P.findings || []).length ? `<div class="note">🤖 ${L('Выводы по прибыли теперь в «Советнике»:', 'მოგების დასკვნები ახლა „მრჩეველშია“:')} ${P.findings.length} · <button class="b bw sm" data-a="tab" data-k="advice">${L('Открыть', 'გახსნა')}</button></div>` : ''}
   <div class="card"><b>${L('Отчёт о прибыли за', 'მოგების ანგარიში:')} ${P.month || (P.from + ' — ' + P.to)}</b><table>
     ${line(L('Выручка (все оплаты)', 'ამონაგები (ყველა გადახდა)'), T.revenue_tetri, '', '')}
     ${P.vat_payer ? line('− ' + L('НДС 18% в бюджет', 'დღგ 18% ბიუჯეტში'), -T.vat_tetri, 'mut') : ''}
@@ -1984,7 +1988,10 @@ document.addEventListener('click', (e) => {
     case 'tab': S.A.verify = null; return openAdmin(d.k);
     case 'alang': S.alang = d.k; store.set('pr_alang', d.k); return render();
     case 'aRange': S.A.range = d.k; S.A.aOpen = false; S.A.rlabel = ''; return run(loadAnalytics);
-    case 'aOpen': S.A.aOpen = !S.A.aOpen; S.A.apy = null; return render();
+    case 'aOpen': S.A.aOpen = !S.A.aOpen; S.A.apy = null; S.A.cs = null; S.A.cm = null; return render();
+    case 'calM': { const c = S.A.cm || (S.A.range === 'custom' && S.A.from ? S.A.from.slice(0, 7) : todayS().slice(0, 7)); const dt = new Date(Date.UTC(+c.slice(0, 4), +c.slice(5, 7) - 1 + Number(d.n), 1)); S.A.cm = dt.toISOString().slice(0, 7); return render(); }
+    case 'calD': { const ds = d.d; if (!S.A.cs) { S.A.cs = ds; return render(); } const x = S.A.cs < ds ? S.A.cs : ds, y2 = S.A.cs < ds ? ds : S.A.cs;
+      S.A.range = 'custom'; S.A.rkind = 'dates'; S.A.from = x; S.A.to = y2; S.A.cs = null; S.A.aOpen = false; S.A.rlabel = ''; return run(loadAnalytics); }
     case 'aYear': S.A.apy = String(+(S.A.apy || (S.A.range === 'custom' && S.A.from ? S.A.from.slice(0, 4) : ymNow().slice(0, 4))) + +d.n); return render();
     case 'aMon': { const t0 = todayS(); const last = d.m + '-' + String(new Date(Date.UTC(+d.m.slice(0, 4), +d.m.slice(5), 0)).getUTCDate()).padStart(2, '0'); S.A.range = 'custom'; S.A.rkind = 'mon'; S.A.from = d.m + '-01'; S.A.to = last > t0 ? t0 : last; S.A.rlabel = MONS()[+d.m.slice(5) - 1] + ' ' + d.m.slice(0, 4); return run(loadAnalytics); }
     case 'aYr': { const t0 = todayS(); S.A.range = 'custom'; S.A.rkind = 'year'; S.A.from = d.y + '-01-01'; S.A.to = d.y + '-12-31' > t0 ? t0 : d.y + '-12-31'; S.A.rlabel = L('Весь', 'მთელი') + ' ' + d.y + ' ' + L('год', 'წელი'); return run(loadAnalytics); }
