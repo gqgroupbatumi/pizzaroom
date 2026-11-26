@@ -123,6 +123,7 @@ th.s{cursor:pointer}
 td{padding:8px;border-bottom:1px solid #F0E6D6;vertical-align:middle}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 tr.low td{background:#FFF4F1}
+.vis{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:8px}.tgrid{flex:1;min-width:260px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.tile{background:#FBF6EC;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:3px}.tile.zero{opacity:.55}.tic{font-size:24px}.tpc{font-size:18px}.tnm{font-size:14px}.tv{font-size:19px;font-weight:900}.pbar{height:8px;background:#EADBC2;border-radius:4px;overflow:hidden;margin-top:4px}.pbar i{display:block;height:100%;border-radius:4px}.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.pcard{background:#FBF6EC;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:4px}.pimg{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:#3b281a;display:flex;align-items:center;justify-content:center;font-size:44px}.pimg img{width:100%;height:100%;object-fit:cover}.pmed{position:absolute;top:4px;left:6px;font-size:26px}.pmed i{font-style:normal;font-size:14px;font-weight:900;background:#fff;color:#2A1D13;border-radius:20px;padding:2px 8px}.pnm{font-size:14px;line-height:1.2}
 .cal{width:320px}.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.cgrid .cwd{font-size:11px;font-weight:800;text-align:center;opacity:.55;padding:2px 0}.cgrid button{height:38px;border:0;border-radius:10px;background:transparent;font:700 15px inherit;font-family:inherit;color:inherit;cursor:pointer}.cgrid button:hover{background:rgba(0,0,0,.06)}.cgrid button.in{background:#FFE7A8;border-radius:4px}.cgrid button.on{background:#2A1D13;color:#fff}.cgrid button.now{box-shadow:inset 0 0 0 2px #FFC244}.cgrid button:disabled{opacity:.25;cursor:default}
 .abar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 2px}.abar .mpick .mpb{min-width:0;height:38px;font-size:14px}
 .mpick{position:relative;display:inline-flex;gap:6px;align-items:center}.mpick>.b{height:42px;min-width:42px;font-size:18px;padding:0 12px}.mpick .mpb{font-size:16px;font-weight:800;min-width:190px}.mpick .b:disabled{opacity:.35}
@@ -824,6 +825,7 @@ const chartCard = (title, body) => (body ? `<div class="card"><h3 style="margin:
 const aHead = (t) => `<h1 style="margin-bottom:0">${L('Аналитика', 'ანალიტიკა')} · ${t}</h1>${aBar()}`;
 const aWait = (t) => `${aHead(t)}<div class="mut" style="padding:50px 0;text-align:center;font-size:18px;font-weight:700">⏳ ${L('Загрузка…', 'იტვირთება…')}</div>`;
 async function loadAnalytics() {
+  if (!S.A.ph) { try { const c = await (await fetch('/api/public/catalog?t=' + Math.floor(Date.now() / 15000))).json(); S.A.ph = Object.fromEntries(c.products.map((p) => [p.id, p.photo])); } catch (e) { S.A.ph = {}; } }
   const [f, t] = rangeDates(); const qs = `from=${f}&to=${t}`; S.A.f = f; S.A.t = t; S.A.aOpen = false;
   const long = S.A.range === 'all' || S.A.range === 'year' || (Date.parse(t) - Date.parse(f)) / 864e5 > 62;
   S.A.group = long ? 'month' : 'day'; const tab = S.atab;
@@ -867,6 +869,45 @@ function viewSales() {
     ${Dd.cats.map((c) => `<tr><td><b>${esc(NM(c))}</b></td><td class="n">${c.qty}</td><td class="n">${money(c.rev)}</td><td style="min-width:160px"><div class="row" style="gap:8px">${hbar(c.rev, Dd.cats[0].rev, '#EE8A2A')}<span>${shareP(c.rev, Dd.cats.reduce((a, x) => a + x.rev, 0))}%</span></div></td></tr>`).join('') || `<tr><td colspan="4" class="mut">—</td></tr>`}</table></div>`;
 }
 /* 💰 Выручка: сколько, откуда (зал, доставка, сайт, Wolt, Glovo) и как платят */
+/* ── наглядно: кольцо + плитки с иконками (даже когда продаж ещё нет) ── */
+function ring(items, center, sub) {
+  const tot = items.reduce((t, x) => t + Math.max(0, x.v), 0);
+  if (tot) return donut(items, center, sub).replace(/<div style="display:flex;flex-direction:column;gap:6px;min-width:200px">[\s\S]*<\/div><\/div>$/, '</div>');
+  return `<svg viewBox="0 0 180 180" width="180" height="180"><circle cx="90" cy="90" r="57" fill="none" stroke="#EADBC2" stroke-width="26"/><text x="90" y="88" text-anchor="middle" font-size="15" font-weight="900" fill="#2A1D13">${esc(center || '0')}</text><text x="90" y="106" text-anchor="middle" font-size="11" fill="#7A6450">${L('пока нет продаж', 'გაყიდვები ჯერ არ არის')}</text></svg>`;
+}
+function tiles(items, tot) {
+  return `<div class="tgrid">${items.map((x) => `<div class="tile ${x.v ? '' : 'zero'}" style="border-top:5px solid ${x.c}"><div class="row between"><span class="tic">${x.i}</span><b class="tpc">${tot ? shareP(x.v, tot) : 0}%</b></div><b class="tnm">${esc(x.l)}</b><span class="tv">${x.t}</span><span class="mut" style="font-size:12px">${x.s || ''}</span><div class="pbar"><i style="width:${tot ? Math.round((x.v * 100) / tot) : 0}%;background:${x.c}"></i></div></div>`).join('')}</div>`;
+}
+const CHIC = { hall: '🍽️', takeaway: '🥡', delivery: '🛵', site: '🌐', wolt: '🔵', glovo: '🟡', bolt: '🟢' };
+function visChannels(chans, rev, own, P, prevBy, NM) {
+  const keys = CHORD.filter((k) => k !== 'bolt' || chans.some((c) => c.channel === k));
+  const by = Object.fromEntries(chans.map((c) => [c.channel, c]));
+  const it = keys.map((k) => { const c = by[k] || { orders: 0, revenue_tetri: 0 }; const pv = (prevBy[k] || {}).revenue_tetri;
+    return { l: NM[k] || k, v: c.revenue_tetri, c: CHCOL[k], i: CHIC[k], t: money(c.revenue_tetri), s: c.orders + ' ' + L('зак.', 'შეკვ.') + (c.orders ? ' · ' + L('чек', 'ჩეკი') + ' ' + money(Math.round(c.revenue_tetri / c.orders)) : '') + (S.A.range !== 'all' && pv != null ? ' ' + cmp(c.revenue_tetri, pv) : '') }; });
+  return `<div class="card"><h3 style="margin:0">📊 ${L('Откуда заказы', 'საიდან შეკვეთები')}</h3><span class="mut" style="font-size:13px">${L('Свои каналы', 'საკუთარი არხები')}: <b>${shareP(own, rev)}%</b> · Wolt + Glovo: <b>${shareP(rev - own, rev)}%</b></span>
+    <div class="vis">${ring(it, money(rev), L('выручка', 'შემოსავალი'))}${tiles(it, rev)}</div></div>`;
+}
+function visPay(pm, payTot, siteN, onlN) {
+  const PC = { cash: '#2F6B3A', card: '#2a78d6', online: '#eb6834', platform: '#14a3d9' }; const PI = { cash: '💵', card: '💳', online: '🌐', platform: '🛵' };
+  const keys = ['cash', 'card', 'online', 'platform', ...Object.keys(pm).filter((k) => !PC[k] && k !== 'transfer')];
+  const it = keys.map((k, i) => { const m = pm[k] || { n: 0, rev: 0 }; return { l: PAYNM()[k] || k, v: m.rev, c: PC[k] || PAL[i], i: PI[k] || '•', t: money(m.rev), s: m.n + ' ' + L('зак.', 'შეკვ.') }; });
+  return `<div class="card"><h3 style="margin:0">💳 ${L('Как платят', 'როგორ იხდიან')}</h3><span class="mut" style="font-size:13px">${L('Заказов с сайта', 'საიტის შეკვეთები')}: <b>${siteN}</b> · ${L('оплачено онлайн', 'ონლაინ გადახდილი')}: <b>${onlN}</b></span>
+    <div class="vis">${ring(it, money(payTot), L('оплачено', 'გადახდილი'))}${tiles(it, payTot)}</div></div>`;
+}
+/* витрина товаров: фото, место, сколько продано, доля, прибыль */
+const phOf = (id) => { const u = (S.A.ph || {})[id]; return u ? u.replace(/-(c|v3|v6|v7)-600\.webp$/, '-$1-360.webp') : ''; };
+function prodShow(rows, T, kind) {
+  if (!rows.length) return `<div class="card"><div class="mut" style="padding:30px;text-align:center;font-size:17px">${kind === 'pizza' ? '🍕' : '🥤'} ${L('За этот период продаж нет', 'ამ პერიოდში გაყიდვები არ არის')}</div></div>`;
+  const mx = Math.max(1, ...rows.map((r) => r.qty)); const med = ['🥇', '🥈', '🥉'];
+  const top = rows.slice(0, 7); const rest = rows.slice(7).reduce((a, r) => a + r.qty, 0);
+  const pie = ring([...top.map((r, i) => ({ l: r.name, v: r.qty, c: PAL[i % PAL.length] })), ...(rest ? [{ l: L('Остальные', 'დანარჩენი'), v: rest, c: '#C9B79C' }] : [])], T.qty + ' ' + L('шт', 'ც'), L('продано', 'გაყიდულია'));
+  const leg = `<div style="display:flex;flex-direction:column;gap:6px;min-width:200px;flex:1">${top.map((r, i) => `<div class="row" style="gap:8px;font-size:14px"><i style="width:12px;height:12px;border-radius:3px;background:${PAL[i % PAL.length]};flex:none"></i><span style="flex:1">${esc(r.name)}</span><b>${shareP(r.qty, T.qty)}%</b></div>`).join('')}${rest ? `<div class="row" style="gap:8px;font-size:14px"><i style="width:12px;height:12px;border-radius:3px;background:#C9B79C;flex:none"></i><span style="flex:1">${L('Остальные', 'დანარჩენი')}</span><b>${shareP(rest, T.qty)}%</b></div>` : ''}</div>`;
+  return `<div class="card"><h3 style="margin:0 0 8px">${kind === 'pizza' ? '🍕 ' + L('Какие пиццы берут', 'რომელ პიცებს იღებენ') : '🥤 ' + L('Какие напитки берут', 'რომელ სასმელებს იღებენ')}</h3><div class="vis">${pie}${leg}</div></div>
+  <div class="card"><h3 style="margin:0 0 10px">🏆 ${L('Рейтинг продаж', 'გაყიდვების რეიტინგი')}</h3><div class="pgrid">${rows.map((r, i) => { const ph = phOf(r.id);
+    return `<div class="pcard"><div class="pimg">${ph ? `<img src="${ph}" alt="" loading="lazy">` : `<span>${kind === 'pizza' ? '🍕' : '🥤'}</span>`}<span class="pmed">${i < 3 ? med[i] : '<i>' + (i + 1) + '</i>'}</span></div>
+      <b class="pnm">${esc(r.name)}</b><div class="row between"><span><b style="font-size:20px">${r.qty}</b> ${L('шт', 'ც')}</span><b>${shareP(r.qty, T.qty)}%</b></div><div class="pbar"><i style="width:${Math.round((r.qty * 100) / mx)}%;background:${i < 3 ? '#2F6B3A' : '#2a78d6'}"></i></div>
+      <span class="mut" style="font-size:12px">${money(r.rev)} · ${L('прибыль', 'მოგება')} <b style="color:var(--ink)">${money(r.profit)}</b></span></div>`; }).join('')}</div></div>`;
+}
 function viewRevenue() {
   const I = S.A.ins; if (!I) return aWait(L('Выручка', 'შემოსავალი'));
   const C = I.pnl.cur || {}, P = I.pnl.prev || {}; const NM = CHNM();
@@ -896,19 +937,10 @@ function viewRevenue() {
   ${xSum(L('Итоги', 'შედეგები'), [[L('Период', 'პერიოდი'), fmtD(S.A.f) + ' — ' + fmtD(S.A.t)], [L('Выручка', 'შემოსავალი'), money(rev)], [L('Заказов', 'შეკვეთები'), C.orders || 0], [L('Средний чек', 'საშუალო ჩეკი'), money(C.avg_check_tetri || 0)], [L('Пицц продано', 'გაყიდული პიცა'), piz]])}
   <div class="card"><div class="row between wrap"><h3 style="margin:0">${L('Выручка по', 'შემოსავალი')} ${S.A.group === 'day' ? L('дням', 'დღეებით') : L('месяцам', 'თვეებით')}</h3><div class="legend">${CHORD.filter((k) => chans.some((c) => c.channel === k)).map((k) => `<span><i style="background:${CHCOL[k]}"></i>${NM[k]}</span>`).join('')}</div></div>
     ${byP.length && rev ? `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${L('График выручки', 'შემოსავლის გრაფიკი')}"><line x1="26" x2="${W}" y1="${H - 22}" y2="${H - 22}" stroke="#E3D3B6"/>${bars}</svg>` : `<span class="mut">${L('За этот период продаж нет', 'ამ პერიოდში გაყიდვები არ არის')}</span>`}</div>
-  <div class="g2">${chartCard('📊 ' + L('Откуда выручка', 'საიდან შემოსავალი'), donut(chans.map((c) => ({ l: NM[c.channel] || c.channel, v: c.revenue_tetri, c: CHCOL[c.channel], t: money(c.revenue_tetri) })), money(rev), L('выручка', 'შემოსავალი')))}
-    ${chartCard('💳 ' + L('Как платят', 'როგორ იხდიან'), donut(Object.entries(pm).sort((a, b) => b[1].rev - a[1].rev).map(([k, m], i) => ({ l: PAYNM()[k] || k, v: m.rev, c: { cash: '#2F6B3A', card: '#2a78d6', online: '#eb6834', platform: '#14a3d9', transfer: '#8e5cc2' }[k] || PAL[i], t: m.n + ' ' + L('зак.', 'შეკ.') })), String(C.orders || 0), L('заказов', 'შეკვეთა')))}</div>
-  <div class="card"><h3 style="margin:0">${L('Откуда заказы: зал, доставка, сайт, Wolt, Glovo', 'საიდან შეკვეთები: დარბაზი, მიტანა, საიტი, Wolt, Glovo')}</h3>
-    <span class="mut" style="font-size:13px">${L('Свои каналы', 'საკუთარი არხები')}: <b>${shareP(own, rev)}%</b> · Wolt + Glovo: <b>${shareP(rev - own, rev)}%</b> ${L('выручки', 'შემოსავლის')}</span>
-    <table><tr><th>${L('Канал', 'არხი')}</th><th class="n">${L('Заказов', 'შეკვეთები')}</th><th class="n">${L('Выручка', 'შემოსავალი')}</th><th>${L('Доля', 'წილი')}</th><th class="n">${L('Средний чек', 'საშუალო ჩეკი')}</th>${S.A.range === 'all' ? '' : `<th class="n">${L('Прошлый период', 'წინა პერიოდი')}</th>`}</tr>
-    ${chans.map((c) => `<tr><td><b><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${CHCOL[c.channel]};margin-right:6px"></i>${NM[c.channel] || c.channel}</b></td><td class="n">${c.orders}</td><td class="n"><b>${money(c.revenue_tetri)}</b></td><td style="min-width:150px"><div class="row" style="gap:8px">${hbar(c.revenue_tetri, rev, CHCOL[c.channel])}<span>${shareP(c.revenue_tetri, rev)}%</span></div></td><td class="n">${money(c.avg_check_tetri)}</td>${S.A.range === 'all' ? '' : `<td class="n">${money((prevBy[c.channel] || {}).revenue_tetri || 0)} ${cmp(c.revenue_tetri, (prevBy[c.channel] || {}).revenue_tetri)}</td>`}</tr>`).join('') || `<tr><td colspan="6" class="mut">${L('Продаж нет', 'გაყიდვები არ არის')}</td></tr>`}
-    ${chans.length ? `<tr class="ptot"><td><b>${L('Итого', 'სულ')}</b></td><td class="n"><b>${C.orders || 0}</b></td><td class="n"><b>${money(rev)}</b></td><td>100%</td><td class="n">${money(C.avg_check_tetri || 0)}</td>${S.A.range === 'all' ? '' : `<td class="n">${money(P.revenue_tetri || 0)}</td>`}</tr>` : ''}</table></div>
+  ${visChannels(chans, rev, own, P, prevBy, NM)}
+  ${visPay(pm, payTot, siteN, onlN)}
   ${S.A.group === 'month' && byP.length > 1 ? `<div class="card"><h3 style="margin:0">${L('Выручка по месяцам и каналам', 'შემოსავალი თვეებითა და არხებით')}</h3><div style="overflow-x:auto"><table><tr><th>${L('Месяц', 'თვე')}</th>${CHORD.filter((k) => byP.some((o) => o[k])).map((k) => `<th class="n">${NM[k]}</th>`).join('')}<th class="n">${L('Итого', 'სულ')}</th></tr>
     ${byP.map((o) => `<tr><td><b>${MONS()[+o.p.slice(5) - 1]} ${o.p.slice(0, 4)}</b></td>${CHORD.filter((k) => byP.some((x) => x[k])).map((k) => `<td class="n">${o[k] ? money(o[k]) : '—'}</td>`).join('')}<td class="n"><b>${money(CHORD.reduce((a, k) => a + (o[k] || 0), 0))}</b></td></tr>`).join('')}</table></div></div>` : ''}
-  <div class="card"><h3 style="margin:0">${L('Как платят', 'როგორ იხდიან')}</h3>
-    <span class="mut" style="font-size:13px">${L('Заказов с сайта', 'საიტის შეკვეთები')}: <b>${siteN}</b> · ${L('оплачено онлайн', 'ონლაინ გადახდილი')}: <b>${onlN}</b>${siteN ? ` (${Math.round((onlN * 100) / siteN)}%)` : ''} · ${L('при получении', 'მიღებისას')}: <b>${Math.max(0, siteN - onlN)}</b></span>
-    <table><tr><th>${L('Способ оплаты', 'გადახდის ხერხი')}</th><th class="n">${L('Заказов', 'შეკვეთები')}</th><th class="n">${L('Сумма', 'თანხა')}</th><th>${L('Доля', 'წილი')}</th></tr>
-    ${Object.entries(pm).sort((a, b) => b[1].rev - a[1].rev).map(([k, m]) => `<tr><td><b>${PAYNM()[k] || k}</b></td><td class="n">${m.n}</td><td class="n">${money(m.rev)}</td><td style="min-width:150px"><div class="row" style="gap:8px">${hbar(m.rev, payTot)}<span>${shareP(m.rev, payTot)}%</span></div></td></tr>`).join('') || `<tr><td colspan="4" class="mut">—</td></tr>`}</table></div>
   <div class="row"><button class="b bo" data-a="repSend">${L('Отчёт за вчера (как утром в Telegram)', 'გუშინდელი ანგარიში')}</button></div>`;
 }
 /* 🍕 Пиццы и 🥤 Напитки: сколько продано, что лучше / хуже, по месяцам */
@@ -950,9 +982,8 @@ function viewProducts(kind) {
   <div class="kpis">${aKpi(L('Продано, шт', 'გაყიდულია, ც'), T.qty, cmp(T.qty, TP.qty), kind === 'pizza' && T.combo ? L('из них в комбо', 'მათ შორის კომბოში') + ' ' + T.combo : '')}${aKpi(L('Выручка', 'შემოსავალი'), money(T.rev), cmp(T.rev, TP.rev))}
     ${aKpi(L('Прибыль после продуктов и комиссий', 'მოგება პროდუქტებისა და საკომისიოს შემდეგ'), money(T.profit), cmp(T.profit, TP.profit))}${aKpi(L('В среднем с одной', 'საშუალოდ ერთზე'), money(T.qty ? Math.round(T.profit / T.qty) : 0))}</div>
   ${xSum(L('Итоги', 'შედეგები'), [[L('Период', 'პერიოდი'), fmtD(S.A.f) + ' — ' + fmtD(S.A.t)], [L('Продано, шт', 'გაყიდულია, ც'), T.qty], [L('Выручка', 'შემოსავალი'), money(T.rev)], [L('Прибыль', 'მოგება'), money(T.profit)]])}
-  ${rows.length ? `<div class="g2">${chartCard('📊 ' + L('Сколько продано, шт', 'რამდენი გაიყიდა, ც'), hbars(rows.slice(0, 15).map((r, i) => ({ l: r.name, v: r.qty, t: r.qty + ' ' + L('шт', 'ც'), c: i < 3 ? '#2F6B3A' : '#2a78d6' }))))}
-    ${chartCard('💰 ' + L('Сколько заработали (прибыль)', 'რამდენი გამოვიმუშავეთ (მოგება)'), hbars(rows.slice().sort((a, b) => b.profit - a.profit).slice(0, 15).map((r) => ({ l: r.name, v: Math.max(0, r.profit), t: money(r.profit), c: '#eb6834' }))))}</div>` : ''}
-  ${says}${tbl(rows, kind === 'pizza' ? L('Рейтинг пицц: от самой продаваемой', 'პიცების რეიტინგი') : L('Рейтинг напитков', 'სასმელების რეიტინგი'))}${monthly}${combos}
+  ${prodShow(rows, T, kind)}
+  ${says}${rows.length ? `<details class="card"><summary style="cursor:pointer;font-weight:800">📋 ${L('Подробная таблица: прибыль, маржа, Wolt/Glovo', 'დეტალური ცხრილი')}</summary>${tbl(rows, kind === 'pizza' ? L('Рейтинг пицц: от самой продаваемой', 'პიცების რეიტინგი') : L('Рейтинг напитков', 'სასმელების რეიტინგი'))}</details>` : ''}${monthly}${combos}
   ${kind === 'pizza' ? menuMatrix(rows) : ''}${tariffCard(sel, title)}${others.length ? tbl(others, L('Остальное меню (соусы, десерты и т.п.)', 'დანარჩენი მენიუ')) : ''}
   <p class="mut" style="font-size:12px">${L('Прибыль = выручка − комиссия Wolt/Glovo − продукты по рецепту. Зарплаты и аренда — во вкладке «Прибыль».', 'მოგება = შემოსავალი − Wolt/Glovo საკომისიო − პროდუქტები რეცეპტით. ხელფასები და იჯარა — ჩანართში „მოგება“.')}</p>`;
 }
