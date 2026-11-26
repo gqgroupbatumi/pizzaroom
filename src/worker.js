@@ -2654,7 +2654,7 @@ const schemaReady = new WeakSet();
 const schemaRun = new WeakMap();
 // Каждый запрос сам доводит обновление базы до конца (миграции повторяемые, шаги помечаются в data_v).
 // Нельзя ждать промис другого запроса: в Cloudflare Workers он может так и не завершиться — тогда сайт «висит».
-const SCHEMA_MARK = 'm62';   // меняйте при добавлении новой миграции
+const SCHEMA_MARK = 'm63';   // меняйте при добавлении новой миграции
 async function ensureSchema(env) {
   if (schemaReady.has(env.DB)) return;
   try { const r = await env.DB.prepare(`SELECT value FROM settings WHERE key = 'schema_mark'`).first(); if (r && r.value === SCHEMA_MARK) { schemaReady.add(env.DB); return; } } catch (e) {}
@@ -3170,8 +3170,7 @@ async function migrate(env) {
   { // 26.11.2026, запуск: владелец попросил обнулить все пробные заказы, оплаты, смены и кассу. Меню, товары, ингредиенты, рецепты, сотрудники и настройки остаются.
     // Только на боевом сервере (есть ASSETS), один раз; после этого кнопка «удалить пробные продажи» считается использованной — настоящая выручка защищена.
     const f = await D.one(`SELECT value FROM settings WHERE key = 'launch_reset'`).catch(() => null);
-    const done = await D.one(`SELECT value FROM settings WHERE key = 'sales_reset'`).catch(() => null);
-    if (!f && !done && env.ASSETS && typeof env.ASSETS.fetch === 'function') {
+    if (!f && env.ASSETS && typeof env.ASSETS.fetch === 'function') { // в т.ч. если кнопку уже нажимали 18.11 — после неё были ещё пробные заказы
       const info = await salesResetInfo(env); const C = (await D.one(`SELECT datetime('now') AS t`)).t;
       const own = await D.one(`SELECT id FROM staff WHERE role = 'owner' ORDER BY id LIMIT 1`).catch(() => null);
       await D.batch([
