@@ -2657,7 +2657,7 @@ const schemaReady = new WeakSet();
 const schemaRun = new WeakMap();
 // Каждый запрос сам доводит обновление базы до конца (миграции повторяемые, шаги помечаются в data_v).
 // Нельзя ждать промис другого запроса: в Cloudflare Workers он может так и не завершиться — тогда сайт «висит».
-const SCHEMA_MARK = 'm64';   // меняйте при добавлении новой миграции
+const SCHEMA_MARK = 'm65';   // меняйте при добавлении новой миграции
 async function ensureSchema(env) {
   if (schemaReady.has(env.DB)) return;
   try { const r = await env.DB.prepare(`SELECT value FROM settings WHERE key = 'schema_mark'`).first(); if (r && r.value === SCHEMA_MARK) { schemaReady.add(env.DB); return; } } catch (e) {}
@@ -3191,6 +3191,26 @@ async function migrate(env) {
   { // оплата переводом от компаний убрана везде (владелец, 26.11.2026)
     const pay = await D.one(`SELECT value FROM settings WHERE key = 'pay'`).catch(() => null);
     if (pay) { try { const v = JSON.parse(pay.value); if (v.transfer) { v.transfer = false; await D.run(`UPDATE settings SET value = ? WHERE key = 'pay'`, JSON.stringify(v)); } } catch (e) {} }
+  }
+  { // 26.11.2026: энергетик BUGA 0,5 (зал 4 ₾, Wolt/Glovo 5,50) и вода Бахмаро 0,5 (цена как у другой воды); вода рядом с водой, BUGA перед соками
+    const dv = await D.one(`SELECT value FROM settings WHERE key = 'drinks_v'`).catch(() => null);
+    if (dv && Number(dv.value) < 8) {
+      const ORD = ['water', 'bakhmaro', 'borjomi', 'cola', 'zero', 'sprite', 'fanta', 'pepsi', 'pepsi_zero', 'kvass', 'burakhi', 'limon_fresh', 'buga',
+        'icetea_peach', 'icetea_lemon', 'icetea_mango', 'icetea_berry', 'cappy_apple', 'cappy_cherry', 'cappy_orange', 'cappy_berry', 'cappy_peach', 'cappy_grapefruit', 'juice', 'juice_orange', 'juice_apple'];
+      const st = [D.stmt(`INSERT INTO products (id, category_id, name_ka, name_en, name_ru, size, photo, sort, active) VALUES ('buga', 'drinks', 'BUGA ენერგეტიკი', 'BUGA Energy drink', 'BUGA энергетик', '0,5 л', '/img/drink-buga-c-600.webp', 113, 1) ON CONFLICT(id) DO NOTHING`),
+        D.stmt(`INSERT OR IGNORE INTO ingredients (id, name, unit) VALUES ('st_buga', 'BUGA ენერგეტიკი 0,5 ლ ქილა · Энергетик BUGA 0,5 л банка', 'pcs')`),
+        D.stmt(`INSERT OR IGNORE INTO recipes (product_id, ingredient_id, qty) VALUES ('buga', 'st_buga', 1)`),
+        ...[['base', 400], ['wolt', 550], ['glovo', 550]].map(([pl, v]) => D.stmt('INSERT INTO prices (product_id, price_list, price_tetri) VALUES (?,?,?) ON CONFLICT(product_id, price_list) DO NOTHING', 'buga', pl, v)),
+        D.stmt(`UPDATE products SET photo = '/img/drink-bakhmaro2-c-600.webp', active = 1, archived = 0, name_ru = 'Вода Бахмаро', name_ka = 'ბახმარო, მთის წყალი', name_en = 'Bakhmaro water', size = '0,5 л' WHERE id = 'bakhmaro'`),
+        D.stmt(`INSERT OR IGNORE INTO ingredients (id, name, unit) VALUES ('st_bakhmaro', 'ბახმარო 0,5 ლ · Вода Бахмаро 0,5 л', 'pcs')`),
+        D.stmt(`INSERT OR IGNORE INTO recipes (product_id, ingredient_id, qty) SELECT 'bakhmaro', 'st_bakhmaro', 1 WHERE EXISTS (SELECT 1 FROM products WHERE id = 'bakhmaro')`),
+        D.stmt(`INSERT INTO prices (product_id, price_list, price_tetri) SELECT 'bakhmaro', price_list, price_tetri FROM prices WHERE product_id = 'water' AND price_list IN ('base','wolt','glovo') AND EXISTS (SELECT 1 FROM products WHERE id = 'bakhmaro')
+          ON CONFLICT(product_id, price_list) DO UPDATE SET price_tetri = excluded.price_tetri`),
+        D.stmt(`UPDATE ingredients SET archived = 0 WHERE id IN ('st_buga', 'st_bakhmaro')`),
+        ...ORD.map((id, i) => D.stmt(`UPDATE products SET sort = ? WHERE id = ? AND category_id = 'drinks'`, 101 + i, id)),
+        D.stmt(`INSERT INTO settings (key, value) VALUES ('drinks_v', '8') ON CONFLICT(key) DO UPDATE SET value = '8'`)];
+      await D.batch(st);
+    }
   }
   await D.run(`INSERT INTO settings (key, value) VALUES ('schema_mark', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, SCHEMA_MARK);
   schemaReady.add(env.DB);
