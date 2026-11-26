@@ -271,13 +271,13 @@ on('GET', '/api/promo/now', 'menu.read', async ({ env, url }) => {
 
 // Публичное меню для сайта (цены зала/сайта)
 on('GET', '/api/public/menu', null, async ({ env }) => db(env).all(`SELECT p.id, p.category_id, p.name_ka, p.name_en, p.name_ru, p.desc_ka, p.desc_en, p.desc_ru,
-  p.size, p.photo, p.in_stock, pr.price_tetri FROM products p JOIN prices pr ON pr.product_id = p.id AND pr.price_list = 'base' WHERE p.active = 1 ORDER BY p.sort`));
+  p.size, p.photo, p.in_stock, pr.price_tetri FROM products p JOIN prices pr ON pr.product_id = p.id AND pr.price_list = 'base' WHERE p.active = 1 ORDER BY CASE WHEN p.category_id = 'pizza' THEN pr.price_tetri END, p.sort`));
 
 on('GET', '/api/public/catalog', null, async ({ env }) => ({
   combos: await publicCombos(env, { showPaused: true }),
   categories: await db(env).all('SELECT id, sort, name_ka, name_en, name_ru, soon, age18 FROM categories c WHERE active = 1 AND (soon = 1 OR EXISTS (SELECT 1 FROM products p WHERE p.category_id = c.id AND p.active = 1)) ORDER BY sort'),
   products: await db(env).all(`SELECT p.id, p.category_id, p.name_ka, p.name_en, p.name_ru, p.desc_ka, p.desc_en, p.desc_ru, p.size, p.photo, p.in_stock, pr.price_tetri
-    FROM products p JOIN prices pr ON pr.product_id = p.id AND pr.price_list = 'base' JOIN categories c ON c.id = p.category_id WHERE p.active = 1 AND c.active = 1 ORDER BY c.sort, p.sort`)
+    FROM products p JOIN prices pr ON pr.product_id = p.id AND pr.price_list = 'base' JOIN categories c ON c.id = p.category_id WHERE p.active = 1 AND c.active = 1 ORDER BY c.sort, CASE WHEN p.category_id = 'pizza' THEN pr.price_tetri END, p.sort`)
 }));
 
 // Смены
@@ -3496,7 +3496,7 @@ const photoOf = (p) => p.photo || (p.category_id === 'pizza' ? `/img/pizza-${p.i
 async function seoCatalog(env) {
   const cats = await db(env).all('SELECT id, sort, name_ka, name_en, name_ru FROM categories WHERE active = 1 ORDER BY sort');
   const prods = await db(env).all(`SELECT p.id, p.category_id, p.name_ka, p.name_en, p.name_ru, p.desc_ka, p.desc_en, p.desc_ru, p.size, p.photo, p.in_stock, pr.price_tetri
-    FROM products p JOIN prices pr ON pr.product_id = p.id AND pr.price_list = 'base' JOIN categories c ON c.id = p.category_id WHERE p.active = 1 AND c.active = 1 ORDER BY c.sort, p.sort`);
+    FROM products p JOIN prices pr ON pr.product_id = p.id AND pr.price_list = 'base' JOIN categories c ON c.id = p.category_id WHERE p.active = 1 AND c.active = 1 ORDER BY c.sort, CASE WHEN p.category_id = 'pizza' THEN pr.price_tetri END, p.sort`);
   return { cats, prods, pizzas: prods.filter((p) => p.category_id === 'pizza') };
 }
 const altLinks = (path) => ['ka', 'ru', 'en'].map((l) => `<link rel="alternate" hreflang="${l}" href="${SITE}${LP[l]}${path}">`).join('') + `<link rel="alternate" hreflang="x-default" href="${SITE}${path}">`;
