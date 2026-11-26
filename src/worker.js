@@ -1846,12 +1846,15 @@ function monthsBetween(from, to) { const out = []; let y = +from.slice(0, 4), m 
 const dayDiff = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5) + 1;
 async function pnlRange(env, from, to, opts = {}) {
   const D = db(env); const S = await getSettings(env); const T = S.tax; const today = tbDate();
+  // запуск программы (26.11.2026): до этого дня зарплаты и расходы в прибыль не идут — учёт начат с нуля на следующий день после обнуления
+  const lr = await D.one(`SELECT value FROM settings WHERE key = 'launch_reset'`).catch(() => null); let startDay = '2000-01-01';
+  try { if (lr) startDay = addDays(tbDate(new Date(String(JSON.parse(lr.value).at).replace(' ', 'T') + 'Z')), 1); } catch (e) {}
   const vatK = T.vatPayer ? T.vat / (100 + T.vat) : 0;
   const months = monthsBetween(from, to); await Promise.all(months.map((mo) => materializeRecurring(env, mo)));
   const payP = Promise.all(months.map((mo) => payroll(env, mo)));
   const wasteP = D.one(`SELECT COALESCE(SUM(cost_tetri),0) AS c FROM stock_moves WHERE kind = 'writeoff' AND ${DT('created_at')} BETWEEN ? AND ?`, from, to);
   const buyP = D.one(`SELECT COALESCE(SUM(cost_tetri),0) AS c FROM stock_moves WHERE kind = 'receipt' AND delta > 0 AND ${DT('created_at')} BETWEEN ? AND ?`, from, to); // закупки продуктов (приход на склад)
-  const exP = D.all(`SELECT category, SUM(amount_tetri) AS gross, SUM(CASE WHEN vat_included = 1 THEN amount_tetri ELSE 0 END) AS with_vat FROM expenses WHERE deleted = 0 AND date BETWEEN ? AND ? GROUP BY category`, from, to);
+  const exP = D.all(`SELECT category, SUM(amount_tetri) AS gross, SUM(CASE WHEN vat_included = 1 THEN amount_tetri ELSE 0 END) AS with_vat FROM expenses WHERE deleted = 0 AND date BETWEEN ? AND ? AND date >= ? GROUP BY category`, from, to, startDay);
   const settP = opts.sett ? Promise.resolve(opts.sett) : settlementsSummary(env);
   const chansP = D.all('SELECT id, commission_bp FROM channels');
   const [ch, cogsRows, pizRow] = await Promise.all([D.all(`SELECT o.channel, COUNT(*) AS orders, SUM(p.total_tetri) AS total_tetri FROM sales p JOIN orders o ON o.id = p.order_id WHERE ${DT('p.created_at')} BETWEEN ? AND ? GROUP BY o.channel`, from, to),
@@ -1876,7 +1879,7 @@ async function pnlRange(env, from, to, opts = {}) {
   const prT = { gross: 0, net: 0, income_tax: 0, pension_emp: 0, pension_er: 0, employer_cost: 0, to_pay: 0, advances: 0, pool: 0 };
   for (const [i, mo] of months.entries()) {
     const md = monthDays(mo), ms = `${mo}-01`, me = `${mo}-${String(md).padStart(2, '0')}`;
-    const a0 = from > ms ? from : ms; let b0 = to < me ? to : me; if (b0 > today) b0 = today; // зарплата набегает по дням — вперёд не считаем
+    let a0 = from > ms ? from : ms; if (a0 < startDay) a0 = startDay; let b0 = to < me ? to : me; if (b0 > today) b0 = today; // зарплата набегает по дням — вперёд не считаем
     const ov = b0 < a0 ? 0 : dayDiff(a0, b0); const k = Math.min(1, Math.max(0, ov / md));
     const pr = pays[i];
     for (const key of ['gross', 'net', 'income_tax', 'pension_emp', 'pension_er', 'employer_cost', 'to_pay', 'advances']) prT[key] += Math.round(pr.totals[key] * k);
