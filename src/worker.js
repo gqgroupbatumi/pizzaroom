@@ -86,6 +86,13 @@ async function notify(env, text) {
   try { const c = await tgConf(env); if (!c.token || !c.chat) return; await tgSend(env, c.chat, 'Pizza Room · ' + text); } catch (e) { /* уведомление не должно ломать кассу */ }
 }
 
+// Новые заказы — владельцу и дополнительным получателям (до 5 человек: подписка по ссылке из админки)
+async function notifyOrders(env, text) {
+  try { const c = await tgConf(env); if (!c.token) return; const s = (await secretGet(env, 'tg')) || {};
+    const to = [...new Set([c.chat, ...((s.subs || []).map((x) => x.chat))].filter(Boolean).map(String))];
+    await Promise.all(to.map((ch) => tgSend(env, ch, 'Pizza Room · ' + text))); } catch (e) { /* уведомление не должно ломать заказ */ }
+}
+
 async function findStaffByPin(env, pin, roles) {
   const list = await db(env).all('SELECT * FROM staff WHERE active = 1');
   for (const s of list) {
@@ -1121,7 +1128,8 @@ on('POST', '/api/me/pin', 'menu.read', async ({ env, me, body, request }) => {
 async function recovery(env) { return Object.assign({ email: 'vbatumi1@gmail.com', phone: '+995557420004' }, (await secretGet(env, 'recovery')) || {}); }
 on('GET', '/api/owner/security', 'staff.manage', async ({ env }) => {
   const c = await tgConf(env); const r = await recovery(env);
-  return { tg: { has_token: !!c.token, username: c.username || null, linked: !!c.chat, env: !!env.TG_TOKEN }, recovery: r, mail_ready: !!env.MAIL };
+  const s = (await secretGet(env, 'tg')) || {};
+  return { tg: { has_token: !!c.token, username: c.username || null, linked: !!c.chat, env: !!env.TG_TOKEN, subs: (s.subs || []).map((x) => ({ chat: x.chat, name: x.name, at: x.at })) }, recovery: r, mail_ready: !!env.MAIL };
 });
 on('POST', '/api/owner/recovery', 'staff.manage', async ({ env, me, body }) => {
   const email = String(body.email || '').trim().slice(0, 120); const phone = String(body.phone || '').replace(/[^\d+]/g, '').slice(0, 20);
@@ -1179,6 +1187,18 @@ on('POST', '/api/tg/disconnect', 'staff.manage', async ({ env, me }) => {
   const c = (await secretGet(env, 'tg')) || {}; if (c.token) { try { await tgCall(c.token, 'deleteWebhook', {}); } catch (e) {} }
   await db(env).run(`DELETE FROM secrets WHERE key = 'tg'`); await audit(env, me.id, 'tg.disconnect'); return { ok: true };
 });
+on('POST', '/api/tg/sub-link', 'staff.manage', async ({ env, me }) => {
+  const s = (await secretGet(env, 'tg')) || {}; if (!s.token || !s.username) fail(400, 'no_bot', 'Сначала подключите Telegram-бота');
+  if ((s.subs || []).length >= 5) fail(400, 'too_many', 'Уже 5 получателей — сначала удалите кого-нибудь');
+  const code = randomHex(6); await secretSet(env, 'tg', Object.assign({}, s, { subcode: code, subcode_at: Date.now() })); await audit(env, me.id, 'tg.sub_link', 'settings', 'tg');
+  return { link: `https://t.me/${s.username}?start=o_${code}` };
+});
+on('POST', '/api/tg/sub-remove', 'staff.manage', async ({ env, me, body }) => {
+  const s = (await secretGet(env, 'tg')) || {}; const ch = String(body.chat || ''); const was = (s.subs || []).find((x) => String(x.chat) === ch);
+  await secretSet(env, 'tg', Object.assign({}, s, { subs: (s.subs || []).filter((x) => String(x.chat) !== ch) }));
+  if (was) { await tgSend(env, ch, 'Pizza Room: вы больше не получаете уведомления о заказах.'); await audit(env, me.id, 'tg.sub_remove', 'settings', 'tg', { name: was.name }); }
+  return { ok: true };
+});
 on('POST', '/api/tg/test', 'staff.manage', async ({ env }) => { const c = await tgConf(env); if (!c.chat) fail(400, 'not_linked', 'Сначала откройте бота по ссылке и нажмите «Start»'); return { ok: await tgSend(env, c.chat, '✅ Pizza Room: бот работает. Сюда будут приходить отчёты, советы и ссылка для восстановления PIN.') }; });
 async function todayText(env) {
   const t = tbDate(); const r = await db(env).one(`SELECT COUNT(*) AS n, COALESCE(SUM(total_tetri),0) AS s FROM sales WHERE date(datetime(created_at, ${TZ})) = ?`, t);
@@ -1194,6 +1214,23 @@ on('POST', '/api/tg/hook/:secret', null, async ({ env, params, body, request }) 
     const code = text.split(/\s+/)[1] || '';
     if (c.code && code === c.code) { await secretSet(env, 'tg', Object.assign({}, c, { chat, code: null })); await audit(env, null, 'tg.linked', 'settings', 'tg', { chat });
       await tgSend(env, chat, '✅ Готово! Это бот Pizza Room только для владельца.\n\nКаждое утро в 9:00 — отчёт за вчера и советы. Команды:\n/today — продажи сегодня\n/report — отчёт за вчера\n/advice — что предлагает советник\n/pin — ссылка на новый PIN, если забыли'); return { ok: true }; }
+  }
+  { // дополнительные получатели уведомлений о заказах
+    const code = text.startsWith('/start') ? (text.split(/\s+/)[1] || '') : ''; const subs = c.subs || []; const isSub = subs.some((x) => String(x.chat) === chat);
+    if (code.startsWith('o_') && chat !== String(c.chat)) {
+      if (c.subcode && code === 'o_' + c.subcode && Date.now() - (c.subcode_at || 0) < 48 * 3600e3 && subs.length < 5) {
+        const name = [m.from && m.from.first_name, m.from && m.from.last_name].filter(Boolean).join(' ') || (m.from && m.from.username) || 'Telegram';
+        await secretSet(env, 'tg', Object.assign({}, c, { subs: [...subs.filter((x) => String(x.chat) !== chat), { chat, name, at: isoNow() }], subcode: null })); await audit(env, null, 'tg.sub_added', 'settings', 'tg', { name });
+        await tgSend(env, chat, '✅ Готово! Сюда будут приходить новые заказы Pizza Room.\nОтписаться: /stop');
+        if (c.chat) await tgSend(env, c.chat, `🔔 ${name} теперь получает уведомления о заказах.`);
+      } else await tgSend(env, chat, 'Ссылка устарела или уже использована. Попросите владельца прислать новую.');
+      return { ok: true };
+    }
+    if (isSub && chat !== String(c.chat)) {
+      if (/^\/stop/.test(text)) { await secretSet(env, 'tg', Object.assign({}, c, { subs: subs.filter((x) => String(x.chat) !== chat) })); await tgSend(env, chat, 'Вы отписались от уведомлений о заказах.'); }
+      else await tgSend(env, chat, 'Сюда приходят новые заказы Pizza Room. Отписаться: /stop');
+      return { ok: true };
+    }
   }
   if (!c.chat || chat !== String(c.chat)) { await tgSend(env, chat, 'Этот бот работает только для владельца Pizza Room.'); return { ok: true }; }
   const cmd = text.split(/[\s@]/)[0].toLowerCase();
@@ -2384,7 +2421,7 @@ on('POST', '/api/public/order', null, async ({ env, body, request }) => {
       console.error('pay_start', e && e.message); fail(502, 'pay_failed', 'Не удалось открыть оплату картой. Попробуйте ещё раз или выберите оплату при получении');
     }
   }
-  await notify(env, `Новый заказ с сайта №${id}: ${(o.total_tetri / 100).toFixed(2)} ₾, ${name}, ${'+995' + digits}${want ? ' · ⏰ КО ВРЕМЕНИ: ' + (want.day === todayL ? 'сегодня ' : 'завтра ') + want.hm : ''}`);
+  await notifyOrders(env, `Новый заказ с сайта №${id}: ${(o.total_tetri / 100).toFixed(2)} ₾, ${name}, ${'+995' + digits}${want ? ' · ⏰ КО ВРЕМЕНИ: ' + (want.day === todayL ? 'сегодня ' : 'завтра ') + want.hm : ''}`);
   return { id, token, total_tetri: o.total_tetri };
 });
 // «Мой заказ» с другого телефона или после очистки браузера: телефон + номер заказа (за последние 2 суток)
@@ -3338,7 +3375,7 @@ async function payCheck(env, p) {
       const tL = new Date(Date.now() + 4 * 3600e3).toISOString().slice(0, 10);
       const w = o.want_at ? new Date(Date.parse(o.want_at.replace(' ', 'T') + 'Z') + 4 * 3600e3).toISOString() : null;
       await audit(env, null, 'site.paid_online', 'order', o.id, { ref: p.ref, bank: p.bank, amount_tetri: s.amount });
-      await notify(env, `Новый заказ с сайта №${o.id}: ${(o.total_tetri / 100).toFixed(2)} ₾ — 💳 ОПЛАЧЕН ОНЛАЙН (${BANKS[p.bank].name}), ${o.customer_name || ''}, ${o.customer_phone || ''}${w ? ' · ⏰ КО ВРЕМЕНИ: ' + (w.slice(0, 10) === tL ? 'сегодня ' : 'завтра ') + w.slice(11, 16) : ''}`);
+      await notifyOrders(env, `Новый заказ с сайта №${o.id}: ${(o.total_tetri / 100).toFixed(2)} ₾ — 💳 ОПЛАЧЕН ОНЛАЙН (${BANKS[p.bank].name}), ${o.customer_name || ''}, ${o.customer_phone || ''}${w ? ' · ⏰ КО ВРЕМЕНИ: ' + (w.slice(0, 10) === tL ? 'сегодня ' : 'завтра ') + w.slice(11, 16) : ''}`);
     } else if (ch.changes) await notify(env, `✅ Тестовая онлайн-оплата ${(s.amount / 100).toFixed(2)} ₾ прошла (${BANKS[p.bank].name}). Верните её в админке → Онлайн-оплата.`);
   } else if (s.state === 'failed' && p.status === 'created') {
     await D.run(`UPDATE online_pays SET status = 'failed', note = ? WHERE id = ?`, 'Банк: ' + s.raw, p.id);
