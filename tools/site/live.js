@@ -329,7 +329,7 @@ document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { va
     '.pr-test a{background:#F5B82E;color:#2A1D13;text-decoration:none;font-weight:800;border-radius:999px;padding:6px 14px;white-space:nowrap}' +
     '.pr-tm{position:fixed;inset:0;z-index:2147483001;background:rgba(20,12,6,.6);display:flex;align-items:center;justify-content:center;padding:16px}' +
     '.pr-tm>div{background:#FBF5EA;color:#2A1D13;border-radius:22px;max-width:420px;width:100%;padding:22px;font:15px/1.5 Inter,"Noto Sans Georgian",system-ui,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.35)}' +
-    '.pr-tm h3{margin:0 0 8px;font-size:20px}.pr-tm .bt{display:block;text-align:center;text-decoration:none;font-weight:800;border-radius:14px;padding:13px;margin-top:10px;border:0;width:100%;font-size:16px;cursor:pointer;font-family:inherit}';
+    '.pr-tm h3{margin:0 0 8px;font-size:20px}.pr-tm .bt{box-sizing:border-box;display:block;text-align:center;text-decoration:none;font-weight:800;border-radius:14px;padding:13px;margin-top:10px;border:0;width:100%;font-size:16px;cursor:pointer;font-family:inherit}';
   function add() {
     if (!document.body || document.querySelector('.pr-test')) return;
     var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
