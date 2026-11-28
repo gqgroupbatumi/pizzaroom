@@ -316,3 +316,35 @@ window.PR_FAQ = function (lang, A, D) {
 })();
 /* Esc закрывает карточку товара */
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var x = document.querySelector('.pr-itemx'); if (x) x.click(); } });
+/* Тестовый режим нового сайта (27.11 – 10.12.2026): полоса сверху + один раз за визит окно «лучше позвоните» */
+(function () {
+  var END = Date.parse('2026-12-11T00:00:00+04:00'); if (Date.now() >= END) return;
+  var lang = /^\/ru(\/|$)/.test(location.pathname) ? 'ru' : /^\/en(\/|$)/.test(location.pathname) ? 'en' : 'ka';
+  var T = {
+    ru: { bar: 'Новый сайт работает в тестовом режиме до 10 декабря. Чтобы заказ точно приняли — позвоните нам.', call: 'Позвонить', h: 'Новый сайт — тестовый режим', p: 'С 27 ноября по 10 декабря сайт работает в тестовом режиме. Заказ на сайте может не сразу дойти до нас — надёжнее всего позвонить или написать в WhatsApp, и мы сразу всё примем.', wa: 'WhatsApp', ok: 'Понятно, продолжить на сайте' },
+    en: { bar: 'Our new website is in test mode until 10 December. To make sure we get your order, please call us.', call: 'Call', h: 'New website — test mode', p: 'From 27 November to 10 December the website runs in test mode. An online order may not reach us right away — the most reliable way is to call or message us on WhatsApp, and we will take your order at once.', wa: 'WhatsApp', ok: 'Got it, continue on the website' },
+    ka: { bar: 'ახალი საიტი 10 დეკემბრამდე სატესტო რეჟიმშია. შეკვეთისთვის უმჯობესია დაგვირეკოთ.', call: 'დარეკვა', h: 'ახალი საიტი — სატესტო რეჟიმი', p: '27 ნოემბრიდან 10 დეკემბრამდე საიტი სატესტო რეჟიმში მუშაობს. საიტზე შეკვეთა შეიძლება მაშინვე არ მოგვივიდეს — ყველაზე საიმედოა დაგვირეკოთ ან მოგვწეროთ WhatsApp-ში.', wa: 'WhatsApp', ok: 'გასაგებია, საიტზე გაგრძელება' } }[lang];
+  var TEL = 'tel:+995514888800', WA = 'https://wa.me/995514888800';
+  var css = '.pr-test{position:sticky;top:0;z-index:2147483000;background:#2A1D13;color:#FFE7A8;font:600 14px/1.35 Inter,"Noto Sans Georgian",system-ui,sans-serif;padding:8px 12px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;text-align:center}' +
+    '.pr-test a{background:#F5B82E;color:#2A1D13;text-decoration:none;font-weight:800;border-radius:999px;padding:6px 14px;white-space:nowrap}' +
+    '.pr-tm{position:fixed;inset:0;z-index:2147483001;background:rgba(20,12,6,.6);display:flex;align-items:center;justify-content:center;padding:16px}' +
+    '.pr-tm>div{background:#FBF5EA;color:#2A1D13;border-radius:22px;max-width:420px;width:100%;padding:22px;font:15px/1.5 Inter,"Noto Sans Georgian",system-ui,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.35)}' +
+    '.pr-tm h3{margin:0 0 8px;font-size:20px}.pr-tm .bt{display:block;text-align:center;text-decoration:none;font-weight:800;border-radius:14px;padding:13px;margin-top:10px;border:0;width:100%;font-size:16px;cursor:pointer;font-family:inherit}';
+  function add() {
+    if (!document.body || document.querySelector('.pr-test')) return;
+    var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+    var b = document.createElement('div'); b.className = 'pr-test'; b.setAttribute('role', 'status');
+    b.innerHTML = '<span>🧪 ' + T.bar + '</span><a href="' + TEL + '">📞 ' + T.call + ' 514 88 88 00</a>';
+    document.body.insertBefore(b, document.body.firstChild);
+    var seen = false; try { seen = sessionStorage.getItem('pr_test_seen') === '1'; } catch (e) {}
+    if (seen || /bot|crawl|spider|lighthouse/i.test(navigator.userAgent)) return;
+    var m = document.createElement('div'); m.className = 'pr-tm';
+    m.innerHTML = '<div><h3>🧪 ' + T.h + '</h3><p style="margin:0">' + T.p + '</p>' +
+      '<a class="bt" style="background:#F5B82E;color:#2A1D13" href="' + TEL + '">📞 ' + T.call + ' +995 514 88 88 00</a>' +
+      '<a class="bt" style="background:#25D366;color:#fff" href="' + WA + '" target="_blank" rel="noopener">💬 ' + T.wa + '</a>' +
+      '<button class="bt" style="background:transparent;color:#7A6450;font-weight:600" type="button">' + T.ok + '</button></div>';
+    m.addEventListener('click', function (e) { if (e.target === m || e.target.tagName === 'BUTTON') { m.remove(); try { sessionStorage.setItem('pr_test_seen', '1'); } catch (x) {} } });
+    document.body.appendChild(m);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', add); else add();
+})();
