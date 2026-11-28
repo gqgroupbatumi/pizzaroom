@@ -99,13 +99,13 @@ def setKey(script, idx, key, val):
     assert len(ms)>=3, ('key',key,len(ms)); m=ms[idx]
     return script[:m.start()]+key+": '"+val.replace("'","\\'")+"'"+script[m.end():]
 TX={0:{'heroTitle':'Итальянская пицца в Батуми — доставка за 35–40 минут','heroSub':'Итальянские продукты, тонкое тесто и начинка до самого края. Готовим в Batumi Mall с 2018 года — в службах доставки гости ставят нам 9,8 из 10.',
-     'aboutText':'С 2018 года мы делаем одну вещь — пиццу, которую хочется заказать снова. Только итальянские продукты, контроль качества на каждом шаге и каждая пицца руками повара. Поэтому в Wolt, Glovo и других службах доставки гости оценивают нас на 9,8 из 10.',
+     'aboutText':'С 2017 года мы делаем одну вещь — пиццу, которую хочется заказать снова. Только итальянские продукты, контроль качества на каждом шаге и каждая пицца руками повара. Поэтому в Wolt, Glovo и других службах доставки гости оценивают нас на 9,8 из 10.',
      'f3':'оценка гостей в службах доставки','n4':'35–40'},
     1:{'heroTitle':'Italian pizza in Batumi — delivered in 35–40 minutes','heroSub':'Italian ingredients, thin crust and toppings right to the edge. Made at Batumi Mall since 2018 — delivery-app guests rate us 9.8 out of 10.',
-     'aboutText':'Since 2018 we have done one thing: pizza you want to order again. Only Italian ingredients, quality checks at every step, and every pizza made by a chef’s hands. That is why guests on Wolt, Glovo and other delivery apps rate us 9.8 out of 10.',
+     'aboutText':'Since 2017 we have done one thing: pizza you want to order again. Only Italian ingredients, quality checks at every step, and every pizza made by a chef’s hands. That is why guests on Wolt, Glovo and other delivery apps rate us 9.8 out of 10.',
      'f3':'guest rating on delivery apps','n4':'35–40'},
     2:{'heroTitle':'იტალიური პიცა ბათუმში — მიტანა 35–40 წუთში','heroSub':'იტალიური პროდუქტები, თხელი ცომი და უხვი შიგთავსი თვით კიდემდე. ვამზადებთ Batumi Mall-ში 2018 წლიდან — მიტანის სერვისებში სტუმრები 10-დან 9,8-ით გვაფასებენ.',
-     'aboutText':'2018 წლიდან ერთ საქმეს ვაკეთებთ — პიცას, რომლის ხელახლა შეკვეთაც მოგინდებათ. მხოლოდ იტალიური პროდუქტები, ხარისხის კონტროლი ყოველ ეტაპზე და ყოველ პიცას მზარეული ხელით ამზადებს. ამიტომაც Wolt-ზე, Glovo-ზე და სხვა მიტანის სერვისებში სტუმრები 10-დან 9,8-ით გვაფასებენ.',
+     'aboutText':'2017 წლიდან ერთ საქმეს ვაკეთებთ — პიცას, რომლის ხელახლა შეკვეთაც მოგინდებათ. მხოლოდ იტალიური პროდუქტები, ხარისხის კონტროლი ყოველ ეტაპზე და ყოველ პიცას მზარეული ხელით ამზადებს. ამიტომაც Wolt-ზე, Glovo-ზე და სხვა მიტანის სერვისებში სტუმრები 10-დან 9,8-ით გვაფასებენ.',
      'f3':'სტუმრების შეფასება მიტანის სერვისებში','n4':'35–40'}}
 for idx,kv in TX.items():
     for k,v in kv.items(): script=setKey(script,idx,k,v)
@@ -474,7 +474,7 @@ body=body.replace(_ft,_ft+'<span class="pr-legal"><a href="/terms{{LGQ}}">{{PY.t
 for a,b in [("name: 'Имя', phone: 'Телефон',","name: 'Имя и фамилия', phone: 'Телефон',"),("name: 'Name', phone: 'Phone',","name: 'Name and surname', phone: 'Phone',"),("name: 'სახელი', phone: 'ტელეფონი',","name: 'სახელი და გვარი', phone: 'ტელეფონი',")]:
     script=R(script,a,b,'name-label')
 html=open('shell_live.html').read().replace('<head>', '<head><script>(function(){try{var N=Date.now(),L=localStorage;var m=JSON.parse(L.getItem(\'pr_me\')||\'null\');if(m){if(!m.at){m.at=N;L.setItem(\'pr_me\',JSON.stringify(m));}else if(N-m.at>90*864e5)L.removeItem(\'pr_me\');}var o=JSON.parse(L.getItem(\'pr_orders\')||\'[]\');var o2=o.filter(function(x){return x&&x.at&&N-x.at<2*864e5;});if(o2.length!==o.length){if(o2.length)L.setItem(\'pr_orders\',JSON.stringify(o2));else L.removeItem(\'pr_orders\');}var t=JSON.parse(L.getItem(\'pr_track\')||\'null\');if(t){if(!t.at){t.at=N;L.setItem(\'pr_track\',JSON.stringify(t));}else if(N-t.at>3*864e5)L.removeItem(\'pr_track\');}}catch(e){}})();</script>',1).replace('%%HELMET%%',helmet).replace('%%BODY%%',body).replace('%%RUNTIME%%',open('runtime.js').read()).replace('%%LIVE%%',LIVE).replace('%%CSS%%',open('live.css').read()).replace('%%SCRIPT%%',script)
-for _a,_b in [('© 2018–2026','© 2017–2026'),('С 2018 года в Батуми','С 2017 года в Батуми'),('In Batumi since 2018','In Batumi since 2017'),('ბათუმში 2018 წლიდან','ბათუმში 2017 წლიდან')]: html=html.replace(_a,_b)
+for _a,_b in [('© 2018–2026','© 2017–2026'),('С 2018 года в Батуми','С 2017 года в Батуми'),('In Batumi since 2018','In Batumi since 2017'),('ბათუმში 2018 წლიდან','ბათუმში 2017 წლიდან'),('#FDC134">2018</span>','#FDC134">2017</span>')]: html=html.replace(_a,_b)  # открылись в 2017, в Batumi Mall с 2018
 # шрифты не блокируют показ страницы: сначала текст системным шрифтом, потом подменяется
 _fl=re.search(r'<link href="(https://fonts.googleapis.com/css2[^"]*)" rel="stylesheet">',html)
 if _fl: html=html.replace(_fl.group(0),'<link href="'+_fl.group(1)+'" rel="stylesheet" media="print" onload="this.media=\'all\'"><noscript><link href="'+_fl.group(1)+'" rel="stylesheet"></noscript>',1)

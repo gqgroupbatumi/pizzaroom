@@ -20,11 +20,11 @@ PIZZAS = [  # id, ka, ru, en, состав (ru), состав (en), цена ₾
 ]
 T = {
  'ka': ('პიცა ბათუმში მიტანით — Pizza Room · Пицца в Батуми · Pizza Batumi',
-        'Pizza Room — ცხელი იტალიური პიცა ბათუმში 2018 წლიდან. შეუკვეთეთ ონლაინ: მიტანა ბათუმში 35–40 წუთში ან წაღება Batumi Mall-დან. Пицца в Батуми с доставкой. Pizza delivery Batumi.'),
+        'Pizza Room — ცხელი იტალიური პიცა ბათუმში 2017 წლიდან. შეუკვეთეთ ონლაინ: მიტანა ბათუმში 35–40 წუთში ან წაღება Batumi Mall-დან. Пицца в Батуми с доставкой. Pizza delivery Batumi.'),
  'ru': ('Пицца в Батуми с доставкой — Pizza Room, Batumi Mall',
-        'Pizza Room — горячая итальянская пицца в Батуми с 2018 года. Закажите онлайн: доставка пиццы по Батуми за 35–40 минут или самовывоз из Batumi Mall. Пицца 33 см от 25 ₾, комбо, напитки.'),
+        'Pizza Room — горячая итальянская пицца в Батуми с 2017 года. Закажите онлайн: доставка пиццы по Батуми за 35–40 минут или самовывоз из Batumi Mall. Пицца 33 см от 25 ₾, комбо, напитки.'),
  'en': ('Pizza delivery in Batumi — Pizza Room, Batumi Mall',
-        'Pizza Room — hot Italian pizza in Batumi since 2018. Order online: pizza delivery across Batumi in 35–40 minutes or pick up at Batumi Mall. 33 cm pizza from 25 GEL, combos, drinks.'),
+        'Pizza Room — hot Italian pizza in Batumi since 2017. Order online: pizza delivery across Batumi in 35–40 minutes or pick up at Batumi Mall. 33 cm pizza from 25 GEL, combos, drinks.'),
 }
 LOC = {'ka': 'ka_GE', 'ru': 'ru_RU', 'en': 'en_US'}
 def url_of(l): return SITE + '/' if l == 'ka' else SITE + '/' + l + '/'
@@ -52,7 +52,7 @@ def head():
         {'@type': 'Restaurant', '@id': SITE + '/#restaurant', 'name': 'Pizza Room', 'alternateName': ['Пицца Рум', 'პიცა რუმი', 'Pizza Room Batumi'],
          'description': T['en'][1], 'url': SITE + '/', 'image': [SITE + '/img/og-1200.jpg', SITE + '/img/hero-square-720.webp'], 'logo': SITE + '/icon-v2-512.png',
          'telephone': '+995514888800', 'priceRange': '25–32 GEL', 'currenciesAccepted': 'GEL', 'paymentAccepted': 'Cash, Credit Card',
-         'servesCuisine': ['Pizza', 'Italian'], 'acceptsReservations': False, 'foundingDate': '2018',
+         'servesCuisine': ['Pizza', 'Italian'], 'acceptsReservations': False, 'foundingDate': '2017',
          'address': {'@type': 'PostalAddress', 'streetAddress': 'Zurab Gorgiladze St 88, Batumi Mall', 'addressLocality': 'Batumi', 'addressRegion': 'Adjara', 'postalCode': '6010', 'addressCountry': 'GE'},
          'geo': {'@type': 'GeoCoordinates', 'latitude': 41.64318, 'longitude': 41.61974},
          'hasMap': 'https://www.google.com/maps?q=41.64318,41.61974',

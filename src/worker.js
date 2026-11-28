@@ -3565,17 +3565,17 @@ const LP = { ka: '', ru: '/ru', en: '/en' };
 const homeUrl = (l) => SITE + (LP[l] || '') + '/';
 const slugOf = (p) => String(p.name_en || p.id).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || p.id;
 const SEO_T = {
-  ka: { title: 'პიცა ბათუმში მიტანით — Pizza Room · Пицца в Батуми · Pizza Batumi', desc: 'Pizza Room — ცხელი იტალიური პიცა ბათუმში 2018 წლიდან. შეუკვეთეთ ონლაინ: მიტანა ბათუმში 35–40 წუთში ან წაღება Batumi Mall-დან. Пицца в Батуми с доставкой. Pizza delivery Batumi.',
+  ka: { title: 'პიცა ბათუმში მიტანით — Pizza Room · Пицца в Батуми · Pizza Batumi', desc: 'Pizza Room — ცხელი იტალიური პიცა ბათუმში 2017 წლიდან. შეუკვეთეთ ონლაინ: მიტანა ბათუმში 35–40 წუთში ან წაღება Batumi Mall-დან. Пицца в Батуми с доставкой. Pizza delivery Batumi.',
     h1: 'პიცა ბათუმში — Pizza Room', lead: 'ცხელი იტალიური პიცა Batumi Mall-ში 2018 წლიდან. შეუკვეთეთ საიტზე: მიტანა ბათუმში 35–40 წუთში ან თავად წაღება Batumi Mall-დან (ზურაბ გორგილაძის ქ. 88).',
     menu: 'მენიუ და ფასები', pizzas: 'პიცები', order: 'შეკვეთა ონლაინ', all: 'მთელი მენიუ', home: 'მთავარი', del: 'მიტანა ბათუმში 35–40 წუთში', pick: 'წაღება Batumi Mall-დან', hours: 'ყოველდღე', phone: 'ტელეფონი', addr: 'მისამართი', addrv: 'ბათუმი, ზურაბ გორგილაძის ქ. 88, Batumi Mall',
     cm: 'სმ', other: 'სხვა პიცები', ptitle: (n, p) => `${n} — ${p} ₾ | პიცის მიტანა ბათუმში | Pizza Room`, pdesc: (n, d) => `${n}: ${d}. 33 სმ. მიტანა ბათუმში 35–40 წუთში ან წაღება Batumi Mall-დან. შეუკვეთეთ pizzaroom.ge-ზე.`,
     mtitle: 'მენიუ და ფასები — პიცა ბათუმში | Pizza Room', mdesc: 'Pizza Room-ის მენიუ: პიცა 33 სმ, კომბო, სასმელები. ფასები ლარში, მიტანა ბათუმში 35–40 წუთში.', nf: 'გვერდი ვერ მოიძებნა', nfp: 'შესაძლოა მისამართი შეიცვალა. აი, სად შეგიძლიათ გადახვიდეთ:' },
-  ru: { title: 'Пицца в Батуми с доставкой — Pizza Room, Batumi Mall', desc: 'Pizza Room — горячая итальянская пицца в Батуми с 2018 года. Закажите онлайн: доставка пиццы по Батуми за 35–40 минут или самовывоз из Batumi Mall. Пицца 33 см от 25 ₾, комбо, напитки.',
+  ru: { title: 'Пицца в Батуми с доставкой — Pizza Room, Batumi Mall', desc: 'Pizza Room — горячая итальянская пицца в Батуми с 2017 года. Закажите онлайн: доставка пиццы по Батуми за 35–40 минут или самовывоз из Batumi Mall. Пицца 33 см от 25 ₾, комбо, напитки.',
     h1: 'Пицца в Батуми — Pizza Room', lead: 'Горячая итальянская пицца в Batumi Mall с 2018 года. Закажите на сайте: доставка пиццы по Батуми за 35–40 минут или самовывоз из Batumi Mall (ул. Зураба Горгиладзе, 88).',
     menu: 'Меню и цены', pizzas: 'Пиццы', order: 'Заказать онлайн', all: 'Всё меню', home: 'Главная', del: 'Доставка по Батуми за 35–40 минут', pick: 'Самовывоз из Batumi Mall', hours: 'Ежедневно', phone: 'Телефон', addr: 'Адрес', addrv: 'Батуми, ул. Зураба Горгиладзе, 88, Batumi Mall',
     cm: 'см', other: 'Другие пиццы', ptitle: (n, p) => `Пицца ${n} — ${p} ₾ | доставка по Батуми | Pizza Room`, pdesc: (n, d) => `Пицца ${n}: ${d}. 33 см. Доставка по Батуми за 35–40 минут или самовывоз из Batumi Mall. Закажите онлайн на pizzaroom.ge.`,
     mtitle: 'Меню и цены — пицца в Батуми | Pizza Room', mdesc: 'Меню Pizza Room: пицца 33 см, комбо, напитки. Цены в лари, доставка по Батуми за 35–40 минут, самовывоз из Batumi Mall.', nf: 'Страница не найдена', nfp: 'Возможно, адрес изменился после обновления сайта. Вот куда можно перейти:' },
-  en: { title: 'Pizza delivery in Batumi — Pizza Room, Batumi Mall', desc: 'Pizza Room — hot Italian pizza in Batumi since 2018. Order online: pizza delivery across Batumi in 35–40 minutes or pick up at Batumi Mall. 33 cm pizza from 25 GEL, combos, drinks.',
+  en: { title: 'Pizza delivery in Batumi — Pizza Room, Batumi Mall', desc: 'Pizza Room — hot Italian pizza in Batumi since 2017. Order online: pizza delivery across Batumi in 35–40 minutes or pick up at Batumi Mall. 33 cm pizza from 25 GEL, combos, drinks.',
     h1: 'Pizza in Batumi — Pizza Room', lead: 'Hot Italian pizza at Batumi Mall since 2018. Order online: pizza delivery across Batumi in 35–40 minutes or pick-up at Batumi Mall (88 Zurab Gorgiladze St).',
     menu: 'Menu and prices', pizzas: 'Pizzas', order: 'Order online', all: 'Full menu', home: 'Home', del: 'Delivery across Batumi in 35–40 min', pick: 'Pick-up at Batumi Mall', hours: 'Daily', phone: 'Phone', addr: 'Address', addrv: 'Batumi, 88 Zurab Gorgiladze St, Batumi Mall',
     cm: 'cm', other: 'Other pizzas', ptitle: (n, p) => `${n} pizza — ${p} GEL | delivery in Batumi | Pizza Room`, pdesc: (n, d) => `${n} pizza: ${d}. 33 cm. Delivery across Batumi in 35–40 minutes or pick-up at Batumi Mall. Order online at pizzaroom.ge.`,
@@ -3607,7 +3607,7 @@ function restaurantLd(S, pizzas, l) {
 }
 function seoBlock(l, cat) {
   const T = SEO_T[l];
-  const li = cat.pizzas.map((p) => `<li><a href="${LP[l]}/pizza/${slugOf(p)}"><b>${escH(NM(p, l))}</b></a> — ${escH(DS(p, l))}${p.size ? ', ' + escH(p.size) : ''} · ${gelS(p.price_tetri)} ₾</li>`).join('');
+  const li = cat.pizzas.map((p) => `<li><a href="${LP[l]}/pizza/${slugOf(p)}"><b>${escH(NM(p, l))}</b></a> — ${escH(DS(p, l))}${p.size ? ', ' + escH(String(p.size).replace(/см/g, T.cm)) : ''} · ${gelS(p.price_tetri)} ₾</li>`).join('');
   return `<div id="seo" style="max-width:560px;margin:0 auto;padding:16px;font:15px/1.5 Inter,sans-serif;color:#2A1D13"><h1>${escH(T.h1)}</h1><p>${escH(T.lead)}</p><h2>${escH(T.pizzas)}</h2><ul>${li}</ul>
 <p><a href="${LP[l]}/menu">${escH(T.menu)}</a> · <a href="${LP[l]}/delivery">${escH(SEO_P[l].del)}</a> · <a href="${LP[l]}/about">${escH(SEO_P[l].about)}</a> · ${escH(T.hours)} 11:00–23:00 · <a href="tel:+995514888800">+995 514 88 88 00</a></p><p><a href="/">ქართული</a> · <a href="/ru/">Русский</a> · <a href="/en/">English</a> · <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a></p></div>`;
 }
